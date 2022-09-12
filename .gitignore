@@ -1,5 +1,5 @@
 # OSM files
 *.osm
 
-# mkgmap directory
-mkgmap*/
+# output directory
+output/

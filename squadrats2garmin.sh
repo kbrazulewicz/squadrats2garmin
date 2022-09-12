@@ -2,7 +2,6 @@
 
 CONFIG_DIR=config
 OUTPUT_DIR=output
-MKGMAP_DIR=mkgmap-r4905
 
 FID=9628
 FNAME="Squadrats"
@@ -28,7 +27,7 @@ FILE=squadrats-poland
 MAPNAME=${FID}000${PID}
 OSM_FILE=${OUTPUT_DIR}/${FILE}.osm
 IMG_FILE=${OUTPUT_DIR}/${FILE}.img
-java -jar ${MKGMAP_DIR}/mkgmap.jar --family-id=${FID} --family-name="${FNAME}" --product-id=${PID} --series-name="${DESC}" --description="${DESC}" --transparent --mapname=${MAPNAME} --output-dir="${OUTPUT_DIR}" --gmapsupp "${OSM_FILE}"
+mkgmap --family-id=${FID} --family-name="${FNAME}" --product-id=${PID} --series-name="${DESC}" --description="${DESC}" --transparent --mapname=${MAPNAME} --output-dir="${OUTPUT_DIR}" --gmapsupp "${OSM_FILE}"
 
 mv ${OUTPUT_DIR}/gmapsupp.img ${IMG_FILE}
 rm ${OUTPUT_DIR}/${MAPNAME}.img ${OUTPUT_DIR}/ovm_${MAPNAME}.img ${OUTPUT_DIR}/osmmap.*
@@ -41,7 +40,7 @@ FILE=squadratinhos-tricity
 MAPNAME=${FID}000${PID}
 OSM_FILE=${OUTPUT_DIR}/${FILE}.osm
 IMG_FILE=${OUTPUT_DIR}/${FILE}.img
-java -jar ${MKGMAP_DIR}/mkgmap.jar --family-id=${FID} --family-name="${FNAME}" --product-id=${PID} --series-name="${DESC}" --description="${DESC}" --transparent --mapname=${MAPNAME} --output-dir="${OUTPUT_DIR}" --gmapsupp "${OSM_FILE}"
+mkgmap --family-id=${FID} --family-name="${FNAME}" --product-id=${PID} --series-name="${DESC}" --description="${DESC}" --transparent --mapname=${MAPNAME} --output-dir="${OUTPUT_DIR}" --gmapsupp "${OSM_FILE}"
 
 mv ${OUTPUT_DIR}/gmapsupp.img ${IMG_FILE}
 rm ${OUTPUT_DIR}/${MAPNAME}.img ${OUTPUT_DIR}/ovm_${MAPNAME}.img ${OUTPUT_DIR}/osmmap.*
