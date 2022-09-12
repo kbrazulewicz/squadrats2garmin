@@ -1,0 +1,5 @@
+# OSM files
+*.osm
+
+# mkgmap directory
+mkgmap*/
