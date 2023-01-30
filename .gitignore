@@ -3,3 +3,6 @@
 
 # output directory
 output/
+
+# pycache directories
+squadrats2osm/**/__pycache__
