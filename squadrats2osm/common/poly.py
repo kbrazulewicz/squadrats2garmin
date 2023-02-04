@@ -13,8 +13,9 @@ class PolyFileIncorrectFiletypeException(PolyFileFormatException):
         self.filetype = filetype
         super().__init__('Expecting polygon filetype, got "{}" instead'.format(filetype))
 
-
 class BoundingBox:
+    """Bounding box for a polygon
+    """
     def __init__(self, n, e, s, w):
         self.n = n
         self.e = e
@@ -22,6 +23,8 @@ class BoundingBox:
         self.w = w
 
     def __repr__(self) -> str:
+        """Overrides the default implementation
+        """
         return 'N {}; E {}; S {}; W {};'.format(self.n, self.e, self.s, self.w)
 
     def __eq__(self, __o: object) -> bool:
@@ -84,13 +87,12 @@ class Poly:
     def __generate_tiles_by_bounding_box(self, zoom: int):
         """Generate tiles for the rectangular area defined by the polygon bounding box
         """
-        tile_sw = Tile.tile_at(self.bounding_box.s, self.bounding_box.w, zoom)
-        tile_ne = Tile.tile_at(self.bounding_box.n, self.bounding_box.e, zoom)
-
+        tile_nw = Tile.tile_at((self.bounding_box.n, self.bounding_box.w), zoom)
+        tile_se = Tile.tile_at((self.bounding_box.s, self.bounding_box.e), zoom)
         tiles = []
 
-        for y in range(tile_sw.y, tile_ne.y + 1):
-            for x in range(tile_sw.x, tile_ne.x + 1):
+        for y in range(tile_nw.y, tile_se.y + 1):
+            for x in range(tile_nw.x, tile_se.x + 1):
                 tiles.append(Tile(x, y, zoom))
 
         return tiles

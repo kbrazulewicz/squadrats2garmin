@@ -1,5 +1,8 @@
 import math
 
+ZOOM_SQUADRATS = 14
+ZOOM_SQUADRATINHOS = 17
+
 class Tile:
     """Class representing a tile
 
@@ -17,8 +20,11 @@ class Tile:
         self.y = y
         self.zoom = zoom
 
+    def __repr__(self) -> str:
+        return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom)
+
     @staticmethod
-    def tile_at(coordinates_deg, zoom):
+    def tile_at(coordinates_deg: tuple[int], zoom: int):
         """ Lon./lat. to tile numbers """
         lat_deg, lon_deg = coordinates_deg
         lat_rad = math.radians(lat_deg)
