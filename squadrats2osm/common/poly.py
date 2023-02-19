@@ -38,6 +38,8 @@ class BoundingBox:
         return False
 
 class Poly:
+    """Polygon definition
+    """
     def __init__(self, filename):
         with open(filename) as f:
             self.coords = self.__read_poly_file(f)
@@ -96,3 +98,11 @@ class Poly:
                 tiles.append(Tile(x, y, zoom))
 
         return tiles
+
+    def __generate_tiles_by_poly(self, zoom: int):
+        """Generate minimal set of tiles overlapping with the polygon
+        """
+        tiles = []
+
+        return tiles
+
