@@ -21,7 +21,18 @@ class Tile:
         self.zoom = zoom
 
     def __repr__(self) -> str:
+        """Overrides the default implementation
+        """
         return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom)
+
+    def __eq__(self, __o: object) -> bool:
+        """Overrides the default implementation
+        """
+        if isinstance(__o, Tile):
+            return (self.x == __o.x and 
+                self.y == __o.y and
+                self.zoom == __o.zoom)
+        return False
 
     @staticmethod
     def tile_at(coordinates_deg: tuple[int], zoom: int):
