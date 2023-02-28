@@ -106,3 +106,54 @@ class Poly:
 
         return tiles
 
+
+    def __generate_tiles_by_outline(self, zoom: int):
+        """Generate tiles 
+        """
+        tiles = []
+        tilesLeft = []
+        tilesRight = []
+        pointA = None
+        for pointB in self.coords:
+            if pointA is not None:
+                (dX, dY) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
+                if dY < 0:
+                    # direction south
+                    tilesLeft.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+                elif (dY > 0):
+                    # direction north
+                    tilesRight.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+
+            pointA = pointB
+
+        return tiles
+
+
+def _generate_tiles_along_the_line(pointA: tuple[int], pointB: tuple[int], zoom: int):
+    """Redirect to the proper method
+    """
+    return _generate_tiles_along_the_line_simple_vertical(pointA, pointB, zoom)
+
+def _generate_tiles_along_the_line_simple_vertical(pointA: tuple[int], pointB: tuple[int], zoom: int):
+    """Generate tiles along the line - generates vertical line for the outmost tile
+    """
+    (dX, dY) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
+    if dX == 0 and dY == 0:
+        """not an actual line - point"""
+        return []
+
+    (tileA, tileB) = (Tile.tile_at(point, zoom) for point in (pointA, pointB))
+
+    if dY < 0:
+        """Direction south - generate westmost vertical line of tiles"""
+        x = min(tileA.x, tileB.x)
+        return (Tile(x, y, zoom) for y in range(tileA.y, tileB.y + 1))
+
+    elif dY > 0:
+        """Direction north - generate eastmost vertical line of tiles"""
+        x = max(tileA.x, tileB.x)
+        return (Tile(x, y, zoom) for y in range(tileB.y, tileA.y + 1))
+
+    else:
+        """horizontal line"""
+        return []
