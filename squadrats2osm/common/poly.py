@@ -105,14 +105,6 @@ class Poly:
         """Generate minimal set of tiles overlapping with the polygon
         """
         tiles = []
-
-        return tiles
-
-
-    def __generate_tiles_by_outline(self, zoom: int):
-        """Generate tiles 
-        """
-        tiles = []
         tilesL = []
         tilesR = []
         pointA = None
