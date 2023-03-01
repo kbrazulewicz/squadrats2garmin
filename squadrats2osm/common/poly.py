@@ -1,3 +1,5 @@
+from collections import defaultdict
+import itertools
 import re
 from common.tile import Tile
 
@@ -111,20 +113,32 @@ class Poly:
         """Generate tiles 
         """
         tiles = []
-        tilesLeft = []
-        tilesRight = []
+        tilesL = []
+        tilesR = []
         pointA = None
         for pointB in self.coords:
             if pointA is not None:
                 (dX, dY) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
                 if dY < 0:
                     # direction south
-                    tilesLeft.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+                    tilesL.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
                 elif (dY > 0):
                     # direction north
-                    tilesRight.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+                    tilesR.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
 
             pointA = pointB
+
+        tileMinY = min(tile.y for tile in itertools.chain(tilesL, tilesR))
+        tileMaxY = max(tile.y for tile in itertools.chain(tilesL, tilesR))
+
+        tilesLDict = defaultdict(list)
+        tilesRDict = defaultdict(list)
+
+        for tile in tilesL:
+            tilesLDict[tile.y].append(tile)
+
+        for tile in tilesR:
+            tilesRDict[tile.y].append(tile)
 
         return tiles
 
