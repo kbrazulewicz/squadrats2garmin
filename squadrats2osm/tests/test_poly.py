@@ -34,15 +34,25 @@ class TestPoly(unittest.TestCase):
         poly = Poly('tests/test_poly/pomorskie.poly')
         self.assertEqual(poly.bounding_box, BoundingBox(19.67, 54.855, 16.68, 53.47))
 
+    def test_tiles_by_bounding_box(self):
+        """
+        Test that tiles are properly generated
+        """
+        poly = Poly('tests/test_poly/pomorskie.poly')
+        squadrats = poly.generate_tiles_by_bounding_box(ZOOM_SQUADRATS)
+        self.assertEqual(len(squadrats), 9216)
+        squadratinhos = poly.generate_tiles_by_bounding_box(ZOOM_SQUADRATINHOS)
+        self.assertEqual(len(squadratinhos), 580382)
+
     def test_tiles(self):
         """
         Test that tiles are properly generated
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
         squadrats = poly.generate_tiles(ZOOM_SQUADRATS)
-        self.assertEqual(len(squadrats), 9216)
+        self.assertEqual(len(squadrats), 6925)
         squadratinhos = poly.generate_tiles(ZOOM_SQUADRATINHOS)
-        self.assertEqual(len(squadratinhos), 580382)
+        self.assertEqual(len(squadratinhos), 439125)
 
 if __name__ == '__main__':
     unittest.main()

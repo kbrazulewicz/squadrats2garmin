@@ -51,6 +51,11 @@ class Poly:
     def generate_tiles(self, zoom: int):
         """Generate a list of tiles of a given zoom covering the entire polygon
         """
+        return self.__generate_tiles_by_poly(zoom)
+
+    def generate_tiles_by_bounding_box(self, zoom: int):
+        """Generate a list of tiles of a given zoom covering the entire polygon
+        """
         return self.__generate_tiles_by_bounding_box(zoom)
 
 
@@ -123,14 +128,32 @@ class Poly:
         tileMinY = min(tile.y for tile in itertools.chain(tilesL, tilesR))
         tileMaxY = max(tile.y for tile in itertools.chain(tilesL, tilesR))
 
-        tilesLDict = defaultdict(list)
-        tilesRDict = defaultdict(list)
+        tilesDict = defaultdict(list)
 
+        # dictionary[y coordinate] of lists containing tuples(x coordinate, L|R)
+        # it is important that 'L' < 'R'
         for tile in tilesL:
-            tilesLDict[tile.y].append(tile)
+            tilesDict[tile.y].append((tile.x, 'L'))
 
         for tile in tilesR:
-            tilesRDict[tile.y].append(tile)
+            tilesDict[tile.y].append((tile.x, 'R'))
+
+        for y in range(tileMinY, tileMaxY + 1):
+            if (len(tilesDict[y]) == 0): continue
+            # sort the lists
+            tilesDict[y].sort(key=lambda tup: (tup[0],tup[1]))
+
+            # get the list and traverse it
+            depth = 0
+            for x in range(tilesDict[y][0][0], tilesDict[y][-1][0]):
+                (tileX, tileLR) = tilesDict[y][0]
+                if x == tileX:
+                    if tileLR == 'L': depth += 1
+                    if tileLR == 'R': depth -= 1
+                    tilesDict[y].pop()
+                    tiles.append(Tile(x, y, zoom))
+                elif depth > 0:
+                    tiles.append(Tile(x, y, zoom))
 
         return tiles
 
