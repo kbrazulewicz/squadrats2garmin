@@ -34,14 +34,19 @@ class Tile:
         """
         return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom)
 
+    def __key(self):
+        # not including zoom because we do not expect existence of tiles of different zooms at the same time
+        return (self.x, self.y)
+
+    def __hash(self):
+        return hash(self.__key())
+
     def __eq__(self, __o: object) -> bool:
         """Overrides the default implementation
         """
         if isinstance(__o, Tile):
-            return (self.x == __o.x and 
-                self.y == __o.y and
-                self.zoom == __o.zoom)
-        return False
+            return (self.__key() == __o.__key())
+        return NotImplemented
 
     @staticmethod
     def tile_at(coordinates_deg: tuple[int], zoom: int):

@@ -48,7 +48,7 @@ class Poly:
 
         self.bounding_box = self.__calculate_bounding_box(self.coords)
 
-    def generate_tiles(self, zoom: int):
+    def generate_tiles(self, zoom: int) -> list[Tile]:
         """Generate a list of tiles of a given zoom covering the entire polygon
         """
         return self.__generate_tiles_by_poly(zoom)
@@ -106,7 +106,7 @@ class Poly:
 
         return tiles
 
-    def __generate_tiles_by_poly(self, zoom: int):
+    def __generate_tiles_by_poly(self, zoom: int) -> list[Tile]:
         """Generate minimal set of tiles overlapping with the polygon
         """
         tiles = []
