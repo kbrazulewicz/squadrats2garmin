@@ -1,6 +1,8 @@
 import math
+from collections import defaultdict
 
-from common.osm import Node
+from common import osm
+from common.osm import Node, Way
 
 # number of tiles: 4^14 = 268 435 456
 # number of nodes: (2^14 + 1)^2 = 268 468 225
@@ -58,6 +60,14 @@ class Tile:
         ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
         return Tile(xtile, ytile, zoom)
     
+    @staticmethod
+    def to_osm_node(x: int, y: int, zoom: int) -> Node:
+        n = 2.0 ** zoom
+        id = osm.NODE_BASE_ID + y * (n + 1) + x
+        lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+        lon = x / n * 360.0 - 180.0
+        return Node(id, lat, lon);
+
     def to_osm_nodes(self) -> list[Node]:
         # zoom levels: 0 .. 20
         # number of tiles: 4 ^ zoom level
@@ -75,13 +85,54 @@ class Tile:
         # (x + 1, y + 1)
         # (x, y + 1)
 
-
         tile_seq_number = self.__to_seq_number()
         nodes = []
-    
-def to_osm_node(x: int, y: int, zoom: int) -> Node:
-    id = y * (n + 1) + x
-    n = 2.0 ** zoom
-    lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
-    lon = x / n * 360.0 - 180.0
-    return Node(id, lat, lon);
+
+
+def generate_grid(tiles: list[Tile]) -> list[Way]:
+    return generate_grid_1(tiles)
+
+
+def generate_grid_1(tiles: list[Tile]) -> list[Way]:
+    """Generate simple way consisting of 4 nodes for every tile"""
+
+    tags = [('contour', 'elevation')]
+
+    # dictionary, key: (x,y) tuple, value : Tile
+    nodesByXY = {}
+    ways = []
+    for tile in tiles:
+        k = (tile.x, tile.y)
+        node1 = nodesByXY[k] if k in nodesByXY else nodesByXY.setdefault(k, Tile.to_osm_node(k[0], k[1], tile.zoom))
+        k = (tile.x + 1, tile.y)
+        node2 = nodesByXY[k] if k in nodesByXY else nodesByXY.setdefault(k, Tile.to_osm_node(k[0], k[1], tile.zoom))
+        k = (tile.x + 1, tile.y + 1)
+        node3 = nodesByXY[k] if k in nodesByXY else nodesByXY.setdefault(k, Tile.to_osm_node(k[0], k[1], tile.zoom))
+        k = (tile.x, tile.y + 1)
+        node4 = nodesByXY[k] if k in nodesByXY else nodesByXY.setdefault(k, Tile.to_osm_node(k[0], k[1], tile.zoom))
+
+        id = node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID
+        ways.append(Way(id, nodes = [node1, node2, node3, node4], tags = tags))
+
+    return ways
+
+
+
+def generate_grid_2(tiles: list[Tile]) -> list[Way]:
+    # sort tiles by y, x
+    tilesByY = defaultdict(list)
+    for tile in tiles:
+        tilesByY[tile.y].append(tile)
+
+    for x in tilesByY.values():
+        x.sort(key=lambda tile: tile.x)
+        print(x)
+
+    # generate horizontal lines
+    # merge horizontal lines
+
+    # sort tiles by x, y
+    # generate vertical lines
+    # merge vertical lines
+
+    return []

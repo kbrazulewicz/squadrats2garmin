@@ -31,6 +31,9 @@ class Node:
     lon : float = None
     """Node's longitude in degrees"""
 
+    tags : list = None
+    """Node's tags"""
+
     def __init__(self, id: int, lat: float, lon: float, tags: list = []) -> None:
         self.id  = id
         self.lat = lat
@@ -52,3 +55,33 @@ class Node:
             node.append(Tag(k, v).to_xml())
 
         return node
+    
+class Way:
+    """Representation of a OSM Way entity
+       See https://wiki.openstreetmap.org/wiki/Way
+    """
+
+    id : int = None
+    """Way id"""
+
+    nodes : list[Node] = None
+    """Ways' nodes"""
+
+    tags : list[Tag] = None
+    """Ways' tags"""
+
+    def __init__(self, id: int, nodes: list[Node], tags: list[Tag] = []) -> None:
+        self.id = id
+        self.nodes = nodes
+        self.tags = tags
+
+    def to_xml(self):
+        way = ET.Element('way', {
+            'id': str(self.id)
+        })
+        for (node) in self.nodes:
+            way.append(node.to_xml())
+        for (k, v) in self.tags:
+            way.append(Tag(k, v).to_xml())
+
+        return way

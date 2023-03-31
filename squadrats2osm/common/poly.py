@@ -1,6 +1,7 @@
-from collections import defaultdict
 import itertools
 import re
+from collections import defaultdict
+
 from common.tile import Tile
 
 class PolyFileFormatException(Exception):
