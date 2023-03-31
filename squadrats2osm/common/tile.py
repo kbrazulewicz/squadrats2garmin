@@ -2,7 +2,7 @@ import math
 from collections import defaultdict
 
 from common import osm
-from common.osm import Node, Way
+from common.osm import Node, NodeRef, Way
 
 # number of tiles: 4^14 = 268 435 456
 # number of nodes: (2^14 + 1)^2 = 268 468 225
@@ -55,14 +55,14 @@ class Tile:
         """ Lon./lat. to tile numbers """
         lat_deg, lon_deg = coordinates_deg
         lat_rad = math.radians(lat_deg)
-        n = 2.0 ** zoom
+        n = 2 ** zoom
         xtile = int((lon_deg + 180.0) / 360.0 * n)
         ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
         return Tile(xtile, ytile, zoom)
     
     @staticmethod
     def to_osm_node(x: int, y: int, zoom: int) -> Node:
-        n = 2.0 ** zoom
+        n = 2 ** zoom
         id = osm.NODE_BASE_ID + y * (n + 1) + x
         lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
         lon = x / n * 360.0 - 180.0

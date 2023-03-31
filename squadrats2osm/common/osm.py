@@ -56,6 +56,17 @@ class Node:
 
         return node
     
+class NodeRef:
+    ref : int = None
+
+    def __init__(self, node: Node) -> None:
+        self.ref = node.id
+
+    def to_xml(self):
+        return ET.Element('nd', {
+            'ref': str(self.ref)
+        })
+
 class Way:
     """Representation of a OSM Way entity
        See https://wiki.openstreetmap.org/wiki/Way
@@ -80,7 +91,7 @@ class Way:
             'id': str(self.id)
         })
         for (node) in self.nodes:
-            way.append(node.to_xml())
+            way.append(NodeRef(node).to_xml())
         for (k, v) in self.tags:
             way.append(Tag(k, v).to_xml())
 

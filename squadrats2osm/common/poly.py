@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from common.tile import Tile
 
+
 class PolyFileFormatException(Exception):
     """Raised when POLY file has an incorrect format
     """
