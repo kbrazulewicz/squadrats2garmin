@@ -43,6 +43,8 @@ class BoundingBox:
 
 class Poly:
     """Polygon definition
+       POLY file contains lines with longitude and latitude of points creating polygon.
+       Points are ordered clockwise
     """
     def __init__(self, filename):
         with open(filename) as f:
@@ -88,18 +90,18 @@ class Poly:
         e = -180
         w = 180
         for point in coords:
-            n = max(n, point[0])
-            s = min(s, point[0])
-            e = max(e, point[1])
-            w = min(w, point[1])
+            n = max(n, point[1])
+            s = min(s, point[1])
+            e = max(e, point[0])
+            w = min(w, point[0])
 
         return BoundingBox(n, e, s, w)
 
     def __generate_tiles_by_bounding_box(self, zoom: int):
         """Generate tiles for the rectangular area defined by the polygon bounding box
         """
-        tile_nw = Tile.tile_at((self.bounding_box.n, self.bounding_box.w), zoom)
-        tile_se = Tile.tile_at((self.bounding_box.s, self.bounding_box.e), zoom)
+        tile_nw = Tile.tile_at(self.bounding_box.n, self.bounding_box.w, zoom)
+        tile_se = Tile.tile_at(self.bounding_box.s, self.bounding_box.e, zoom)
         tiles = []
 
         for y in range(tile_nw.y, tile_se.y + 1):
@@ -111,19 +113,19 @@ class Poly:
     def __generate_tiles_by_poly(self, zoom: int) -> list[Tile]:
         """Generate minimal set of tiles overlapping with the polygon
         """
-        tiles = []
-        tilesL = []
-        tilesR = []
+        tiles: list[Tile] = []
+        tilesL: list[Tile] = []
+        tilesR: list[Tile] = []
         pointA = None
         for pointB in self.coords:
             if pointA is not None:
-                (dX, dY) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
-                if dY < 0:
-                    # direction south
-                    tilesL.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
-                elif (dY > 0):
-                    # direction north
+                (dLat, dLon) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
+                if dLat < 0:
+                    # direction south (clockwise)
                     tilesR.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+                elif (dLat > 0):
+                    # direction north (clockwise)
+                    tilesL.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
 
             pointA = pointB
 
@@ -168,23 +170,23 @@ def _generate_tiles_along_the_line(pointA: tuple[int], pointB: tuple[int], zoom:
 def _generate_tiles_along_the_line_simple_vertical(pointA: tuple[int], pointB: tuple[int], zoom: int):
     """Generate tiles along the line - generates vertical line for the outmost tile
     """
-    (dX, dY) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
-    if dX == 0 and dY == 0:
-        """not an actual line - point"""
+    (dLon, dLat) = (pointB[0] - pointA[0], pointB[1] - pointA[1])
+    if dLon == 0 and dLat == 0:
+        # not an actual line - point
+        return []
+    
+    if dLat == 0:
+        # horizontal line
         return []
 
-    (tileA, tileB) = (Tile.tile_at(point, zoom) for point in (pointA, pointB))
+    (tileA, tileB) = (Tile.tile_at(lat = point[1], lon = point[0], zoom = zoom) for point in (pointA, pointB))
 
-    if dY < 0:
-        """Direction south - generate westmost vertical line of tiles"""
-        x = min(tileA.x, tileB.x)
-        return (Tile(x, y, zoom) for y in range(tileA.y, tileB.y + 1))
-
-    elif dY > 0:
-        """Direction north - generate eastmost vertical line of tiles"""
+    x = None
+    if dLat < 0:
+        # direction south - generate eastmost vertical line of tiles
         x = max(tileA.x, tileB.x)
-        return (Tile(x, y, zoom) for y in range(tileB.y, tileA.y + 1))
-
     else:
-        """horizontal line"""
-        return []
+        # direction north - generate westmost vertical line of tiles
+        x = min(tileA.x, tileB.x)
+    
+    return [Tile(x, y, zoom) for y in range(min(tileA.y, tileB.y), max(tileA.y, tileB.y) + 1)]
