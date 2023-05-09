@@ -2,6 +2,7 @@ import math
 from collections import defaultdict
 
 from common import osm
+from common import util
 from common.osm import Node, Way
 
 # number of tiles: 4^14 = 268 435 456
@@ -90,7 +91,7 @@ class Tile:
 
 
 def generate_grid(tiles: list[Tile]) -> list[Way]:
-    return generate_grid_2(tiles)
+    return generate_grid(tiles)
 
 
 def generate_grid_simple(tiles: list[Tile]) -> list[Way]:
@@ -119,115 +120,85 @@ def node_cache_get_or_compute(nodeCache: dict, x, y, zoom) -> Node:
         nodeCache[k] = node
         return node
 
-def generate_grid_2(tiles: list[Tile]) -> list[Way]:
+def generate_grid(tiles: list[Tile]) -> list[Way]:
 
-    if not tiles:
-        return []
+    if not tiles: return []
+
+    ways: list[Way] = []
+    zoom: int = tiles[0].zoom
 
     # sort tiles by y, x
     tilesByY = defaultdict(list)
     for tile in tiles:
         tilesByY[tile.y].append(tile)
 
-    for row in tilesByY.values():
-        row.sort(key=lambda tile: tile.x)
+    # find the horizontal ranges
+    rangesByY = {y: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.x for tile in row]))) for (y, row) in tilesByY.items()}
+
+    # generate horizontal lines
+    prevY = None
+    for y in sorted(rangesByY.keys()):
+        if prevY is None or prevY + 1 != y:
+            # first row or a gap - generate top edge
+            ways.extend(__create_horizontal_ways_for_ranges(y = y, ranges = rangesByY[y], zoom = zoom))
+        
+        if y + 1 in rangesByY:
+            # generate bottom edge between current and next row
+            ways.extend(__create_horizontal_ways_for_ranges(y = y + 1, ranges = util.merge_ranges(rangesByY[y] + rangesByY[y + 1]), zoom = zoom))
+        else:
+            # generate bottom edge when next row is empty    
+            ways.extend(__create_horizontal_ways_for_ranges(y = y + 1, ranges = rangesByY[y], zoom = zoom))
+
+        prevY = y
 
     # sort tiles by x, y
     tilesByX = defaultdict(list)
     for tile in tiles:
         tilesByX[tile.x].append(tile)
 
-    for col in tilesByX.values():
-        col.sort(key=lambda tile: tile.y)
-
-
-    ways: list[Way] = []
-
-    # generate horizontal lines
-    # at the moment we're ignoring holes and generate one long horizontal line
-    rows = sorted(tilesByY.keys())
-    prevRow = -1
-    for row in rows:
-        # first row or a gap - generate top edge
-        if prevRow + 1 != row:
-            ways.extend(__calculate_ways_for_rows([], tilesByY[row]))
-        # generate bottom edge either with next row or with empty row if the next row doesn't exist
-        ways.extend(__calculate_ways_for_rows(tilesByY[row], tilesByY[row + 1]))
-        prevRow = row
-
-    # merge horizontal lines - ignoring at the moment
-
+    # find the vertical ranges
+    rangesByX = {x: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.y for tile in column]))) for (x, column) in tilesByX.items()}
 
     # generate vertical lines
-    # at the moment we're ignoring holes and generate one long vertical line
-    cols = sorted(tilesByX.keys())
-    prevCol = -1
-    for col in cols:
-        # first column or a gap - generate left edge
-        if prevCol + 1 != col:
-            ways.extend(__calculate_ways_for_rows([], tilesByX[col]))
-        # generate right edge either with next column or with empty column if the next column doesn't exist
-        ways.extend(__calculate_ways_for_cols(tilesByX[col], tilesByX[col + 1]))
-        prevCol = col
+    prevX = None
+    for x in sorted(rangesByX.keys()):
+        if prevX is None or prevX + 1 != x:
+            # first column or a gap - generate left edge
+            ways.extend(__create_vertical_ways_for_ranges(x = x, ranges = rangesByX[x], zoom = zoom))
+        
+        if x + 1 in rangesByX:
+            # generate right edge between current and next column
+            ways.extend(__create_vertical_ways_for_ranges(x = x + 1, ranges = util.merge_ranges(rangesByX[x] + rangesByX[x + 1]), zoom = zoom))
+        else:
+            # generate right edge when next column is empty    
+            ways.extend(__create_vertical_ways_for_ranges(x = x + 1, ranges = rangesByX[x], zoom = zoom))
 
-    # merge vertical lines - ignoring at the moment
+        prevX = x
 
     return ways
 
-
-def __calculate_ways_for_rows(row1: list[Tile], row2: list[Tile]) -> list[Way]:
-
-    if not row1 and not row2:
+def __create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], zoom: int) -> list[Way]:
+    if not ranges:
         return []
+    
+    ways: list[Way] = []
 
-    zoom = None
-    y = None
-    minXCandidates: list[int] = [] 
-    maxXCandidates: list[int] = [] 
+    for range in ranges:
+        (node1, node2) = (Tile.to_osm_node(x, y, zoom) for x in range)
+        id = (node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID) * 2
+        ways.append(Way(id = id, nodes = [node1, node2], tags = TAGS_WAY))
 
-    if row1:
-        zoom = row1[0].zoom
-        y = row1[0].y + 1
-        minXCandidates.append(row1[0].x)
-        maxXCandidates.append(row1[-1].x + 1)
+    return ways
 
-    if row2:
-        zoom = row2[0].zoom
-        y = row2[0].y
-        minXCandidates.append(row2[0].x)
-        maxXCandidates.append(row2[-1].x + 1)
-
-    node1 = Tile.to_osm_node(min(minXCandidates), y, zoom)
-    node2 = Tile.to_osm_node(max(maxXCandidates), y, zoom)
-
-    id = node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID
-    return [Way(id, nodes = [node1, node2], tags = TAGS_WAY)]
-
-
-def __calculate_ways_for_cols(col1: list[Tile], col2: list[Tile]) -> list[Way]:
-
-    if not col1 and not col2:
+def __create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], zoom: int) -> list[Way]:
+    if not ranges:
         return []
+    
+    ways: list[Way] = []
 
-    zoom = None
-    x = None
-    minYCandidates: list[int] = [] 
-    maxYCandidates: list[int] = [] 
+    for range in ranges:
+        (node1, node2) = (Tile.to_osm_node(x, y, zoom) for y in range)
+        id = (node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID) * 2 + 1
+        ways.append(Way(id = id, nodes = [node1, node2], tags = TAGS_WAY))
 
-    if col1:
-        zoom = col1[0].zoom
-        x = col1[0].x + 1
-        minYCandidates.append(col1[0].y)
-        maxYCandidates.append(col1[-1].y + 1)
-
-    if col2:
-        zoom = col2[0].zoom
-        x = col2[0].x
-        minYCandidates.append(col2[0].y)
-        maxYCandidates.append(col2[-1].y + 1)
-
-    node1 = Tile.to_osm_node(x, min(minYCandidates), zoom)
-    node2 = Tile.to_osm_node(x, max(maxYCandidates), zoom)
-
-    id = node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID
-    return [Way(id, nodes = [node1, node2], tags = TAGS_WAY)]
+    return ways

@@ -1,0 +1,16 @@
+{
+    "jobs": [
+        {
+            "id": "squadrats-poland",
+            "zoom": "squadrats",
+            "poly": "config/polygons/europe/poland.poly",
+            "osm": "output/europe/poland_14.osm"
+        },
+        {
+            "id": "squadratinhos-pomorskie",
+            "zoom": "squadratinhos",
+            "poly": "config/polygons/europe/poland/pomorskie.poly",
+            "osm": "output/europe/poland/pomorskie_17.osm"
+        }
+    ]
+}
