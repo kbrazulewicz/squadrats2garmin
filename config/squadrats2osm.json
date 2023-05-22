@@ -5,8 +5,16 @@
             "zoom": "squadrats",
             "osm": "output/europe/squadrats-PL-poland.osm",
             "mkgmap": {
-                "country-name": "Poland",
-                "country-abbr": "PL"
+                "mapName": "96160001",
+                "description": "europe/poland Squadrats",
+                "familyId": "9616",
+                "familyName": "Squadrats Poland",
+                "productId": "1",
+                "seriesName": "Squadrats",
+                "areaName": "europe/poland",
+                "countryName": "Poland",
+                "countryAbbr": "PL",
+                "imgFile": "dist/europe/squadrats-PL-poland.img"
             }
         },
         {
@@ -14,8 +22,8 @@
             "zoom": "squadratinhos",
             "osm": "output/europe/squadratinhos-PL-poland.osm",
             "mkgmap": {
-                "country-name": "Poland",
-                "country-abbr": "PL"
+                "countryName": "Poland",
+                "countryAbbr": "PL"
             }
         },
         {
@@ -23,10 +31,10 @@
             "zoom": "squadratinhos",
             "osm": "output/europe/poland/squadratinhos-{name}.osm",
             "mkgmap": {
-                "country-name": "Poland",
-                "country-abbr": "PL",
-                "region-name": "Pomerania",
-                "region-abbr": "PM"
+                "countryName": "Poland",
+                "countryAbbr": "PL",
+                "regionName": "Pomerania",
+                "regionAbbr": "PM"
             }
         }
     ]
