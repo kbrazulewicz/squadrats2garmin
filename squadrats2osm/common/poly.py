@@ -1,5 +1,4 @@
 import itertools
-import re
 from collections import defaultdict
 
 from common.tile import Tile
@@ -73,12 +72,11 @@ class Poly:
         coords = []
 
         for l1 in file:
-            l1 = l1.strip()
-            if (l1 == 'END'): break
+            if l1.strip() == 'END': break
             for l2 in file:
                 l2 = l2.strip()
                 if (l2 == 'END'): break
-                coords.append([float(s) for s in re.split('\s+', l2)])
+                coords.append(list(map(float, l2.split())))                
 
         return coords
 

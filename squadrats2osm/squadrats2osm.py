@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 import json
+import pathlib
 import sys
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 from common import poly, tile
 from common.poly import Poly
@@ -11,8 +11,9 @@ from common.tile import ZOOM_SQUADRATINHOS
 from common.timer import timeit
 
 
-def generateOsmFile(id: str, input: str, output: str, zoom: int):
-    poly = Poly(input)
+def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: int):
+    id = input.name
+    poly = Poly(str(input))
 
     with timeit(f'{id}: generate_tiles'):
         tiles = poly.generate_tiles(zoom)
@@ -38,16 +39,13 @@ def generateOsmFile(id: str, input: str, output: str, zoom: int):
         ET.indent(document)
 
     with timeit(f'{id}: write OSM document'):
-        p = Path(output)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        ET.ElementTree(document).write(p, encoding='utf-8', xml_declaration=True)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        ET.ElementTree(document).write(str(output), encoding='utf-8', xml_declaration=True)
         # ET.ElementTree(document).write(sys.stdout.buffer, encoding='utf-8', xml_declaration=True)
 
 
 def processJob(job: dict):
-    id = job['id']
-    input = job['poly']
-    output = job['osm']
+    input = pathlib.Path(job['poly'])
     zoom = None
     match job['zoom']:
         case 'squadrats':
@@ -57,8 +55,15 @@ def processJob(job: dict):
         case _:
             print(f'job {id}: allowed zoom values are: [squadrats, squadratinhos]', file=sys.stderr)
             return 0
-        
-    generateOsmFile(id, input, output, zoom)
+
+    if input.is_file():
+        output = pathlib.Path(job['osm'])
+        generateOsmFile(input, output, zoom)
+
+    elif input.is_dir():
+        for poly in input.glob('*.poly'):
+            output = pathlib.Path(job['osm'].replace('{name}', poly.stem))
+            generateOsmFile(poly, output, zoom)
 
 
 def processOptionsFile(filename):
@@ -73,4 +78,4 @@ if __name__ == "__main__":
         case 2:
             processOptionsFile(sys.argv[1])
         case _:
-            generateOsmFile(id='anonymous', input='tests/test_poly/pomorskie.poly', output='pomorskie.osm', zoom=ZOOM_SQUADRATINHOS)
+            generateOsmFile(input=pathlib.Path('tests/test_poly/pomorskie.poly'), output=pathlib.Path('pomorskie.osm'), zoom=ZOOM_SQUADRATINHOS)

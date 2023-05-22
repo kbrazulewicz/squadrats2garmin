@@ -2,51 +2,41 @@
 
 CONFIG_DIR=config
 OUTPUT_DIR=output
+DIST_DIR=dist
 
-FID=9628
-FNAME="Squadrats"
+# 9 + https://en.wikipedia.org/wiki/ISO_3166-1 code for Poland
+familyId=9616
+familyName="Squadrats Poland"
 
 # init
 mkdir -p ${OUTPUT_DIR}
 
 # cleanup
-rm -rf ${OUTPUT_DIR}/*
+# rm -rf ${OUTPUT_DIR}/*
 
-python3 squadrats2osm/squadrats2osm.py ${CONFIG_DIR}/squadrats2osm.json
+# python3 squadrats2osm/squadrats2osm.py ${CONFIG_DIR}/squadrats2osm.json
 
-#rem generate Squadrats image for Poland
-PID=1
-DESC="Squadrats Poland"
-MAPNAME=${FID}000${PID}
-OSM_FILE=${OUTPUT_DIR}/europe/poland_14.osm
-IMG_FILE=${OUTPUT_DIR}/europe/squadrats_poland.img
-mkgmap --mapname=${MAPNAME} --description="${DESC}" \
-	--family-id=${FID} --family-name="${FNAME}" \
-	--product-id=${PID} --series-name="${DESC}" --transparent \
-	--country-name="Poland" --country-abbr="PL" \
-	--output-dir="${OUTPUT_DIR}" \
-	--gmapsupp \
-	"${OSM_FILE}"
+bin/osm2img.sh --mapname "${familyId}0001" --description "europe/poland Squadrats" \
+	--familyId ${familyId} --familyName "${familyName}" \
+	--productId 1 \
+	--seriesName "Squadrats" --areaName "europe/poland" \
+	--countryName "Poland" --countryAbbr "PL" \
+	--osmFile ${OUTPUT_DIR}/europe/squadrats-PL-poland.osm \
+	--imgFile ${DIST_DIR}/europe/squadrats-PL-poland.img 
 
-mv ${OUTPUT_DIR}/gmapsupp.img ${IMG_FILE}
-rm ${OUTPUT_DIR}/${MAPNAME}.img ${OUTPUT_DIR}/ovm_${MAPNAME}.img ${OUTPUT_DIR}/osmmap.*
-#gmt -i ${IMG_FILE}
+bin/osm2img.sh --mapname "${familyId}0101" --description "europe/poland Squadratinhos" \
+	--familyId ${familyId} --familyName "${familyName}" \
+	--productId 101 \
+	--seriesName "Squadrats" --areaName "europe/poland" \
+	--countryName "Poland" --countryAbbr "PL" \
+	--osmFile ${OUTPUT_DIR}/europe/squadratinhos-PL-poland.osm \
+	--imgFile ${DIST_DIR}/europe/squadratinhos-PL-poland.img 
 
-
-PID=2
-DESC="Squadratinhos Pomorskie"
-MAPNAME=${FID}000${PID}
-OSM_FILE=${OUTPUT_DIR}/europe/poland/pomorskie_17.osm
-IMG_FILE=${OUTPUT_DIR}/europe/poland/squadratinhos_pl_pomorskie.img
-mkgmap --mapname=${MAPNAME} --description="${DESC}" \
-	--family-id=${FID} --family-name="${FNAME}" \
-	--product-id=${OSM_ID} --series-name="${DESC}" --transparent \
-	--country-name="Poland" --country-abbr="PL" \
-	--region-name="Pomerania" --region-abbr="PM" \
-	--output-dir="${OUTPUT_DIR}" \
-	--gmapsupp \
-	"${OSM_FILE}"
-
-mv ${OUTPUT_DIR}/gmapsupp.img ${IMG_FILE}
-rm ${OUTPUT_DIR}/${MAPNAME}.img ${OUTPUT_DIR}/ovm_${MAPNAME}.img ${OUTPUT_DIR}/osmmap.*
-#gmt -i ${IMG_FILE}
+bin/osm2img.sh --mapname "${familyId}0122" --description "europe/poland/pomorskie Squadratinhos" \
+	--familyId ${familyId} --familyName "${familyName}" \
+	--productId 122 \
+	--seriesName "Squadrats" --areaName "europe/poland" \
+	--countryName "Poland" --countryAbbr "PL" \
+	--regionName "Pomerania" --regionAbbr "PM" \
+	--osmFile ${OUTPUT_DIR}/europe/poland/squadratinhos-PL-22-pomorskie.osm \
+	--imgFile ${DIST_DIR}/europe/poland/squadratinhos-PL-22-pomorskie.img 

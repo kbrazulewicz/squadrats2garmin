@@ -1,16 +1,33 @@
 {
     "jobs": [
         {
-            "id": "squadrats-poland",
-            "zoom": "squadrats",
             "poly": "config/polygons/europe/poland.poly",
-            "osm": "output/europe/poland_14.osm"
+            "zoom": "squadrats",
+            "osm": "output/europe/squadrats-PL-poland.osm",
+            "mkgmap": {
+                "country-name": "Poland",
+                "country-abbr": "PL"
+            }
         },
         {
-            "id": "squadratinhos-pomorskie",
+            "poly": "config/polygons/europe/poland.poly",
             "zoom": "squadratinhos",
-            "poly": "config/polygons/europe/poland/pomorskie.poly",
-            "osm": "output/europe/poland/pomorskie_17.osm"
+            "osm": "output/europe/squadratinhos-PL-poland.osm",
+            "mkgmap": {
+                "country-name": "Poland",
+                "country-abbr": "PL"
+            }
+        },
+        {
+            "poly": "config/polygons/europe/poland",
+            "zoom": "squadratinhos",
+            "osm": "output/europe/poland/squadratinhos-{name}.osm",
+            "mkgmap": {
+                "country-name": "Poland",
+                "country-abbr": "PL",
+                "region-name": "Pomerania",
+                "region-abbr": "PM"
+            }
         }
     ]
 }
