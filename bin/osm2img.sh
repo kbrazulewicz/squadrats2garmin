@@ -1,17 +1,26 @@
 #! /bin/bash
 
-outputDir=output
+if [[ $# -ne 2 ]]; then
+    exit
+fi
 
-while [ $# -gt 0 ]; do
-    if [[ $1 == "--"* ]]; then
-        v="${1/--/}"
-        declare "$v"="$2"
-        shift
-    fi
-    shift
-done
+id=$1
+configFile=$2
+outputDir=tmp
 
-MKGMAP_OPTS=("--mapname=${mapname}" "--description=${description}")
+while read -r k; read -r v;
+do
+    declare "$k"="$v"
+done < <(jq -r "(.jobs[] | select(.id == \"${id}\") | (\"polyFile\", .poly, \"osmFile\", .osm, (.mkgmap | to_entries | .[] | (.key, .value))))" ${configFile})
+
+# name substitution in osmFile and imgFile
+polyFileStem=$(basename "${polyFile%.*}")
+
+osmFile=${osmFile/\{name\}/$polyFileStem}
+imgFile=${imgFile/\{name\}/$polyFileStem}
+
+# build options for mkgmap
+MKGMAP_OPTS=("--mapname=${mapName}" "--description=${description}")
 MKGMAP_OPTS+=("--family-id=${familyId}" "--family-name=${familyName}")
 MKGMAP_OPTS+=("--product-id=${productId}")
 MKGMAP_OPTS+=("--series-name=${seriesName}" "--area-name=${areaName}")
@@ -25,8 +34,12 @@ fi
 MKGMAP_OPTS+=("--output-dir=${outputDir}")
 MKGMAP_OPTS+=("--gmapsupp" "${osmFile}")
 
+echo Converting ${osmFile}
+mkdir -p ${outputDir}
 mkgmap "${MKGMAP_OPTS[@]}"
 
-mkdir -p $(dirname "$imgFile")
-mv ${outputDir}/gmapsupp.img ${imgFile}
-rm ${outputDir}/${mapname}.img ${outputDir}/ovm_${mapname}.img ${outputDir}/osmmap.*
+if [[ -r "${outputDir}/gmapsupp.img" ]]; then
+    mkdir -p $(dirname "$imgFile")
+    mv ${outputDir}/gmapsupp.img ${imgFile}
+    rm ${outputDir}/${mapName}.img ${outputDir}/ovm_${mapName}.img ${outputDir}/osmmap.*
+fi

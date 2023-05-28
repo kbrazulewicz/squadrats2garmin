@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 import json
 import pathlib
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 
@@ -12,6 +13,8 @@ from common.timer import timeit
 
 
 def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: int):
+    print(f'Generating tiles for {str(input)}, zoom level {zoom}')
+
     id = input.name
     poly = Poly(str(input))
 
@@ -43,7 +46,6 @@ def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: int):
         ET.ElementTree(document).write(str(output), encoding='utf-8', xml_declaration=True)
         # ET.ElementTree(document).write(sys.stdout.buffer, encoding='utf-8', xml_declaration=True)
 
-
 def processJob(job: dict):
     input = pathlib.Path(job['poly'])
     zoom = None
@@ -57,8 +59,8 @@ def processJob(job: dict):
             return 0
 
     if input.is_file():
-        output = pathlib.Path(job['osm'])
-        generateOsmFile(input, output, zoom)
+        osmFilePath = pathlib.Path(job['osm'].replace('{name}', input.stem))
+        generateOsmFile(input, osmFilePath, zoom)
 
     elif input.is_dir():
         for poly in input.glob('*.poly'):

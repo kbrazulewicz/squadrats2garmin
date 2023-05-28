@@ -1,6 +1,7 @@
 {
     "jobs": [
         {
+            "id": "616-14",
             "poly": "config/polygons/europe/poland.poly",
             "zoom": "squadrats",
             "osm": "output/europe/squadrats-PL-poland.osm",
@@ -18,23 +19,41 @@
             }
         },
         {
+            "id": "616-17",
             "poly": "config/polygons/europe/poland.poly",
             "zoom": "squadratinhos",
             "osm": "output/europe/squadratinhos-PL-poland.osm",
             "mkgmap": {
+                "mapName": "96160101",
+                "description": "europe/poland Squadratinhos",
+                "familyId": "9616",
+                "familyName": "Squadrats Poland",
+                "productId": "101",
+                "seriesName": "Squadrats",
+                "areaName": "europe/poland",
                 "countryName": "Poland",
-                "countryAbbr": "PL"
+                "countryAbbr": "PL",
+                "imgFile": "dist/europe/squadratinhos-PL-poland.img"
             }
         },
         {
-            "poly": "config/polygons/europe/poland",
+            "id": "616-22-17",
+            "poly": "config/polygons/europe/poland/PL-22-pomorskie.poly",
             "zoom": "squadratinhos",
             "osm": "output/europe/poland/squadratinhos-{name}.osm",
             "mkgmap": {
+                "mapName": "96160122",
+                "description": "europe/poland/pomerania Squadratinhos",
+                "familyId": "9616",
+                "familyName": "Squadrats Poland",
+                "productId": "122",
+                "seriesName": "Squadrats",
+                "areaName": "europe/poland",
                 "countryName": "Poland",
                 "countryAbbr": "PL",
                 "regionName": "Pomerania",
-                "regionAbbr": "PM"
+                "regionAbbr": "PM",
+                "imgFile": "dist/europe/poland/squadratinhos-{name}.img"
             }
         }
     ]
