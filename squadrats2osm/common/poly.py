@@ -49,7 +49,7 @@ class Poly:
         with open(filename) as f:
             self.coords = self.__read_poly_file(f)
 
-        self.bounding_box = self.__calculate_bounding_box(self.coords)
+        self.bounding_box = self.__calculate_bounding_box()
 
     def generate_tiles(self, zoom: int) -> list[Tile]:
         """Generate a list of tiles of a given zoom covering the entire polygon
@@ -71,27 +71,42 @@ class Poly:
 
         coords = []
 
-        for l1 in file:
-            if l1.strip() == 'END': break
-            for l2 in file:
-                l2 = l2.strip()
-                if (l2 == 'END'): break
-                coords.append(list(map(float, l2.split())))                
+        for line in file:
+            line = line.strip()
+            if line == 'END': break
+            if line.startswith('!'): 
+                """ ignore holes in the polygon """
+                self.__read_polygon(file)
+            else:
+                coords.append(self.__read_polygon(file))
 
         return coords
 
-    def __calculate_bounding_box(self, coords) -> BoundingBox:
+    def __read_polygon(self, file):
+        """Read single polygon section
+        """
+        coords = []
+
+        for line in file:
+            line = line.strip()
+            if (line == 'END'): break
+            coords.append(tuple(map(float, line.split())))
+
+        return coords
+
+    def __calculate_bounding_box(self) -> BoundingBox:
         """Calculate bounding box for a given set of coordinates
         """
         n = -90
         s = 90
         e = -180
         w = 180
-        for point in coords:
-            n = max(n, point[1])
-            s = min(s, point[1])
-            e = max(e, point[0])
-            w = min(w, point[0])
+        for poly in self.coords:
+            for point in poly:
+                n = max(n, point[1])
+                s = min(s, point[1])
+                e = max(e, point[0])
+                w = min(w, point[0])
 
         return BoundingBox(n, e, s, w)
 
@@ -112,50 +127,51 @@ class Poly:
         """Generate minimal set of tiles overlapping with the polygon
         """
         tiles: list[Tile] = []
-        tilesL: list[Tile] = []
-        tilesR: list[Tile] = []
-        pointA = None
-        for pointB in self.coords:
-            if pointA is not None:
-                (dLat, dLon) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
-                if dLat < 0:
-                    # direction south (clockwise)
-                    tilesR.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
-                elif (dLat > 0):
-                    # direction north (clockwise)
-                    tilesL.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+        for poly in self.coords:
+            tilesL: list[Tile] = []
+            tilesR: list[Tile] = []
+            pointA = None
+            for pointB in poly:
+                if pointA is not None:
+                    (dLat, dLon) = (pointB[1] - pointA[1], pointB[0] - pointA[0])
+                    if dLat < 0:
+                        # direction south (clockwise)
+                        tilesR.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
+                    elif (dLat > 0):
+                        # direction north (clockwise)
+                        tilesL.extend(_generate_tiles_along_the_line(pointA, pointB, zoom))
 
-            pointA = pointB
+                pointA = pointB
 
-        tileMinY = min(tile.y for tile in itertools.chain(tilesL, tilesR))
-        tileMaxY = max(tile.y for tile in itertools.chain(tilesL, tilesR))
+            tileMinY = min(tile.y for tile in itertools.chain(tilesL, tilesR))
+            tileMaxY = max(tile.y for tile in itertools.chain(tilesL, tilesR))
 
-        tilesDict = defaultdict(list)
+            tilesDict = defaultdict(list)
 
-        # dictionary[y coordinate] of lists containing tuples(x coordinate, L|R)
-        # it is important that 'L' < 'R'
-        for tile in tilesL:
-            tilesDict[tile.y].append((tile.x, 'L'))
+            # dictionary[y coordinate] of lists containing tuples(x coordinate, L|R)
+            # it is important that 'L' < 'R'
+            for tile in tilesL:
+                tilesDict[tile.y].append((tile.x, 'L'))
 
-        for tile in tilesR:
-            tilesDict[tile.y].append((tile.x, 'R'))
+            for tile in tilesR:
+                tilesDict[tile.y].append((tile.x, 'R'))
 
-        for y in range(tileMinY, tileMaxY + 1):
-            if (len(tilesDict[y]) == 0): continue
-            # sort the lists
-            tilesDict[y].sort(key=lambda tup: (tup[0],tup[1]))
+            for y in range(tileMinY, tileMaxY + 1):
+                if (len(tilesDict[y]) == 0): continue
+                # sort the lists
+                tilesDict[y].sort(key=lambda tup: (tup[0],tup[1]))
 
-            # get the list and traverse it
-            depth = 0
-            for x in range(tilesDict[y][0][0], tilesDict[y][-1][0]):
-                (tileX, tileLR) = tilesDict[y][0]
-                if x == tileX:
-                    if tileLR == 'L': depth += 1
-                    if tileLR == 'R': depth -= 1
-                    tilesDict[y].pop()
-                    tiles.append(Tile(x, y, zoom))
-                elif depth > 0:
-                    tiles.append(Tile(x, y, zoom))
+                # get the list and traverse it
+                depth = 0
+                for x in range(tilesDict[y][0][0], tilesDict[y][-1][0]):
+                    (tileX, tileLR) = tilesDict[y][0]
+                    if x == tileX:
+                        if tileLR == 'L': depth += 1
+                        if tileLR == 'R': depth -= 1
+                        tilesDict[y].pop()
+                        tiles.append(Tile(x, y, zoom))
+                    elif depth > 0:
+                        tiles.append(Tile(x, y, zoom))
 
         return tiles
 
