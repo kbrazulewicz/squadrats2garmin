@@ -55,46 +55,6 @@
                 "regionAbbr": "PM",
                 "imgFile": "dist/europe/poland/squadratinhos-{name}.img"
             }
-        },
-        {
-            "id": "724-05-14",
-            "poly": "config/polygons/africa/spain/ES-CN-canarias.poly",
-            "zoom": "squadrats",
-            "osm": "output/africa/spain/squadrats-{name}.osm",
-            "mkgmap": {
-                "mapName": "97240122",
-                "description": "africa/spain/canaries Squadrats",
-                "familyId": "9724",
-                "familyName": "Squadrats Spain",
-                "productId": "1",
-                "seriesName": "Squadrats",
-                "areaName": "africa/spain",
-                "countryName": "Spain",
-                "countryAbbr": "ES",
-                "regionName": "Canarias",
-                "regionAbbr": "CN",
-                "imgFile": "dist/africa/spain/squadrats-{name}.img"
-            }
-        },
-        {
-            "id": "724-05-17",
-            "poly": "config/polygons/africa/spain/ES-CN-canarias.poly",
-            "zoom": "squadratinhos",
-            "osm": "output/africa/spain/squadratinhos-{name}.osm",
-            "mkgmap": {
-                "mapName": "97240122",
-                "description": "africa/spain/canaries Squadratinhos",
-                "familyId": "9724",
-                "familyName": "Squadrats Spain",
-                "productId": "122",
-                "seriesName": "Squadrats",
-                "areaName": "africa/spain",
-                "countryName": "Spain",
-                "countryAbbr": "ES",
-                "regionName": "Canarias",
-                "regionAbbr": "CN",
-                "imgFile": "dist/africa/spain/squadratinhos-{name}.img"
-            }
         }
     ]
 }
