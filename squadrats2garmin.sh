@@ -1,12 +1,26 @@
 #! /bin/bash
 
-CONFIG_FILE=config/squadrats2osm.json
-OUTPUT_DIR=output
-DIST_DIR=dist
+function usage {
+	echo "Usage: $0 [-h] <config-file>"
+}
 
-# 9 + https://en.wikipedia.org/wiki/ISO_3166-1 code for Poland
-familyId=9616
-familyName="Squadrats Poland"
+while getopts ":h:" o; do
+    case "${o}" in
+        *)
+            usage
+            exit 1
+			;;
+    esac
+done
+shift $((OPTIND-1))
+
+CONFIG_FILE=${1:-config/squadrats2osm.json}
+OUTPUT_DIR=output
+
+if ! [[ -r "${CONFIG_FILE}" ]]; then
+	usage
+	exit 1
+fi
 
 # init
 mkdir -p ${OUTPUT_DIR}
