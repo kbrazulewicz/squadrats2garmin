@@ -1,0 +1,40 @@
+{
+    "jobs": [
+        {
+            "id": "250-14",
+            "poly": "config/polygons/europe/france.poly",
+            "zoom": "squadrats",
+            "osm": "output/europe/squadrats-FR-france.osm",
+            "mkgmap": {
+                "mapName": "92500001",
+                "description": "europe/france Squadrats",
+                "familyId": "9250",
+                "familyName": "Squadrats France",
+                "productId": "1",
+                "seriesName": "Squadrats",
+                "areaName": "europe/france",
+                "countryName": "France",
+                "countryAbbr": "FR",
+                "imgFile": "dist/europe/squadrats-FR-france.img"
+            }
+        },
+        {
+            "id": "250-17",
+            "poly": "config/polygons/europe/france.poly",
+            "zoom": "squadratinhos",
+            "osm": "output/europe/squadratinhos-FR-france.osm",
+            "mkgmap": {
+                "mapName": "92500101",
+                "description": "europe/france Squadratinhos",
+                "familyId": "9250",
+                "familyName": "Squadrats France",
+                "productId": "101",
+                "seriesName": "Squadrats",
+                "areaName": "europe/france",
+                "countryName": "France",
+                "countryAbbr": "FR",
+                "imgFile": "dist/europe/squadratinhos-FR-france.img"
+            }
+        }
+    ]
+}
