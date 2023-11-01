@@ -27,11 +27,19 @@ class Tile:
     """tile's y coordinate"""
     zoom: int = None
     """tile's zoom level"""
+    lon: float = None
+    """tile's NW corner longitude"""
+    lat: float = None
+    """tile's NW corner latitude"""
 
     def __init__(self, x: int, y: int, zoom: int) -> None:
         self.x = x
         self.y = y
         self.zoom = zoom
+
+        n = 2 ** zoom
+        self.lon = x / n * 360.0 - 180.0
+        self.lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
 
     def __repr__(self) -> str:
         """Overrides the default implementation
@@ -63,11 +71,10 @@ class Tile:
 
     @staticmethod
     def to_osm_node(x: int, y: int, zoom: int) -> Node:
+        tile = Tile(x = x, y = y, zoom = zoom)
         n = 2 ** zoom
         id = osm.NODE_BASE_ID + y * (n + 1) + x
-        lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
-        lon = x / n * 360.0 - 180.0
-        return Node(id = id, lat = lat, lon = lon);
+        return Node(id = id, lon = tile.lon, lat = tile.lat);
 
     def to_osm_nodes(self) -> list[Node]:
         # zoom levels: 0 .. 20

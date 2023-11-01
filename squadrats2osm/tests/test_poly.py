@@ -3,6 +3,7 @@ import unittest
 from common.poly import BoundingBox
 from common.poly import Poly
 from common.poly import PolyFileIncorrectFiletypeException
+from common.poly import _generate_tiles_along_the_line
 from common.poly import _generate_tiles_along_the_line_simple_vertical
 from common.tile import ZOOM_SQUADRATS
 from common.tile import ZOOM_SQUADRATINHOS
@@ -53,30 +54,43 @@ class TestPoly(unittest.TestCase):
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
         squadrats = poly.generate_tiles(ZOOM_SQUADRATS)
-        self.assertEqual(len(squadrats), 11394)
+        self.assertEqual(len(squadrats), 10984)
         squadratinhos = poly.generate_tiles(ZOOM_SQUADRATINHOS)
-        self.assertEqual(len(squadratinhos), 718836)
+        self.assertEqual(len(squadratinhos), 693067)
 
     def test_generate_tiles_along_the_line_simple_vertical(self):
         result = _generate_tiles_along_the_line_simple_vertical(pointA = (0, 0), pointB = (1, 1), zoom = ZOOM_SQUADRATS)
         self.assertEqual(len(result), 47)
-        self.assertEqual(result[0],  Tile.tile_at( 1,  0, ZOOM_SQUADRATS))
-        self.assertEqual(result[-1], Tile.tile_at( 0,  0, ZOOM_SQUADRATS))
+        self.assertEqual(result[0],  Tile.tile_at(lon = 0, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = ZOOM_SQUADRATS))
 
         result = _generate_tiles_along_the_line_simple_vertical(pointA = (1, 1), pointB = (0, 0), zoom = ZOOM_SQUADRATS)
         self.assertEqual(len(result), 47)
-        self.assertEqual(result[0],  Tile.tile_at( 1,  1, ZOOM_SQUADRATS))
-        self.assertEqual(result[-1], Tile.tile_at( 0,  1, ZOOM_SQUADRATS))
+        self.assertEqual(result[0],  Tile.tile_at(lon = 1, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = 1, lat = 0, zoom = ZOOM_SQUADRATS))
 
         result = _generate_tiles_along_the_line_simple_vertical(pointA = (0, 0), pointB = (-1, 1), zoom = ZOOM_SQUADRATS)
         self.assertEqual(len(result), 47)
-        self.assertEqual(result[0],  Tile.tile_at( 1, -1, ZOOM_SQUADRATS))
-        self.assertEqual(result[-1], Tile.tile_at( 0, -1, ZOOM_SQUADRATS))
+        self.assertEqual(result[0],  Tile.tile_at(lon = -1, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = -1, lat = 0, zoom = ZOOM_SQUADRATS))
 
         result = _generate_tiles_along_the_line_simple_vertical(pointA = (-1, 1), pointB = (0, 0), zoom = ZOOM_SQUADRATS)
         self.assertEqual(len(result), 47)
-        self.assertEqual(result[0],  Tile.tile_at( 1,  0, ZOOM_SQUADRATS))
-        self.assertEqual(result[-1], Tile.tile_at( 0,  0, ZOOM_SQUADRATS))
+        self.assertEqual(result[0],  Tile.tile_at(lon = 0, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = ZOOM_SQUADRATS))
+
+    def test_generate_tiles_along_the_line(self):
+        result = _generate_tiles_along_the_line(pointA = (0, 0), pointB = (0.1, 0.1), zoom = ZOOM_SQUADRATS)
+        self.assertEqual(len(result), 10)
+        self.assertEqual(result[0],  Tile.tile_at(lon = 0.08, lat = 0.1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[1],  Tile.tile_at(lon = 0.1, lat = 0.1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = ZOOM_SQUADRATS))
+
+        result = _generate_tiles_along_the_line(pointA = (0, 0), pointB = (1, 1), zoom = ZOOM_SQUADRATS)
+        self.assertEqual(len(result), 92)
+        self.assertEqual(result[0],  Tile.tile_at(lon = 0.98, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[1],  Tile.tile_at(lon = 1, lat = 1, zoom = ZOOM_SQUADRATS))
+        self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = ZOOM_SQUADRATS))
 
 if __name__ == '__main__':
     unittest.main()
