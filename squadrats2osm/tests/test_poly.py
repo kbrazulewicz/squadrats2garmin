@@ -23,11 +23,12 @@ class TestPoly(unittest.TestCase):
         Test that it can load properly formatted POLY file
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        self.assertEqual(len(poly.coords), 215)
-        self.assertEqual(poly.coords[0], [16.68, 54.58])
-        self.assertEqual(poly.coords[100], [18.465, 53.665])
-        self.assertEqual(poly.coords[200], [16.79, 54.35])
-        self.assertEqual(poly.coords[214], [16.68, 54.58])
+        self.assertEqual(len(poly.coords), 1)
+        self.assertEqual(len(poly.coords[0]), 215)
+        self.assertEqual(poly.coords[0][0], (16.68, 54.58))
+        self.assertEqual(poly.coords[0][100], (18.465, 53.665))
+        self.assertEqual(poly.coords[0][200], (16.79, 54.35))
+        self.assertEqual(poly.coords[0][214], (16.68, 54.58))
         
     def test_bounding_box(self):
         """
