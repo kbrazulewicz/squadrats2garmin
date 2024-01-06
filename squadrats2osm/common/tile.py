@@ -13,7 +13,7 @@ ZOOM_SQUADRATS = 14
 # number of nodes: (2^17 + 1)^2 = 17 180 131 329
 ZOOM_SQUADRATINHOS = 17
 
-TAGS_WAY = [('contour', 'elevation')]
+TAGS_WAY = [('name', 'grid')]
 
 class Tile:
     """Representation of a tile
@@ -114,7 +114,7 @@ def generate_grid_simple(tiles: list[Tile]) -> list[Way]:
         node4 = node_cache_get_or_compute(nodesByXY, tile.x, tile.y + 1, tile.zoom)
 
         id = node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID
-        ways.append(Way(id, nodes = [node1, node2, node3, node4, node1], tags = TAGS_WAY))
+        ways.append(Way(id, nodes = [node1, node2, node3, node4, node1], tags = [*TAGS_WAY, ('zoom', tile.zoom)]))
 
     return ways
 
@@ -193,7 +193,7 @@ def __create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], z
     for range in ranges:
         (node1, node2) = (Tile.to_osm_node(x, y, zoom) for x in range)
         id = (node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID) * 2
-        ways.append(Way(id = id, nodes = [node1, node2], tags = TAGS_WAY))
+        ways.append(Way(id = id, nodes = [node1, node2], tags = [*TAGS_WAY, ('zoom', zoom)]))
 
     return ways
 
@@ -206,6 +206,6 @@ def __create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], zoo
     for range in ranges:
         (node1, node2) = (Tile.to_osm_node(x, y, zoom) for y in range)
         id = (node1.id - osm.NODE_BASE_ID + osm.WAY_BASE_ID) * 2 + 1
-        ways.append(Way(id = id, nodes = [node1, node2], tags = TAGS_WAY))
+        ways.append(Way(id = id, nodes = [node1, node2], tags = [*TAGS_WAY, ('zoom', zoom)]))
 
     return ways

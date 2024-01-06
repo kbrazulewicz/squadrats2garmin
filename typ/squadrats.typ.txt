@@ -1,0 +1,177 @@
+[_id]
+FID=9999
+ProductCode=1
+CodePage=1252
+[end]
+
+[_comments]
+Garmin custom types: https://gpspohod.ucoz.ru/j-typ.htm#06
+Garmin color palettes: https://developer.garmin.com/connect-iq/connect-iq-faq/how-do-i-optimize-bitmaps/
+Garmin colors: https://developer.garmin.com/connect-iq/api-docs/Toybox/Graphics.html
+[End]
+
+[_drawOrder]
+Type=0x10F09,1
+Type=0x10F13,2
+Type=0x10F14,2
+[end]
+
+[_polygon]
+; style for the collected squadrat
+; CUSTOMIZABLE_AREA_10
+; LightSkyBlue 87CEFA
+Type=0x10F09
+String=Squadrat
+Xpm="32 32 2 1"
+"X c #87CEFA"
+"  c none"
+"XX      XX      XX      XX      "
+"XXX    XXXX    XXXX    XXXX    X"
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"   XXXX    XXXX    XXXX    XXXX "
+"    XX      XX      XX      XX  "
+"   XXXX    XXXX    XXXX    XXXX "
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"XXX    XXXX    XXXX    XXXX    X"
+"XX      XX      XX      XX      "
+"XXX    XXXX    XXXX    XXXX    X"
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"   XXXX    XXXX    XXXX    XXXX "
+"    XX      XX      XX      XX  "
+"   XXXX    XXXX    XXXX    XXXX "
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"XXX    XXXX    XXXX    XXXX    X"
+"XX      XX      XX      XX      "
+"XXX    XXXX    XXXX    XXXX    X"
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"   XXXX    XXXX    XXXX    XXXX "
+"    XX      XX      XX      XX  "
+"   XXXX    XXXX    XXXX    XXXX "
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"XXX    XXXX    XXXX    XXXX    X"
+"XX      XX      XX      XX      "
+"XXX    XXXX    XXXX    XXXX    X"
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"   XXXX    XXXX    XXXX    XXXX "
+"    XX      XX      XX      XX  "
+"   XXXX    XXXX    XXXX    XXXX "
+"  XX  XX  XX  XX  XX  XX  XX  XX"
+"XXX    XXXX    XXXX    XXXX    X"
+;12345678901234567890123456789012
+[end]
+
+[_polygon]
+; style for the collected squadratinho
+; CUSTOMIZABLE_AREA_20
+; DarkGreen 006400
+Type=0x10F13
+String=Squadratinho
+Xpm="32 32 2 1"
+"X c #006400"
+"  c none"
+"XX      XX      XX      XX      "
+"  X    X  X    X  X    X  X    X"
+"   X  X    X  X    X  X    X  X "
+"    XX      XX      XX      XX  "
+"    XX      XX      XX      XX  "
+"   X  X    X  X    X  X    X  X "
+"  X    X  X    X  X    X  X    X"
+"XX      XX      XX      XX      "
+"XX      XX      XX      XX      "
+"  X    X  X    X  X    X  X    X"
+"   X  X    X  X    X  X    X  X "
+"    XX      XX      XX      XX  "
+"    XX      XX      XX      XX  "
+"   X  X    X  X    X  X    X  X "
+"  X    X  X    X  X    X  X    X"
+"XX      XX      XX      XX      "
+"XX      XX      XX      XX      "
+"  X    X  X    X  X    X  X    X"
+"   X  X    X  X    X  X    X  X "
+"    XX      XX      XX      XX  "
+"    XX      XX      XX      XX  "
+"   X  X    X  X    X  X    X  X "
+"  X    X  X    X  X    X  X    X"
+"XX      XX      XX      XX      "
+"XX      XX      XX      XX      "
+"  X    X  X    X  X    X  X    X"
+"   X  X    X  X    X  X    X  X "
+"    XX      XX      XX      XX  "
+"    XX      XX      XX      XX  "
+"   X  X    X  X    X  X    X  X "
+"  X    X  X    X  X    X  X    X"
+"XX      XX      XX      XX      "
+;12345678901234567890123456789012
+[end]
+
+
+[_polygon]
+; style for the collected squadratinho - zoomed out
+; CUSTOMIZABLE_AREA_21
+; day mode - Green 008000
+; night mode - DarkGreen 006400
+Type=0x10F14
+String=Squadratinho
+Xpm="0 0 2 0"
+"a c #008000"
+"b c #006400"
+[end]
+
+[_line]
+; Ubersquadrat
+; CUSTOMIZABLE_LINE_10
+; Green 008000
+Type=0x10E09
+LineWidth=3
+Xpm="0 0 1 0"
+"a c #008000"
+[end]
+
+[_line]
+; Ubersquadratinho
+; CUSTOMIZABLE_LINE_20
+; DarkGreen 006400
+Type=0x10E13
+LineWidth=3
+Xpm="0 0 1 0"
+"a c #006400"
+[end]
+
+[_line]
+; Squadratinho grid
+; CUSTOMIZABLE_LINE_193
+; day mode - COLOR_BLACK 0x000000
+; night mode - COLOR_GREEN 0x00FF00
+Type=0x11400
+Xpm="32 1 4 1"
+"X c #000000"
+"  c none"
+"3 c #00FF00"
+"4 c none"
+"XX  XX  XX  XX  XX  XX  XX  XX  "
+;12345678901234567890123456789012
+[end]
+
+[_line]
+; Squadrat grid - zoomed out
+; CUSTOMIZABLE_LINE_209
+; day mode - COLOR_BLACK 0x000000
+; night mode - COLOR_GREEN 0x00FF00
+Type=0x11410
+LineWidth=1
+Xpm="0 0 2 0"
+"1 c #000000"
+"2 c #00FF00"
+[end]
+
+[_line]
+; Squadrat grid - zoomed in
+; CUSTOMIZABLE_LINE_210
+; day mode - COLOR_BLACK 0x000000
+; night mode - COLOR_GREEN 0x00FF00
+Type=0x11411
+LineWidth=3
+Xpm="0 0 2 0"
+"1 c #000000"
+"2 c #00FF00"
+[end]

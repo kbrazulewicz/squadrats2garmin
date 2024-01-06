@@ -14,7 +14,7 @@ class Tag:
     def to_xml(self):
         return ET.Element('tag', {
             'k': self.k,
-            'v': self.v
+            'v': str(self.v)
         })
 
 class Node:

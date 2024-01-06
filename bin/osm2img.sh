@@ -19,6 +19,10 @@ polyFileStem=$(basename "${polyFile%.*}")
 osmFile=${osmFile/\{name\}/$polyFileStem}
 imgFile=${imgFile/\{name\}/$polyFileStem}
 
+# default mkgmap style and Garmin TYP
+styleFile="${styleFile:-style/squadrats-default.style}"
+typFile="${typFile:-typ/squadrats.typ.txt}"
+
 # build options for mkgmap
 MKGMAP_OPTS=("--mapname=${mapName}" "--description=${description}")
 MKGMAP_OPTS+=("--family-id=${familyId}" "--family-name=${familyName}")
@@ -32,7 +36,8 @@ if [ ! -z "${regionName}" ]; then
     MKGMAP_OPTS+=("--region-name=${regionName}" "--region-abbr=${regionAbbr}")
 fi
 MKGMAP_OPTS+=("--output-dir=${outputDir}")
-MKGMAP_OPTS+=("--gmapsupp" "${osmFile}")
+MKGMAP_OPTS+=("--style-file=${styleFile}")
+MKGMAP_OPTS+=("--gmapsupp" "${typFile}" "${osmFile}")
 
 echo Converting ${osmFile}
 mkdir -p ${outputDir}
@@ -41,5 +46,5 @@ mkgmap "${MKGMAP_OPTS[@]}"
 if [[ -r "${outputDir}/gmapsupp.img" ]]; then
     mkdir -p $(dirname "$imgFile")
     mv ${outputDir}/gmapsupp.img ${imgFile}
-    rm ${outputDir}/${mapName}.img ${outputDir}/ovm_${mapName}.img ${outputDir}/osmmap.*
+    rm ${outputDir}/*
 fi

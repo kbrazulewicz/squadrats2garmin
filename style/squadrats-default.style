@@ -1,0 +1,31 @@
+<<<version>>>
+1
+
+<<<info>>>
+summary: Squadrats style
+version: 1.0
+
+description {
+The default style used for Squadrats.
+}
+
+<<<options>>>
+#levels: 0:24, 1:22, 2:20, 3:18, 4:16, 5:14
+
+<<<lines>>>
+#name=ubersquadrat [0x10E09]
+#name=ubersquadratinho [0x10E13]
+#name=squadrats [0x10E09 level 5 continue]
+name=squadratinhos [0x10E13 resolution 22-23 continue]
+
+# Squadrats grid
+name=grid & zoom=14 [0x11410 resolution 20-22 continue]
+name=grid & zoom=14 [0x11411 resolution 23-24]
+
+# Squadratinho grid
+name=grid & zoom=17 [0x11400 resolution 23-24]
+
+<<<polygons>>>
+#name=squadrats [0x10F09 level 5]
+name=squadratinhos [0x10F14 resolution 22-23 continue]
+name=squadratinhos [0x10F13 resolution 24]
