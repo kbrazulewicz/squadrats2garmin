@@ -44,6 +44,7 @@ class Poly:
     """Polygon definition
        POLY file contains lines with longitude and latitude of points creating polygon.
        Points are ordered clockwise
+       https://wiki.openstreetmap.org/wiki/Osmosis/Polygon_Filter_File_Format
     """
     def __init__(self, filename):
         with open(filename) as f:
@@ -163,7 +164,7 @@ class Poly:
 
                 # get the list and traverse it
                 depth = 0
-                for x in range(tilesDict[y][0][0], tilesDict[y][-1][0]):
+                for x in range(tilesDict[y][0][0], tilesDict[y][-1][0] + 1):
                     (tileX, tileLR) = tilesDict[y][0]
                     if x == tileX:
                         if tileLR == 'L': depth += 1
