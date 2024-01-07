@@ -140,16 +140,13 @@ Xpm="0 0 1 0"
 [_line]
 ; Squadratinho grid
 ; CUSTOMIZABLE_LINE_193
-; day mode - COLOR_BLACK 0x000000
+; day mode - COLOR_DK_GRAY 0x555555
 ; night mode - COLOR_GREEN 0x00FF00
 Type=0x11400
-Xpm="32 1 4 1"
-"X c #000000"
-"  c none"
-"3 c #00FF00"
-"4 c none"
-"XX  XX  XX  XX  XX  XX  XX  XX  "
-;12345678901234567890123456789012
+LineWidth=1
+Xpm="0 0 2 0"
+"1 c #555555"
+"2 c #00FF00"
 [end]
 
 [_line]
