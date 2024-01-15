@@ -39,7 +39,7 @@ class Tile:
 
         n = 2 ** zoom
         self.lon = x / n * 360.0 - 180.0
-        self.lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+        self.lat = tile_lat(y = y, zoom = zoom)
 
     def __repr__(self) -> str:
         """Overrides the default implementation
@@ -63,10 +63,7 @@ class Tile:
     @staticmethod
     def tile_at(lat: float, lon: float, zoom: int):
         """ Lon./lat. to tile numbers """
-        lat_rad = math.radians(lat)
-        n = 2 ** zoom
-        xtile = int((lon + 180.0) / 360.0 * n)
-        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+        (xtile, ytile) = tile_coordinates(lat = lat, lon = lon, zoom = zoom)
         return Tile(x = xtile, y = ytile, zoom = zoom)
 
     @staticmethod
@@ -95,6 +92,17 @@ class Tile:
 
         tile_seq_number = self.__to_seq_number()
         nodes = []
+
+def tile_coordinates(lat: float, lon: float, zoom: int) -> tuple(int, int):
+    n = 2 ** zoom
+    xtile = int((lon + 180.0) / 360.0 * n)
+    ytile = int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * n)
+
+    return (xtile, ytile)
+
+def tile_lat(y: int, zoom: int) -> float:
+    n = 2 ** zoom
+    return math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
 
 
 def generate_grid(tiles: list[Tile]) -> list[Way]:
