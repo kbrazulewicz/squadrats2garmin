@@ -74,39 +74,24 @@ class TestSquadrats(unittest.TestCase):
                 [(1, 'L'), (3, 'R'), (4, 'R')],
                 "XXXX"
             ),
-            ]:
-            with self.subTest(input = input, expected = expected):
-                y = 1
-                zoom = ZOOM_SQUADRATS
-                row = [Boundary(lon=zoom.lon(i[0]), lr=i[1], y=y) for i in input]
-                expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
-
-                result = _generate_tiles_for_a_row(row=row, zoom=zoom)        
-                self.assertEqual(result, [Tile(x=x, y=y, zoom=zoom) for x in expectedArray])
-
-
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (3, 'R'), (4, 'R')], 
-        #     expected = "XXXX")
-
-        # # LL RR
-        # # XXXXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (2, 'L'), (4, 'R'), (5, 'R')], 
-        #     expected = "XXXXX")
-
-        # # LLRR
-        # # XXXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (2, 'L'), (3, 'R'), (4, 'R')], 
-        #     expected = "XXXX")
-
-        # # L R L R
-        # # XXX XXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (3, 'R'), (5, 'L'), (7, 'R')],
-        #     expected = "XXX XXX")
-
+            # LL RR
+            # XXXXX
+            (
+                [(1, 'L'), (2, 'L'), (4, 'R'), (5, 'R')],
+                "XXXXX"
+            ),
+            # LLRR
+            # XXXX
+            (
+                [(1, 'L'), (2, 'L'), (3, 'R'), (4, 'R')],
+                "XXXX"
+            ),
+            # L R L R
+            # XXX XXX
+            (
+                [(1, 'L'), (3, 'R'), (5, 'L'), (7, 'R')],
+                "XXX XXX"
+            ),
         # # LRR L R
         # # XXX XXX
         # self.__generate_tiles_for_a_row_assert(
@@ -146,13 +131,22 @@ class TestSquadrats(unittest.TestCase):
         # self.__generate_tiles_for_a_row_assert(
         #     input = [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
         #     expected = "X XXX")
-        
     # def test_generate_tiles_for_a_row1(self):
     #     self.__generate_tiles_for_a_row_assert(
     #         input = [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
     #         expected = "X XXX")
 
 
+            ]:
+            with self.subTest(input = input, expected = expected):
+                y = 1
+                zoom = ZOOM_SQUADRATS
+                row = [Boundary(lon=zoom.lon(i[0]), lr=i[1], y=y) for i in input]
+                expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
+
+                result = _generate_tiles_for_a_row(row=row, zoom=zoom)        
+                self.assertEqual(result, [Tile(x=x, y=y, zoom=zoom) for x in expectedArray])
+        
     def test_generate_tiles(self):
         """
         Test that tiles are properly generated
