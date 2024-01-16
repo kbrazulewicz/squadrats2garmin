@@ -92,51 +92,46 @@ class TestSquadrats(unittest.TestCase):
                 [(1, 'L'), (3, 'R'), (5, 'L'), (7, 'R')],
                 "XXX XXX"
             ),
-        # # LRR L R
-        # # XXX XXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (2, 'R'), (3, 'R'), (5, 'L'), (7, 'R')], 
-        #     expected = "XXX XXX")
-
-        # # L RL R
-        # # XXXXXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (3, 'R'), (4, 'L'), (6, 'R')],
-        #     expected = "XXXXXX")
-
-        # # L R
-        # #   L R
-        # # XXXXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (3, 'R'), (3, 'L'), (5, 'R')],
-        #     expected = "XXXXX")
-
-        # # LR
-        # #  L R
-        # # XXXXX
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (2, 'R'), (2, 'L'), (4, 'R')],
-        #     expected = "XXXX")
-
-        # # L
-        # # R
-        # # X
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (1, 'R')],
-        #     expected = "X")
-
-        # L L R
-        # R
-        # X
-        # self.__generate_tiles_for_a_row_assert(
-        #     input = [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
-        #     expected = "X XXX")
-    # def test_generate_tiles_for_a_row1(self):
-    #     self.__generate_tiles_for_a_row_assert(
-    #         input = [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
-    #         expected = "X XXX")
-
-
+						# LRR L R
+						# XXX XXX
+            (
+                [(1, 'L'), (2, 'R'), (3, 'R'), (5, 'L'), (7, 'R')],
+                "XXX XXX"
+            ),
+            # L RL R
+            # XXXXXX
+            (
+                [(1, 'L'), (3, 'R'), (4, 'L'), (6, 'R')],
+                "XXXXXX"
+            ),
+            # L R
+            #   L R
+            # XXXXX
+            (
+                [(1, 'L'), (3, 'R'), (3, 'L'), (5, 'R')],
+                "XXXXX"
+            ),
+            # LR
+            #  L R
+            # XXXXX
+            (
+                [(1, 'L'), (2, 'R'), (2, 'L'), (4, 'R')],
+                "XXXX"
+            ),
+            # L
+            # R
+            # X
+            (
+                [(1, 'L'), (1, 'R')],
+                "X"
+            ),
+            # L L R
+            # R
+            # X XXX
+            (
+                [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
+                "X XXX"
+            ),
             ]:
             with self.subTest(input = input, expected = expected):
                 y = 1

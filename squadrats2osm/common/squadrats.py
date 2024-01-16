@@ -126,33 +126,35 @@ def generate_tiles(poly: Poly, zoom: Zoom) -> list[Tile]:
     return tiles
 
 def _generate_tiles_for_a_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
-    tiles: list[Tile] = []
 
-    if (len(row) > 0):
-        # sort the list by longitude
-        row.sort(key=lambda b: b.lon)
+    if len(row) == 0:
+        return []
 
-        west: Boundary = None
-        east: Boundary = None
+    # sort the list by longitude
+    row.sort(key=lambda b: b.lon)
 
-        for b in row:
-            if b.lr == 'L':
-                if west is None:
-                    west = b
-                elif east is not None:
-                    tiles.extend(_generate_tile_range(west=west, east=east, zoom=zoom))
-                    west = b
-                    east = None
-            elif b.lr == 'R':
-                east = b
+    tilesX: set[int] = set()
+    west: Boundary = None
+    east: Boundary = None
 
-        if east is not None:
-            tiles.extend(_generate_tile_range(west=west, east=east, zoom=zoom))
+    for b in row:
+        if b.lr == 'L':
+            if west is None:
+                west = b
+            elif east is not None:
+                tilesX.update(_generate_tile_range(west=west, east=east, zoom=zoom))
+                west = b
+                east = None
+        elif b.lr == 'R':
+            east = b
 
-    return tiles
+    if east is not None:
+        tilesX.update(_generate_tile_range(west=west, east=east, zoom=zoom))
+
+    return [Tile(x=x, y=row[0].y, zoom=zoom) for x in list(tilesX)]
 
 
-def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom):
+def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int]:
     
     if west is None:
         raise UnexpectedBoundaryException('West boundary not set')
@@ -167,7 +169,7 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom):
     (westX, westY) = zoom.tile(lat=lat, lon=west.lon)
     (eastX, eastY) = zoom.tile(lat=lat, lon=east.lon)
 
-    return [Tile(x=x, y=west.y, zoom=zoom) for x in range(westX, eastX + 1)]
+    return range(westX, eastX + 1)
 
 
 def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
