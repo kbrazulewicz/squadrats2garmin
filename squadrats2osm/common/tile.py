@@ -4,14 +4,8 @@ from collections import defaultdict
 from common import osm
 from common import util
 from common.osm import Node, Way
+from common.zoom import Zoom
 
-# number of tiles: 4^14 = 268 435 456
-# number of nodes: (2^14 + 1)^2 = 268 468 225
-ZOOM_SQUADRATS = 14
-
-# number of tiles: 4^17 = 17 179 869 184
-# number of nodes: (2^17 + 1)^2 = 17 180 131 329
-ZOOM_SQUADRATINHOS = 17
 
 TAGS_WAY = [('name', 'grid')]
 
@@ -25,26 +19,25 @@ class Tile:
     """tile's x coordinate"""
     y: int = None
     """tile's y coordinate"""
-    zoom: int = None
+    zoom: Zoom = None
     """tile's zoom level"""
     lon: float = None
     """tile's NW corner longitude"""
     lat: float = None
     """tile's NW corner latitude"""
 
-    def __init__(self, x: int, y: int, zoom: int) -> None:
+    def __init__(self, x: int, y: int, zoom: Zoom) -> None:
         self.x = x
         self.y = y
         self.zoom = zoom
 
-        n = 2 ** zoom
-        self.lon = x / n * 360.0 - 180.0
-        self.lat = tile_lat(y = y, zoom = zoom)
+        self.lon = zoom.lon(x)
+        self.lat = zoom.lat(y)
 
     def __repr__(self) -> str:
         """Overrides the default implementation
         """
-        return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom)
+        return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom.zoom)
 
     def __key(self):
         # not including zoom because we do not expect existence of tiles of different zooms at the same time
@@ -61,16 +54,15 @@ class Tile:
         return NotImplemented
 
     @staticmethod
-    def tile_at(lat: float, lon: float, zoom: int):
+    def tile_at(lat: float, lon: float, zoom: Zoom):
         """ Lon./lat. to tile numbers """
-        (xtile, ytile) = tile_coordinates(lat = lat, lon = lon, zoom = zoom)
+        (xtile, ytile) = zoom.tile(lat = lat, lon = lon)
         return Tile(x = xtile, y = ytile, zoom = zoom)
 
     @staticmethod
-    def to_osm_node(x: int, y: int, zoom: int) -> Node:
+    def to_osm_node(x: int, y: int, zoom: Zoom) -> Node:
         tile = Tile(x = x, y = y, zoom = zoom)
-        n = 2 ** zoom
-        id = osm.NODE_BASE_ID + y * (n + 1) + x
+        id = osm.NODE_BASE_ID + y * (zoom.n + 1) + x
         return Node(id = id, lon = tile.lon, lat = tile.lat);
 
     def to_osm_nodes(self) -> list[Node]:
@@ -92,18 +84,6 @@ class Tile:
 
         tile_seq_number = self.__to_seq_number()
         nodes = []
-
-def tile_coordinates(lat: float, lon: float, zoom: int) -> tuple(int, int):
-    n = 2 ** zoom
-    xtile = int((lon + 180.0) / 360.0 * n)
-    ytile = int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * n)
-
-    return (xtile, ytile)
-
-def tile_lat(y: int, zoom: int) -> float:
-    n = 2 ** zoom
-    return math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
-
 
 def generate_grid(tiles: list[Tile]) -> list[Way]:
     return generate_grid(tiles)
@@ -192,7 +172,7 @@ def generate_grid(tiles: list[Tile]) -> list[Way]:
 
     return ways
 
-def __create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], zoom: int) -> list[Way]:
+def __create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], zoom: Zoom) -> list[Way]:
     if not ranges:
         return []
     
@@ -205,7 +185,7 @@ def __create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], z
 
     return ways
 
-def __create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], zoom: int) -> list[Way]:
+def __create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], zoom: Zoom) -> list[Way]:
     if not ranges:
         return []
     

@@ -7,19 +7,22 @@ import xml.etree.ElementTree as ET
 
 from common import poly, tile
 from common.poly import Poly
-from common.tile import ZOOM_SQUADRATS
-from common.tile import ZOOM_SQUADRATINHOS
+from common.squadrats import generate_tiles
+from common.zoom import Zoom
+from common.zoom import ZOOM_SQUADRATS
+from common.zoom import ZOOM_SQUADRATINHOS
 from common.timer import timeit
 
 
-def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: int):
-    print(f'Generating tiles for {str(input)}, zoom level {zoom}')
+def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: Zoom):
+    print(f'Generating tiles for {str(input)}, zoom level {zoom.zoom}')
 
     id = input.name
     poly = Poly(str(input))
 
     with timeit(f'{id}: generate_tiles'):
-        tiles = poly.generate_tiles(zoom)
+        # tiles = poly.generate_tiles(zoom)
+        tiles = generate_tiles(poly=poly, zoom=zoom)
 
     print(f'{id}: {len(tiles)} tiles')
 

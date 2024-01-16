@@ -1,12 +1,11 @@
 import unittest
 
-from common.tile import ZOOM_SQUADRATS
 from common.tile import Tile
+from common.zoom import ZOOM_SQUADRATS
 
 class TestTile(unittest.TestCase):
     def test_tile_at(self):
-        """
-        Test Tile.tile_at method
+        """Test Tile.tile_at method
         """
 
         self.assertEqual(Tile(8192, 8192, ZOOM_SQUADRATS), Tile.tile_at(  0,   0, ZOOM_SQUADRATS))

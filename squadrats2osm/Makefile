@@ -1,5 +1,5 @@
 run:
-	python3 app.py
+	python3 squadrats2osm.py ../config/squadrats2osm.json
 
 test:
 	python3 -m unittest -v
