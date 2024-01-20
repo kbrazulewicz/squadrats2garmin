@@ -6,7 +6,9 @@ import sys
 import xml.etree.ElementTree as ET
 
 from common import poly, tile
+from common.job import Job
 from common.poly import Poly
+from common.squadrats import generate_grid
 from common.squadrats import generate_tiles
 from common.zoom import Zoom
 from common.zoom import ZOOM_SQUADRATS
@@ -17,34 +19,33 @@ from common.timer import timeit
 def generateOsmFile(input: pathlib.Path, output: pathlib.Path, zoom: Zoom):
     print(f'Generating tiles for {str(input)}, zoom level {zoom.zoom}')
 
-    id = input.name
+    job: Job = Job(id=input.name, zoom=zoom)
     poly = Poly(str(input))
 
-    with timeit(f'{id}: generate_tiles'):
-        # tiles = poly.generate_tiles(zoom)
-        tiles = generate_tiles(poly=poly, zoom=zoom)
+    with timeit(f'{job.id}: generate_tiles'):
+        tiles = generate_tiles(poly=poly, job=job)
 
-    print(f'{id}: {len(tiles)} tiles')
+    print(f'{job.id}: {sum(map(len, tiles.values()))} tiles')
 
-    with timeit(f'{id}: generate_grid'):
-        ways = tile.generate_grid(tiles)
+    with timeit(f'{job.id}: generate_grid'):
+        ways = generate_grid(tiles=tiles, job=job)
         
-    print(f'{id}: {len(ways)} ways')
+    print(f'{job.id}: {len(ways)} ways')
 
     uniqueNodes = set()
-    with timeit(f'{id}: collect unique nodes'):
+    with timeit(f'{job.id}: collect unique nodes'):
         for w in ways:
             uniqueNodes.update(w.nodes)
 
-    print(f'{id}: {len(uniqueNodes)} unique nodes')
+    print(f'{job.id}: {len(uniqueNodes)} unique nodes')
 
-    with timeit(f'{id}: build OSM document'):
+    with timeit(f'{job.id}: build OSM document'):
         document = ET.Element('osm', {"version": '0.6'})
         document.extend(n.to_xml() for n in sorted(uniqueNodes, key=lambda node: node.id))
         document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.id))
         ET.indent(document)
 
-    with timeit(f'{id}: write OSM document'):
+    with timeit(f'{job.id}: write OSM document'):
         output.parent.mkdir(parents=True, exist_ok=True)
         ET.ElementTree(document).write(str(output), encoding='utf-8', xml_declaration=True)
         # ET.ElementTree(document).write(sys.stdout.buffer, encoding='utf-8', xml_declaration=True)
