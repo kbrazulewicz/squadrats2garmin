@@ -4,6 +4,7 @@ from typing import NamedTuple
 from common.poly import Coordinates
 from common.poly import Poly
 from common.tile import Tile
+from common.timer import timeit
 from common.zoom import Zoom
 
 class UnexpectedBoundaryException(Exception):
@@ -16,16 +17,36 @@ class Boundary(NamedTuple):
     
     Attributes
     ----------
-    lr : int
+    lr : str
         'L' or 'R' boundary
     y : int
         y coordinate of a tile
     lon : float
         westmost (for 'L') or eastmost (for 'R') longitude
     """
-    lr: int
+    lr: str
     y: int
     lon: float
+
+
+def generate_tiles(poly: Poly, zoom: Zoom) -> list[Tile]:
+    """Generate a list of tiles of a given zoom covering the entire polygon
+    """
+
+    # return poly.generate_tiles(zoom=zoom)
+
+    tiles: list[Tile] = []
+    tilesDict = defaultdict(list)
+
+    with timeit('generate contours'):
+        contours: list[Boundary] = generate_contour_for_polygon(poly=poly, zoom=zoom)
+        for boundary in contours:
+            tilesDict[boundary.y].append(boundary)
+
+    for row in tilesDict.values():
+        tiles.extend(_generate_tiles_for_a_row(row=row, zoom=zoom))
+
+    return tiles
 
 
 def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
@@ -52,7 +73,7 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
     minY = min(coordinatesA[1], coordinatesB[1])
     maxY = max(coordinatesA[1], coordinatesB[1])
 
-    if dLat < 0 :
+    if dLat < 0:
         # southward
         for y in range(minY, maxY + 1):
             lon1: float = None
@@ -61,18 +82,16 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
             if y == minY:
                 lon1 = a.lon
             else:
-                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y))
+                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
             if y == maxY:
                 lon2 = b.lon
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
-            lon = max(lon1, lon2)
+            boundaries.append(Boundary('R', y, max(lon1, lon2)))
 
-            boundaries.append(Boundary('R', y, lon))
-
-    elif dLat > 0 :
+    elif dLat > 0:
         # northward
         for y in range(minY, maxY + 1):
             lon1: float = None
@@ -81,16 +100,19 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
             if y == minY:
                 lon1 = b.lon
             else:
-                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y))
+                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
             if y == maxY:
                 lon2 = a.lon
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
-            lon = min(lon1, lon2)
+            boundaries.append(Boundary('L', y, min(lon1, lon2)))
+    
+    elif dLat == 0:
+        minX = min(coordinatesA[1], coordinatesB[1])
+        maxX = max(coordinatesA[1], coordinatesB[1])
 
-            boundaries.append(Boundary('L', y, lon))
     
     return boundaries
 
@@ -107,31 +129,14 @@ def generate_contour_for_polygon_area(polyArea: list[Coordinates], zoom: Zoom) -
 def generate_contour_for_polygon(poly: Poly, zoom: Zoom) -> list[Boundary]:
     return [b for area in poly.coords for b in generate_contour_for_polygon_area(polyArea=area, zoom=zoom)]
 
-def generate_tiles(poly: Poly, zoom: Zoom) -> list[Tile]:
-    """Generate a list of tiles of a given zoom covering the entire polygon
-    """
-
-    # return poly.generate_tiles(zoom=zoom)
-
-    tiles: list[Tile] = []
-    tilesDict = defaultdict(list)
-
-    contours: list[Boundary] = generate_contour_for_polygon(poly=poly, zoom=zoom)
-    for boundary in contours:
-        tilesDict[boundary.y].append(boundary)
-
-    for row in tilesDict.values():
-        tiles.extend(_generate_tiles_for_a_row(row=row, zoom=zoom))
-
-    return tiles
-
 def _generate_tiles_for_a_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
+    # sort the list by longitude and LR (important in case of the same longitude the L boundary needs preceed the R boundary)
+    row.sort(key=lambda b: (b.lon, 0 if b.lr == 'R' else 1))
+    return _generate_tiles_for_a_sorted_row(row=row, zoom=zoom)
 
+def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
     if len(row) == 0:
         return []
-
-    # sort the list by longitude
-    row.sort(key=lambda b: b.lon)
 
     tilesX: set[int] = set()
     west: Boundary = None

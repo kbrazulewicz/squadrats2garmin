@@ -1,13 +1,8 @@
 import unittest
+import common.squadrats
 
 from common.poly import Coordinates
 from common.poly import Poly
-from common.squadrats import Boundary
-from common.squadrats import line_grid_intersections
-from common.squadrats import line_intersection
-from common.squadrats import generate_tiles
-from common.squadrats import _generate_tiles_by_bounding_box
-from common.squadrats import _generate_tiles_for_a_row
 from common.tile import Tile
 from common.zoom import ZOOM_SQUADRATS
 from common.zoom import ZOOM_SQUADRATINHOS
@@ -20,22 +15,22 @@ class TestSquadrats(unittest.TestCase):
         pointB: Coordinates = Coordinates(lat = 5, lon = 7)
 
         # intersections with the ends of the line
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = pointA.lat), pointA.lon)
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = pointB.lat), pointB.lon)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = pointA.lat), pointA.lon)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = pointB.lat), pointB.lon)
 
         # other intersections
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = 1), 1.4)
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = 2), 2.8)
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = 3), 4.2)
-        self.assertEqual(line_intersection(a = pointA, b = pointB, lat = 4), 5.6)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = 1), 1.4)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = 2), 2.8)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = 3), 4.2)
+        self.assertEqual(common.squadrats.line_intersection(a = pointA, b = pointB, lat = 4), 5.6)
 
     
     def test_line_grid_intersections(self):
         pointS: Coordinates = Coordinates(lat = 0.0, lon = 0.0)
         pointN: Coordinates = Coordinates(lat = 0.1, lon = 0.1)
 
-        boundariesNorthward = line_grid_intersections(a = pointS, b = pointN, zoom = ZOOM_SQUADRATS)
-        boundariesSouthward = line_grid_intersections(a = pointN, b = pointS, zoom = ZOOM_SQUADRATS)
+        boundariesNorthward = common.squadrats.line_grid_intersections(a = pointS, b = pointN, zoom = ZOOM_SQUADRATS)
+        boundariesSouthward = common.squadrats.line_grid_intersections(a = pointN, b = pointS, zoom = ZOOM_SQUADRATS)
 
         self.assertEqual(len(boundariesNorthward), 6)
         self.assertEqual(len(boundariesSouthward), 6)
@@ -47,9 +42,9 @@ class TestSquadrats(unittest.TestCase):
         """Test that tiles are properly generated for the bounding box method
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        squadrats = _generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
+        squadrats = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
         self.assertEqual(len(squadrats), 14933)
-        squadratinhos = _generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
+        squadratinhos = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
         self.assertEqual(len(squadratinhos), 939807)
 
 
@@ -92,8 +87,8 @@ class TestSquadrats(unittest.TestCase):
                 [(1, 'L'), (3, 'R'), (5, 'L'), (7, 'R')],
                 "XXX XXX"
             ),
-						# LRR L R
-						# XXX XXX
+            # LRR L R
+            # XXX XXX
             (
                 [(1, 'L'), (2, 'R'), (3, 'R'), (5, 'L'), (7, 'R')],
                 "XXX XXX"
@@ -111,11 +106,25 @@ class TestSquadrats(unittest.TestCase):
                 [(1, 'L'), (3, 'R'), (3, 'L'), (5, 'R')],
                 "XXXXX"
             ),
+            #   L R
+            # L R
+            # XXXXX
+            (
+                [(1, 'L'), (3, 'L'), (3, 'R'), (5, 'R')],
+                "XXXXX"
+            ),
             # LR
             #  L R
             # XXXXX
             (
                 [(1, 'L'), (2, 'R'), (2, 'L'), (4, 'R')],
+                "XXXX"
+            ),
+            #  L R
+            # LR
+            # XXXXX
+            (
+                [(1, 'L'), (2, 'L'), (2, 'R'), (4, 'R')],
                 "XXXX"
             ),
             # L
@@ -125,21 +134,57 @@ class TestSquadrats(unittest.TestCase):
                 [(1, 'L'), (1, 'R')],
                 "X"
             ),
-            # L L R
             # R
+            # L
+            # X
+            (
+                [(1, 'R'), (1, 'L')],
+                "X"
+            ),
+            # L
+            # R
+            #   L R
             # X XXX
             (
                 [(1, 'L'), (1, 'R'), (3, 'L'), (5, 'R')],
                 "X XXX"
             ),
+            # R
+            # L
+            #   L R
+            # X XXX
+            (
+                [(1, 'R'), (1, 'L'), (3, 'L'), (5, 'R')],
+                "X XXX"
+            ),
+
+            # L R L R
+            #   L R
+            # XXXXXXX
+            (
+                [(1, 'L'), (3, 'R'), (3, 'L'), (5, 'L'), (5, 'R'), (7, 'R')],
+                "XXXXXXX"
+            ),
+            # (
+            #     [(1, 'L'), (3, 'L'), (3, 'R'), (5, 'L'), (5, 'R'), (7, 'R')],
+            #     "XXXXXXX"
+            # ),
+            (
+                [(1, 'L'), (3, 'R'), (3, 'L'), (5, 'R'), (5, 'L'), (7, 'R')],
+                "XXXXXXX"
+            ),
+            (
+                [(1, 'L'), (3, 'L'), (3, 'R'), (5, 'R'), (5, 'L'), (7, 'R')],
+                "XXXXXXX"
+            ),
             ]:
             with self.subTest(input = input, expected = expected):
                 y = 1
                 zoom = ZOOM_SQUADRATS
-                row = [Boundary(lon=zoom.lon(i[0]), lr=i[1], y=y) for i in input]
+                row = [common.squadrats.Boundary(lon=zoom.lon(i[0]), lr=i[1], y=y) for i in input]
                 expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
 
-                result = _generate_tiles_for_a_row(row=row, zoom=zoom)        
+                result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=zoom)        
                 self.assertEqual(result, [Tile(x=x, y=y, zoom=zoom) for x in expectedArray])
         
     def test_generate_tiles(self):
@@ -147,10 +192,10 @@ class TestSquadrats(unittest.TestCase):
         Test that tiles are properly generated
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        squadrats = generate_tiles(poly=poly, zoom=ZOOM_SQUADRATS)
-        self.assertEqual(len(squadrats), 10549)
+        squadrats = common.squadrats.generate_tiles(poly=poly, zoom=ZOOM_SQUADRATS)
+        self.assertEqual(len(squadrats), 10543)
         squadratinhos = generate_tiles(poly=poly, zoom=ZOOM_SQUADRATINHOS)
-        self.assertEqual(len(squadratinhos), 657742)
+        self.assertEqual(len(squadratinhos), 657739)
 
 
     # def test_generate_tiles_along_the_line(self):
