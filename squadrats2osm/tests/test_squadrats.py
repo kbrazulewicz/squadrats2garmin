@@ -1,6 +1,7 @@
 import unittest
 import common.squadrats
 
+from common.job import Job
 from common.poly import Coordinates
 from common.poly import Poly
 from common.tile import Tile
@@ -192,10 +193,10 @@ class TestSquadrats(unittest.TestCase):
         Test that tiles are properly generated
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        squadrats = common.squadrats.generate_tiles(poly=poly, zoom=ZOOM_SQUADRATS)
-        self.assertEqual(len(squadrats), 10543)
-        squadratinhos = generate_tiles(poly=poly, zoom=ZOOM_SQUADRATINHOS)
-        self.assertEqual(len(squadratinhos), 657739)
+        squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(id=__name__, zoom=ZOOM_SQUADRATS))
+        self.assertEqual(sum(map(len, squadrats.values())), 10561)
+        squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(id=__name__, zoom=ZOOM_SQUADRATINHOS))
+        self.assertEqual(sum(map(len, squadratinhos.values())), 657749)
 
 
     # def test_generate_tiles_along_the_line(self):
