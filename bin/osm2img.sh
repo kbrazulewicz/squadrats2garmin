@@ -24,24 +24,34 @@ styleFile="${styleFile:-style/squadrats-default.style}"
 typFile="${typFile:-typ/squadrats.typ.txt}"
 
 # build options for mkgmap
-MKGMAP_OPTS=("--mapname=${mapName}" "--description=${description}")
-MKGMAP_OPTS+=("--family-id=${familyId}" "--family-name=${familyName}")
-MKGMAP_OPTS+=("--product-id=${productId}")
-MKGMAP_OPTS+=("--series-name=${seriesName}" "--area-name=${areaName}")
-MKGMAP_OPTS+=("--transparent")
+MKGMAP_OPTS=mkgmap.config
+rm -f $MKGMAP_OPTS
+echo "mapname=${mapName}" >> $MKGMAP_OPTS
+echo "description=${description}" >> $MKGMAP_OPTS
+echo "family-id=${familyId}" >> $MKGMAP_OPTS
+echo "family-name=${familyName}" >> $MKGMAP_OPTS
+echo "product-id=${productId}" >> $MKGMAP_OPTS
+echo "series-name=${seriesName}" >> $MKGMAP_OPTS
+echo "area-name=${areaName}" >> $MKGMAP_OPTS
+echo "transparent" >> $MKGMAP_OPTS
 if [ ! -z "${countryName}" ]; then
-    MKGMAP_OPTS+=("--country-name=${countryName}" "--country-abbr=${countryAbbr}")
+    echo "country-name=${countryName}" >> $MKGMAP_OPTS
+    echo "country-abbr=${countryAbbr}" >> $MKGMAP_OPTS
 fi
 if [ ! -z "${regionName}" ]; then
-    MKGMAP_OPTS+=("--region-name=${regionName}" "--region-abbr=${regionAbbr}")
+    echo "region-name=${regionName}" >> $MKGMAP_OPTS
+    echo "region-abbr=${regionAbbr}" >> $MKGMAP_OPTS
 fi
-MKGMAP_OPTS+=("--output-dir=${outputDir}")
-MKGMAP_OPTS+=("--style-file=${styleFile}")
-MKGMAP_OPTS+=("--gmapsupp" "${typFile}" "${osmFile}")
+echo "output-dir=${outputDir}" >> $MKGMAP_OPTS
+echo "style-file=${styleFile}" >> $MKGMAP_OPTS
+echo "gmapsupp" >> $MKGMAP_OPTS
+echo "input-file=${typFile}" >> $MKGMAP_OPTS
+echo "input-file=${osmFile}" >> $MKGMAP_OPTS
 
 echo Converting ${osmFile}
 mkdir -p ${outputDir}
-mkgmap "${MKGMAP_OPTS[@]}"
+# cat $MKGMAP_OPTS
+mkgmap --read-config=${MKGMAP_OPTS}
 
 if [[ -r "${outputDir}/gmapsupp.img" ]]; then
     mkdir -p $(dirname "$imgFile")
