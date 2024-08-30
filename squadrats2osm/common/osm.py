@@ -2,9 +2,7 @@ import xml.etree.ElementTree as ET
 
 # all squadratinhos
 # 4^17 = 17 179 869 184
-NODE_BASE_ID = 100000000000
-
-WAY_BASE_ID  = 200000000000
+WAY_BASE_ID  = 100000000000
 
 class Tag:
     def __init__(self, k: str, v: str):
