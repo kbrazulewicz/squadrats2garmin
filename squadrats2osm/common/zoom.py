@@ -37,7 +37,7 @@ class Zoom:
         return math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / self.n))))
     
     def lon(self, x: int) -> float:
-        return x / self.n * 360.0 - 180.0
+        return x / self.n * 360.0 - 180.0    
     
     def tile(self, lat: float, lon: float) -> tuple[int, int]:
         xtile = int((lon + 180.0) / 360.0 * self.n)
