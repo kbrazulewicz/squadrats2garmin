@@ -4,7 +4,6 @@ from typing import NamedTuple
 from common import osm
 from common import util
 from common.geo import Coordinates
-from common.id import Id
 from common.job import Job
 from common.osm import Node, Way
 from common.poly import Poly
@@ -64,6 +63,8 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
         line beginning
     b : Coordinates
         line end
+    zoom : Zoom
+        zoom
     """
 
     boundaries: list[Boundary] = []
@@ -155,7 +156,7 @@ def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Ti
     if len(row) == 0:
         return []
 
-    tilesX: set[int] = set()
+    tiles_x: set[int] = set()
     west: Boundary = None
     east: Boundary = None
 
@@ -164,16 +165,16 @@ def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Ti
             if west is None:
                 west = b
             elif east is not None:
-                tilesX.update(_generate_tile_range(west=west, east=east, zoom=zoom))
+                tiles_x.update(_generate_tile_range(west=west, east=east, zoom=zoom))
                 west = b
                 east = None
         elif b.lr == 'R':
             east = b
 
     if east is not None:
-        tilesX.update(_generate_tile_range(west=west, east=east, zoom=zoom))
+        tiles_x.update(_generate_tile_range(west=west, east=east, zoom=zoom))
 
-    return [Tile(x=x, y=row[0].y, zoom=zoom) for x in list(tilesX)]
+    return [Tile(x=x, y=row[0].y, zoom=zoom) for x in list(tiles_x)]
 
 
 def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int]:
@@ -206,24 +207,6 @@ def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
             tiles.append(Tile(x, y, zoom))
 
     return tiles
-
-
-def generate_grid_simple(tiles: list[Tile]) -> list[Way]:
-    """Generate simple way consisting of 4 nodes for every tile"""
-
-    # dictionary, key: (x,y) tuple, value : Tile
-    nodesByXY = {}
-    ways = []
-    for tile in tiles:
-        node1 = node_cache_get_or_compute(nodesByXY, tile.x, tile.y, tile.zoom)
-        node2 = node_cache_get_or_compute(nodesByXY, tile.x + 1, tile.y, tile.zoom)
-        node3 = node_cache_get_or_compute(nodesByXY, tile.x + 1, tile.y + 1, tile.zoom)
-        node4 = node_cache_get_or_compute(nodesByXY, tile.x, tile.y + 1, tile.zoom)
-
-        id = node1.id - osm.WAY_BASE_ID
-        ways.append(Way(id, nodes = [node1, node2, node3, node4, node1], tags = [*TAGS_WAY, ('zoom', tile.zoom.zoom)]))
-
-    return ways
 
 def node_cache_get_or_compute(nodeCache: dict, x, y, zoom) -> Node:
     k = (x, y)
