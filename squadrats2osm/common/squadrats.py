@@ -222,7 +222,7 @@ def generate_grid_simple(tiles: list[Tile]) -> list[Way]:
         node4 = node_cache_get_or_compute(nodesByXY, tile.x, tile.y + 1, tile.zoom)
 
         id = node1.id - osm.WAY_BASE_ID
-        ways.append(Way(id, nodes = [node1, node2, node3, node4, node1], tags = [*TAGS_WAY, ('zoom', tile.zoom)]))
+        ways.append(Way(id, nodes = [node1, node2, node3, node4, node1], tags = [*TAGS_WAY, ('zoom', tile.zoom.zoom)]))
 
     return ways
 
