@@ -40,15 +40,15 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
     """Generate a list of tiles of a given zoom covering the entire polygon
     """
 
-    contourTiles = defaultdict(list)
+    contour_tiles = defaultdict(list)
 
     with timeit(f'{job.name}: generate contours'):
         contours: list[Boundary] = generate_contour_for_polygon(poly=poly, job=job)
         for boundary in contours:
-            contourTiles[boundary.y].append(boundary)
+            contour_tiles[boundary.y].append(boundary)
 
     with timeit(f'{job.name}: fill contours'):
-        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)), contourTiles.items()))
+        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)), contour_tiles.items()))
 
 def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
     """Intersection of a line with a horizontal gridline
