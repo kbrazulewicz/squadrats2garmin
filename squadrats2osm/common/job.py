@@ -1,11 +1,18 @@
+from common.id import Id
 from common.zoom import Zoom
 
 class Job:
     """Representation of the job context
     """
-    id: str
+    name: str
     zoom: Zoom
+
+    _id: Id
     
-    def __init__(self, id: str, zoom: Zoom) -> None:
-        self.id = id
+    def __init__(self, name: str, zoom: Zoom) -> None:
+        self.name = name
         self.zoom = zoom
+        self._id = Id()
+
+    def nextId(self) -> int:
+        return self._id.next_id()

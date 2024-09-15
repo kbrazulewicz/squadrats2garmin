@@ -42,13 +42,13 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
 
     contourTiles = defaultdict(list)
 
-    with timeit(f'{job.id}: generate contours'):
-        contours: list[Boundary] = generate_contour_for_polygon(poly=poly, zoom=job.zoom)
+    with timeit(f'{job.name}: generate contours'):
+        contours: list[Boundary] = generate_contour_for_polygon(poly=poly, job=job)
         for boundary in contours:
             contourTiles[boundary.y].append(boundary)
 
-    with timeit(f'{job.id}: fill contours'):
-        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], zoom=job.zoom)), contourTiles.items()))
+    with timeit(f'{job.name}: fill contours'):
+        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)), contourTiles.items()))
 
 def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
     """Intersection of a line with a horizontal gridline
@@ -139,18 +139,18 @@ def generate_contour_for_polygon_area(polyArea: list[Coordinates], zoom: Zoom) -
     pointA: Coordinates = None
     for pointB in polyArea:
         if pointA is not None:
-            boundaries.extend(line_grid_intersections(a = pointA, b = pointB, zoom = zoom))
+            boundaries.extend(line_grid_intersections(a=pointA, b=pointB, zoom=zoom))
         pointA = pointB
 
     return boundaries
 
-def generate_contour_for_polygon(poly: Poly, zoom: Zoom) -> list[Boundary]:
-    return [b for area in poly.coords for b in generate_contour_for_polygon_area(polyArea=area, zoom=zoom)]
+def generate_contour_for_polygon(poly: Poly, job: Job) -> list[Boundary]:
+    return [b for area in poly.coords for b in generate_contour_for_polygon_area(polyArea=area, zoom=job.zoom)]
 
-def _generate_tiles_for_a_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
+def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
     # sort the list by longitude and LR (important in case of the same longitude the L boundary needs preceed the R boundary)
     row.sort(key=lambda b: (b.lon, 0 if b.lr == 'R' else 1))
-    return _generate_tiles_for_a_sorted_row(row=row, zoom=zoom)
+    return _generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
 
 def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
     if len(row) == 0:
@@ -239,8 +239,6 @@ def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
 
     if not tiles: return []
 
-    id = Id()
-
     ways: list[Way] = []
 
     # sort tiles by y, x
@@ -254,14 +252,14 @@ def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
     for y in sorted(rangesByY.keys()):
         if prevY is None or prevY + 1 != y:
             # first row or a gap - generate top edge
-            ways.extend(_create_horizontal_ways_for_ranges(y = y, ranges = rangesByY[y], zoom = job.zoom))
+            ways.extend(_create_horizontal_ways_for_ranges(y=y, ranges=rangesByY[y], job=job))
         
         if y + 1 in rangesByY:
             # generate bottom edge between current and next row
-            ways.extend(_create_horizontal_ways_for_ranges(y = y + 1, ranges = util.merge_ranges(rangesByY[y] + rangesByY[y + 1]), zoom = job.zoom))
+            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=util.merge_ranges(rangesByY[y] + rangesByY[y + 1]), job=job))
         else:
             # generate bottom edge when next row is empty    
-            ways.extend(_create_horizontal_ways_for_ranges(y = y + 1, ranges = rangesByY[y], zoom = job.zoom))
+            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=rangesByY[y], job=job))
 
         prevY = y
 
@@ -279,47 +277,43 @@ def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
     for x in sorted(rangesByX.keys()):
         if prevX is None or prevX + 1 != x:
             # first column or a gap - generate left edge
-            ways.extend(_create_vertical_ways_for_ranges(x = x, ranges = rangesByX[x], zoom = job.zoom))
+            ways.extend(_create_vertical_ways_for_ranges(x=x, ranges=rangesByX[x], job=job))
         
         if x + 1 in rangesByX:
             # generate right edge between current and next column
-            ways.extend(_create_vertical_ways_for_ranges(x = x + 1, ranges = util.merge_ranges(rangesByX[x] + rangesByX[x + 1]), zoom = job.zoom))
+            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=util.merge_ranges(rangesByX[x] + rangesByX[x + 1]), job=job))
         else:
             # generate right edge when next column is empty    
-            ways.extend(_create_vertical_ways_for_ranges(x = x + 1, ranges = rangesByX[x], zoom = job.zoom))
+            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=rangesByX[x], job=job))
 
         prevX = x
 
     return ways
 
-def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], zoom: Zoom) -> list[Way]:
+def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:
         return []
     
     ways: list[Way] = []
 
     for range in ranges:
-        (node1, node2) = (_osm_node(x, y, zoom) for x in range)
-        id = (node1.id - osm.WAY_BASE_ID) * 2
-        ways.append(Way(id = id, nodes = [node1, node2], tags = [*TAGS_WAY, ('zoom', zoom.zoom)]))
+        (node1, node2) = (_osm_node(x, y, job) for x in range)
+        ways.append(Way(id=job.nextId(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
 
     return ways
 
-def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], zoom: Zoom) -> list[Way]:
+def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:
         return []
     
     ways: list[Way] = []
 
     for range in ranges:
-        (node1, node2) = (_osm_node(x, y, zoom) for y in range)
-        id = (node1.id - osm.WAY_BASE_ID) * 2 - 1
-        ways.append(Way(id = id, nodes = [node1, node2], tags = [*TAGS_WAY, ('zoom', zoom.zoom)]))
+        (node1, node2) = (_osm_node(x, y, job) for y in range)
+        ways.append(Way(id=job.nextId(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
 
     return ways
 
 
-def _osm_node(x: int, y: int, zoom: Zoom) -> Node:
-    tile_no = y * (zoom.n + 1) + x
-    id = - (tile_no + 1)
-    return Node(id=id, lon=zoom.lon(x), lat=zoom.lat(y));
+def _osm_node(x: int, y: int, job: Job) -> Node:
+    return Node(id=job.nextId(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))

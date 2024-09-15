@@ -181,21 +181,21 @@ class TestSquadrats(unittest.TestCase):
             ]:
             with self.subTest(input = input, expected = expected):
                 y = 1
-                zoom = ZOOM_SQUADRATS
-                row = [common.squadrats.Boundary(lon=zoom.lon(i[0]), lr=i[1], y=y) for i in input]
+                job = Job(__name__, ZOOM_SQUADRATS)
+                row = [common.squadrats.Boundary(lon=job.zoom.lon(i[0]), lr=i[1], y=y) for i in input]
                 expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
 
-                result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=zoom)        
-                self.assertEqual(result, [Tile(x=x, y=y, zoom=zoom) for x in expectedArray])
+                result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
+                self.assertEqual(result, [Tile(x=x, y=y, zoom=job.zoom) for x in expectedArray])
         
     def test_generate_tiles(self):
         """
         Test that tiles are properly generated
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(id=__name__, zoom=ZOOM_SQUADRATS))
+        squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(name=__name__, zoom=ZOOM_SQUADRATS))
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
-        squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(id=__name__, zoom=ZOOM_SQUADRATINHOS))
+        squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(name=__name__, zoom=ZOOM_SQUADRATINHOS))
         self.assertEqual(sum(map(len, squadratinhos.values())), 657749)
 
 
