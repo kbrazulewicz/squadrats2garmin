@@ -39,7 +39,6 @@ class Boundary(NamedTuple):
 def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
     """Generate a list of tiles of a given zoom covering the entire polygon
     """
-
     contour_tiles = defaultdict(list)
 
     with timeit(f'{job.name}: generate contours'):
@@ -134,18 +133,18 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
 
     return boundaries
 
-def generate_contour_for_polygon_area(polyArea: list[Coordinates], zoom: Zoom) -> list[Boundary]:
+def generate_contour_for_polygon_area(poly_area: list[Coordinates], zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
-    pointA: Coordinates = None
-    for pointB in polyArea:
-        if pointA is not None:
-            boundaries.extend(line_grid_intersections(a=pointA, b=pointB, zoom=zoom))
-        pointA = pointB
+    point_a: Coordinates = None
+    for point_b in poly_area:
+        if point_a is not None:
+            boundaries.extend(line_grid_intersections(a=point_a, b=point_b, zoom=zoom))
+        point_a = point_b
 
     return boundaries
 
 def generate_contour_for_polygon(poly: Poly, job: Job) -> list[Boundary]:
-    return [b for area in poly.coords for b in generate_contour_for_polygon_area(polyArea=area, zoom=job.zoom)]
+    return [b for area in poly.coords for b in generate_contour_for_polygon_area(poly_area=area, zoom=job.zoom)]
 
 def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
     # sort the list by longitude and LR (important in case of the same longitude the L boundary needs preceed the R boundary)
