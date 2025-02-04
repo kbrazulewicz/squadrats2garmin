@@ -1,6 +1,46 @@
 {
     "jobs": [
         {
+            "id": "724-10-14",
+            "poly": "config/polygons/europe/spain/ES-VC-Comunitat-Valenciana.poly",
+            "zoom": "squadrats",
+            "osm": "output/europe/spain/squadrats-{name}.osm",
+            "mkgmap": {
+                "mapName": "97240110",
+                "description": "europe/spain/Comunitat Valenciana Squadrats",
+                "familyId": "9724",
+                "familyName": "Squadrats Spain",
+                "productId": "110",
+                "seriesName": "Squadrats",
+                "areaName": "europe/spain",
+                "countryName": "Spain",
+                "countryAbbr": "ES",
+                "regionName": "Comunitat Valenciana",
+                "regionAbbr": "VC",
+                "imgFile": "dist/europe/spain/squadrats-{name}.img"
+            }
+        },
+        {
+            "id": "724-10-17",
+            "poly": "config/polygons/europe/spain/ES-VC-Comunitat-Valenciana.poly",
+            "zoom": "squadratinhos",
+            "osm": "output/europe/spain/squadratinhos-{name}.osm",
+            "mkgmap": {
+                "mapName": "97240210",
+                "description": "europe/spain/Comunitat Valenciana Squadratinhos",
+                "familyId": "9724",
+                "familyName": "Squadrats Spain",
+                "productId": "210",
+                "seriesName": "Squadrats",
+                "areaName": "europe/spain",
+                "countryName": "Spain",
+                "countryAbbr": "ES",
+                "regionName": "Comunitat Valenciana",
+                "regionAbbr": "VC",
+                "imgFile": "dist/europe/spain/squadratinhos-{name}.img"
+            }
+        },
+        {
             "id": "724-05-14",
             "poly": "config/polygons/africa/spain/ES-CN-canarias.poly",
             "zoom": "squadrats",
