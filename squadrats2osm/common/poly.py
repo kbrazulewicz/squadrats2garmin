@@ -9,12 +9,12 @@ from common.zoom import Zoom
 
 
 class PolyFileFormatException(Exception):
-    """Raised when POLY file has an incorrect format
+    """Raised when a POLY file has an incorrect format
     """
     pass
 
 class PolyFileIncorrectFiletypeException(PolyFileFormatException):
-    """Raised when POLY file has an incorrect filetype
+    """Raised when a POLY file has an incorrect filetype
     """
     def __init__(self, filetype) -> None:
         self.filetype = filetype
@@ -42,10 +42,10 @@ class Poly:
         self.bounding_box = self.__calculate_bounding_box()
 
     def __read_poly_file(self, file):
-        """Read contents of the POLY file
+        """Read the contents of the POLY file
         """
         filetype = file.readline().rstrip('\n')
-        if (filetype != 'polygon'):
+        if filetype != 'polygon':
             raise PolyFileIncorrectFiletypeException(filetype)
 
         coords = []
@@ -62,13 +62,13 @@ class Poly:
         return coords
 
     def __read_polygon(self, file):
-        """Read single polygon section
+        """Read a single polygon section
         """
         coords = []
 
         for line in file:
             line = line.strip()
-            if (line == 'END'): break
+            if line == 'END': break
             (poly_lon, poly_lat) = (map(float, line.split()))
             coords.append(Coordinates(lat = poly_lat, lon = poly_lon))
 
