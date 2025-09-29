@@ -32,7 +32,7 @@ mkdir -p ${OUTPUT_DIR}
 rm -rf ${OUTPUT_DIR:?}/*
 
 # generate OSM files
-python3 squadrats2osm/s2o.py "${CONFIG_FILE}"
+python3 squadrats2osm/squadrats2osm.py "${CONFIG_FILE}"
 
 # generate Garmin IMG file
 mkgmap --read-config="${MKGMAP_OPTS}"
