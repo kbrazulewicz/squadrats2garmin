@@ -88,6 +88,9 @@ def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int
         config_file.write("product-id=1\n")
         config_file.write(f'series-name={IMG_SERIES_NAME}\n')
 
+        config_file.write("input-file=../typ/squadrats.typ.txt\n")
+        config_file.write("style-file=style/squadrats-default.style\n")
+
         sequence_number = 1
         for job in jobs:
             config_file.write(f'mapname={family_id}{sequence_number:04d}\n')
@@ -101,9 +104,6 @@ def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int
             config_file.write(f'input-file={job.osm_file.relative_to(OUTPUT_PATH)}\n')
 
             sequence_number += 1
-
-        config_file.write("input-file=../typ/squadrats.typ.txt\n")
-        config_file.write("style-file=../style/squadrats-default.style\n")
 
         config_file.write(f'description=Squadrats\n')
         config_file.write("gmapsupp\n")
