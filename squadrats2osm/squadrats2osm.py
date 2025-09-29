@@ -78,7 +78,8 @@ def generate_osm(job: Job):
 
 def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int = IMG_FAMILY_ID, family_name: str = IMG_FAMILY_NAME):
     with open(output, "w", encoding="utf-8") as config_file:
-        config_file.write("unicode\n")
+        # config_file.write("unicode\n")
+        config_file.write("latin1\n")
         config_file.write("transparent\n")
         config_file.write(f'output-dir={OUTPUT_PATH}\n')
 
@@ -87,7 +88,9 @@ def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int
         config_file.write("product-id=1\n")
         config_file.write(f'series-name={IMG_SERIES_NAME}\n')
 
+        sequence_number = 1
         for job in jobs:
+            config_file.write(f'mapname={family_id}{sequence_number:04d}\n')
             config_file.write(f'country-name={job.region.get_country_name()}\n')
             config_file.write(f'country-abbr={job.region.get_country_code()}\n')
             if isinstance(job.region, Subdivision):
@@ -97,14 +100,14 @@ def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int
             config_file.write(f'description={job.region.get_name()} @{job.zoom.zoom}\n')
             config_file.write(f'input-file={job.osm_file.relative_to(OUTPUT_PATH)}\n')
 
+            sequence_number += 1
+
         config_file.write("input-file=../typ/squadrats.typ.txt\n")
         config_file.write("style-file=../style/squadrats-default.style\n")
 
-        config_file.write(f'mapname={family_id}0001\n')
         config_file.write(f'description=Squadrats\n')
         config_file.write("gmapsupp\n")
 
-    pass
 
 def main(config_file: str) -> None:
     logger.info("Generate poly index")
