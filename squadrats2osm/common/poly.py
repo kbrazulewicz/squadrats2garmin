@@ -1,11 +1,5 @@
-import itertools
-from collections import defaultdict
-from typing import NamedTuple
-
 from common.geo import BoundingBox
 from common.geo import Coordinates
-from common.tile import Tile
-from common.zoom import Zoom
 
 
 class PolyFileFormatException(Exception):

@@ -1,7 +1,6 @@
 from collections import defaultdict
 from typing import NamedTuple
 
-from common import osm
 from common import util
 from common.geo import Coordinates
 from common.job import Job
@@ -14,7 +13,7 @@ from common.zoom import Zoom
 TAGS_WAY = [('name', 'grid')]
 
 class UnexpectedBoundaryException(Exception):
-    """Raised when unexpected Boundary is found
+    """Raised when an unexpected Boundary is found
     """
     pass
 
