@@ -40,12 +40,12 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
     """
     contour_tiles = defaultdict(list)
 
-    with timeit(f'{job.name}: generate contours'):
+    with timeit(f'{job}: generate contours'):
         contours: list[Boundary] = generate_contour_for_polygon(poly=poly, job=job)
         for boundary in contours:
             contour_tiles[boundary.y].append(boundary)
 
-    with timeit(f'{job.name}: fill contours'):
+    with timeit(f'{job}: fill contours'):
         return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)), contour_tiles.items()))
 
 def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
@@ -280,7 +280,7 @@ def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], jo
 
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for x in range)
-        ways.append(Way(id=job.nextId(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
+        ways.append(Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
 
     return ways
 
@@ -292,10 +292,10 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
 
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for y in range)
-        ways.append(Way(id=job.nextId(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
+        ways.append(Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
 
     return ways
 
 
 def _osm_node(x: int, y: int, job: Job) -> Node:
-    return Node(id=job.nextId(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))
+    return Node(id=job.next_id(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))

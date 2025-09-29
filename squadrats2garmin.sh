@@ -16,22 +16,29 @@ shift $((OPTIND-1))
 
 CONFIG_FILE=${1:-config/squadrats2osm.json}
 OUTPUT_DIR=output
+MKGMAP_OPTS="${OUTPUT_DIR}/mkgmap.conf"
 
 if ! [[ -r "${CONFIG_FILE}" ]]; then
     usage
     exit 1
 fi
 
+IMG_FILE=$(jq -r '.output' ${CONFIG_FILE})
+
 # init
 mkdir -p ${OUTPUT_DIR}
 
 # cleanup
-rm -rf ${OUTPUT_DIR}/*
+rm -rf ${OUTPUT_DIR:?}/*
 
 # generate OSM files
-python3 squadrats2osm/squadrats2osm.py ${CONFIG_FILE}
+python3 squadrats2osm/s2o.py "${CONFIG_FILE}"
 
-# generate Garmin IMG files
-for id in `jq -r '.jobs[].id' ${CONFIG_FILE}`; do
-    bin/osm2img.sh ${id} ${CONFIG_FILE}
-done
+# generate Garmin IMG file
+mkgmap --read-config="${MKGMAP_OPTS}"
+
+if [[ -r "${OUTPUT_DIR}/gmapsupp.img" ]]; then
+    mkdir -p "$(dirname "${IMG_FILE}")"
+    mv ${OUTPUT_DIR}/gmapsupp.img "${IMG_FILE}"
+    # rm ${OUTPUT_DIR}/*
+fi

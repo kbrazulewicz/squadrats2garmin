@@ -1,7 +1,5 @@
 import math
 
-from common.geo import Coordinates
-
 class Zoom:
     """Representation of zoom on the OSM map
 
@@ -18,19 +16,19 @@ class Zoom:
     def __repr__(self) -> str:
         """Override the default implementation
         """
-        return 'Zoom(zoom={})'.format(self.zoom)
+        return f"Zoom(zoom={self.zoom})"
 
     def __key(self):
-        return (self.zoom)
+        return self.zoom
 
-    def __hash(self):
+    def __hash__(self):
         return hash(self.__key())
 
     def __eq__(self, __o: object) -> bool:
         """Override the default implementation
         """
         if isinstance(__o, Zoom):
-            return (self.__key() == __o.__key())
+            return self.__key() == __o.__key()
         return NotImplemented
 
     def lat(self, y: int) -> float:
