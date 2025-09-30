@@ -1,0 +1,10 @@
+{
+  "output": "dist/europe/squadrats-CZ-česko.img",
+  "mapname_prefix": "97203",
+  "zoom_14": [
+    "CZ-*"
+  ],
+  "zoom_17": [
+    "CZ-*"
+  ]
+}

@@ -13,6 +13,7 @@ from common.zoom import Zoom, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 OUTPUT_PATH = "output"
 
 IMG_FAMILY_ID = 9724
+IMG_MAPNAME_PREFIX_LENGTH = 5
 IMG_FAMILY_NAME = "Squadrats2Garmin 2025"
 IMG_SERIES_NAME = "Squadrats grid"
 
@@ -20,10 +21,12 @@ logger = logging.getLogger(__name__)
 
 class Config:
     output: str
+    mapname_prefix: str
     regions: dict[Zoom, list[Region]]
 
-    def __init__(self, output: str, regions_14: list[Region], regions_17: list[Region]) -> None:
+    def __init__(self, output: str, mapname_prefix: str, regions_14: list[Region], regions_17: list[Region]) -> None:
         self.output = output
+        self.mapname_prefix = mapname_prefix
         self.regions = {
             ZOOM_SQUADRATS: regions_14,
             ZOOM_SQUADRATINHOS: regions_17
@@ -33,15 +36,24 @@ class Config:
 def process_config(filename: str, poly_index: RegionIndex) -> Config:
     logger.debug(f'Processing input job from "{filename}"')
     output_file: str
+    mapname_prefix: str
     regions_14: list[Region] = []
     regions_17: list[Region] = []
     with open(filename) as configFile:
         config = json.load(configFile)
         output_file = config['output']
+
+        if 'mapname_prefix' in config:
+            mapname_prefix = config['mapname_prefix']
+        else:
+            mapname_prefix = str(IMG_FAMILY_ID).ljust(IMG_MAPNAME_PREFIX_LENGTH, '0')
+        if (len(mapname_prefix) > IMG_MAPNAME_PREFIX_LENGTH):
+            raise ValueError(f'Mapname prefix "{mapname_prefix}" is too long')
+
         regions_14 = select_regions(poly_index=poly_index, regions=config['zoom_14'])
         regions_17 = select_regions(poly_index=poly_index, regions=config['zoom_17'])
 
-    return Config(output=output_file, regions_14=regions_14, regions_17=regions_17)
+    return Config(output=output_file, mapname_prefix=mapname_prefix, regions_14=regions_14, regions_17=regions_17)
 
 
 def generate_osm(job: Job):
@@ -76,15 +88,15 @@ def generate_osm(job: Job):
         # ET.ElementTree(document).write(sys.stdout.buffer, encoding='utf-8', xml_declaration=True)
 
 
-def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int = IMG_FAMILY_ID, family_name: str = IMG_FAMILY_NAME):
+def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
     with open(output, "w", encoding="utf-8") as config_file:
-        # config_file.write("unicode\n")
-        config_file.write("latin1\n")
+        config_file.write("unicode\n")
+        # config_file.write("latin1\n")
         config_file.write("transparent\n")
         config_file.write(f'output-dir={OUTPUT_PATH}\n')
 
-        config_file.write(f'family-id={family_id}\n')
-        config_file.write(f'family-name={family_name}\n')
+        config_file.write(f'family-id={IMG_FAMILY_ID}\n')
+        config_file.write(f'family-name={IMG_FAMILY_NAME}\n')
         config_file.write("product-id=1\n")
         config_file.write(f'series-name={IMG_SERIES_NAME}\n')
 
@@ -92,7 +104,8 @@ def generate_mkgmap_config(output: pathlib.Path, jobs: list[Job], family_id: int
 
         sequence_number = 1
         for job in jobs:
-            config_file.write(f'mapname={family_id}{sequence_number:04d}\n')
+            # mapname_prefix is 5 characters long, and we're adding 3 digits of sequence number
+            config_file.write(f'mapname={config.mapname_prefix}{sequence_number:03d}\n')
             config_file.write(f'country-name={job.region.get_country_name()}\n')
             config_file.write(f'country-abbr={job.region.get_country_code()}\n')
             if isinstance(job.region, Subdivision):
@@ -125,7 +138,7 @@ def main(config_file: str) -> None:
             jobs.append(job)
 
     mkgmap_config = pathlib.Path(f'{OUTPUT_PATH}/mkgmap.conf')
-    generate_mkgmap_config(output=mkgmap_config, jobs=jobs)
+    generate_mkgmap_config(output=mkgmap_config, config=config, jobs=jobs)
 
 
 if __name__ == "__main__":
