@@ -13,7 +13,7 @@ class PolyDownloader:
             'User-Agent': 'OSM-PolyDownloader/1.0'
         })
 
-    def download(self, relation_id, output_path, retry_count=3):
+    def download(self, relation_id, output_path, retry_count=5):
         """Download POLY file with retries"""
 
         url = f"{self.base_url}/get_poly.py"
