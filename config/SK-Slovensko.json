@@ -1,5 +1,6 @@
 {
   "output": "dist/europe/squadrats-SK-slovakia.img",
+  "description": "Squadrats, Slovakia",
   "mapname_prefix": "97703",
   "zoom_14": [
     "SK-*"

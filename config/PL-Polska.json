@@ -1,5 +1,6 @@
 {
   "output": "dist/europe/squadrats-PL-poland.img",
+  "description": "Squadrats, Poland",
   "mapname_prefix": "97616",
   "zoom_14": [
     "PL-*"

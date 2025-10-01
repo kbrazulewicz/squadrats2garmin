@@ -1,5 +1,6 @@
 {
   "output": "squadrats.img",
+  "description": "Squadrats, custom",
   "mapname_prefix": "97240",
   "zoom_14": [
     "ES-VC",

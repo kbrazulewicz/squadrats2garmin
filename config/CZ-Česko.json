@@ -1,5 +1,6 @@
 {
-  "output": "dist/europe/squadrats-CZ-česko.img",
+  "output": "dist/europe/squadrats-CZ-czechia.img",
+  "description": "Squadrats, Czechia",
   "mapname_prefix": "97203",
   "zoom_14": [
     "CZ-*"

@@ -1,5 +1,6 @@
 {
   "output": "dist/europe/squadrats-FR-france.img",
+  "description": "Squadrats, France",
   "mapname_prefix": "97250",
   "zoom_14": [
     "FR"

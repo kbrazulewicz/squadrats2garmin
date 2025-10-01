@@ -21,12 +21,20 @@ logger = logging.getLogger(__name__)
 
 class Config:
     output: str
+    description: str
     mapname_prefix: str
     regions: dict[Zoom, list[Region]]
 
-    def __init__(self, output: str, mapname_prefix: str, regions_14: list[Region], regions_17: list[Region]) -> None:
-        self.output = output
-        self.mapname_prefix = mapname_prefix
+    def __init__(self, config:dict, regions_14: list[Region], regions_17: list[Region]) -> None:
+        self.output = config['output']
+        self.description = config['description']
+        if 'mapname_prefix' in config:
+            self.mapname_prefix = config['mapname_prefix']
+        else:
+            self.mapname_prefix = str(IMG_FAMILY_ID).ljust(IMG_MAPNAME_PREFIX_LENGTH, '0')
+        if (len(self.mapname_prefix) > IMG_MAPNAME_PREFIX_LENGTH):
+            raise ValueError(f'Mapname prefix "{self.mapname_prefix}" is too long')
+
         self.regions = {
             ZOOM_SQUADRATS: regions_14,
             ZOOM_SQUADRATINHOS: regions_17
@@ -35,25 +43,13 @@ class Config:
 
 def process_config(filename: str, poly_index: RegionIndex) -> Config:
     logger.debug(f'Processing input job from "{filename}"')
-    output_file: str
-    mapname_prefix: str
-    regions_14: list[Region] = []
-    regions_17: list[Region] = []
     with open(filename) as configFile:
         config = json.load(configFile)
-        output_file = config['output']
 
-        if 'mapname_prefix' in config:
-            mapname_prefix = config['mapname_prefix']
-        else:
-            mapname_prefix = str(IMG_FAMILY_ID).ljust(IMG_MAPNAME_PREFIX_LENGTH, '0')
-        if (len(mapname_prefix) > IMG_MAPNAME_PREFIX_LENGTH):
-            raise ValueError(f'Mapname prefix "{mapname_prefix}" is too long')
+        regions_14: list[Region] = select_regions(poly_index=poly_index, regions=config['zoom_14'])
+        regions_17: list[Region] = select_regions(poly_index=poly_index, regions=config['zoom_17'])
 
-        regions_14 = select_regions(poly_index=poly_index, regions=config['zoom_14'])
-        regions_17 = select_regions(poly_index=poly_index, regions=config['zoom_17'])
-
-    return Config(output=output_file, mapname_prefix=mapname_prefix, regions_14=regions_14, regions_17=regions_17)
+        return Config(config=config, regions_14=regions_14, regions_17=regions_17)
 
 
 def generate_osm(job: Job):
@@ -90,8 +86,8 @@ def generate_osm(job: Job):
 
 def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
     with open(output, "w", encoding="utf-8") as config_file:
-        config_file.write("unicode\n")
-        # config_file.write("latin1\n")
+        # images with 'unicode' options are not displayed on Garmin
+        config_file.write("latin1\n")
         config_file.write("transparent\n")
         config_file.write(f'output-dir={OUTPUT_PATH}\n')
 
@@ -119,7 +115,7 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
 
         config_file.write("input-file=../typ/squadrats.typ.txt\n")
 
-        config_file.write(f'description=Squadrats\n')
+        config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
 
 

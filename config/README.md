@@ -24,6 +24,10 @@ The format of the configuration file is as follows:
 
     The name of the output IMG file.
 
+* `description`
+
+    This will show up in the Garmin unit as the map name.
+
 * `mapname_prefix`
 
     If you want to keep multiple IMG files on your Garmin unit, this value needs to be unique for each IMG file.
