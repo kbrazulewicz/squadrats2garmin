@@ -1,13 +1,13 @@
 # Configuring jobs for squadrats2garmin
 
-Generating a Garmin IMG file with Squadrats grid is a two-phase process.
+Generating a Garmin IMG file containing Squadrats grid is a two-phase process.
 
 ## Generate OSM XML files
 The `squadrats2garmin` script invokes the `squadrats2osm` Python tool to generate [OSM XML](https://wiki.openstreetmap.org/wiki/OSM_XML) files for all the regions in the configuration file.
 
 The format of the configuration file is as follows:
 
-```
+```json
 {
   "output": "dist/europe/squadrats-PL-poland.img",
   "mapname_prefix": "97616",
@@ -32,7 +32,7 @@ The format of the configuration file is as follows:
 
     If you want to keep multiple IMG files on your Garmin unit, this value needs to be unique for each IMG file.
 
-    This value should be 5 digits long. For the country-specific grids the following pattern is used: `97[ISO_3166-1-numeric-code]`.
+    The prefix should be 5 digits long. For the country-specific grids the following pattern is recommended: `97[ISO_3166-1-numeric-code]`.
 
     For custom grids it is up to you.
 
@@ -55,4 +55,4 @@ The format of the configuration file is as follows:
     Be mindful that generating squadratinhos (zoom level 17) grid for the large regions will take a lot of time and might also impact Garmin unit performance.
 
 ## Convert OSM XML files to Garmin IMG files
-The [mkgmap](https://www.mkgmap.org.uk/) tool is used to convert the [OSM XML](https://wiki.openstreetmap.org/wiki/OSM_XML) file to Garmin IMG file. This process uses the configuration in the `mkgmap` child element.
+In the final step, the [mkgmap](https://www.mkgmap.org.uk/) tool is used to convert the [OSM XML](https://wiki.openstreetmap.org/wiki/OSM_XML) file to Garmin IMG file.

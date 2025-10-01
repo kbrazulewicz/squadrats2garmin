@@ -8,7 +8,7 @@ That's right. [Explain](https://squadrats.com/explain) like I'm your grandpa, pl
 It allows you to see borders of squadrats and squadratinhos right on your Garmin device. 
 No more need to reach out for your phone to confirm a score! 
 
-Here you can generate or [download](dist/README.md) a transparent, squadrat- or squadratinho-sized grid overlay for maps on your Garmin device.
+Here you can generate or [download](dist/README.md) a transparent, squadrat- and squadratinho-sized grid overlay for maps on your Garmin device.
 
 ### Supported devices
 Basically all Garmin devices which can use custom maps in IMG format. That includes but is not limited to:
@@ -28,7 +28,7 @@ Smartwatches
 
 ## Downloading pre-made grids
 Please check [dist](dist) directory for pre-made grids.
-Contact me if your country/province is missing, and you don't like playing around with command line tools.
+Contact me if your country/province is missing, and you don't like playing around with commandline tools.
 
 ### How to upload pre-made grid to your Garmin device?
 
@@ -37,14 +37,21 @@ Upload chosen area(s) to your [Garmin Edge](https://www.dcrainmaker.com/2019/08/
 ## Generating your own grid
 Garmin compatible grids are created by running `squadrats2garmin` script with a configuration file, ie.
 ```console
-$ ./squadrats2garmin.sh config/france.json
+# setup Python environment
+$ python3 -m venv .venv
+$ pip install -r requirements.txt
+
+# activate Python environment
+$ source .venv/bin/activate
+
+# run the script
+$ ./squadrats2garmin.sh config/PL-Polska.json
 ```
-The configuration file can define multiple jobs, each of them generating a Garmin-compatible IMG file. 
 Read more about [configuration file format](config/README.md)  
 
 ### Requirements
 - bash-compatible shell
-- python 3.10
+- python 3.10+
 - mkgmap (sudo install mkgmap)
 
 <!--
