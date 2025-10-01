@@ -52,7 +52,7 @@ class OsmIdResolver:
     def __init__(self):
         self.api = overpy.Overpass()
 
-    def get_id(self, iso_code: str, retry_count: int = 3):
+    def get_id(self, iso_code: str, retry_count: int = 5):
         query: str
         if "-" in iso_code:
             query = f'''
