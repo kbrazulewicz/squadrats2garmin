@@ -1,17 +1,17 @@
 # Squadrats2Garmin tools
-Squadrats2Garmin project is a set of tools that improves experience of _squadrats_ collectors using Garmin bike computers and smartwatches.
+Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches.
 
 ## What are Squadrats?
 That's right. [Explain](https://squadrats.com/explain) like I'm your grandpa, please!
 
 ## What does this project do?
-It allows you to see borders of squadrats and squadratinhos right on your Garmin device. 
+It allows you to see borders of Squadrats and Squadratinhos right on your Garmin device. 
 No more need to reach out for your phone to confirm a score! 
 
-Here you can generate or [download](dist/README.md) a transparent, squadrat- and squadratinho-sized grid overlay for maps on your Garmin device.
+Here you can generate or download Squadrat- and Squadratinho-sized grid overlay for maps on your Garmin device.
 
 ### Supported devices
-Basically all Garmin devices which can use custom maps in IMG format. That includes but is not limited to:
+Basically all Garmin devices that can use custom maps in IMG format. That includes but is not limited to:
 
 Bike computers:
 - Edge 10x0 series
@@ -21,7 +21,7 @@ Bike computers:
 Smartwatches
 - Garmin Descent
 - Garmin epix
-- Garmin Fenix 7, 6, 5X and 5 Plus
+- Garmin Fenix 8, 7, 6, 5X and 5 Plus
 - Garmin Forerunner 965, 945
 - Garmin MARQ
 - Garmin tactix
@@ -31,10 +31,19 @@ Please check [dist](dist) directory for pre-made grids.
 Contact me if your country/province is missing, and you don't like playing around with commandline tools.
 
 ### How to upload pre-made grid to your Garmin device?
-
-Upload chosen area(s) to your [Garmin Edge](https://www.dcrainmaker.com/2019/08/how-to-install-free-maps-on-your-garmin-edge.html) or [Garmin watch](https://www.dcrainmaker.com/2019/08/how-to-installing-free-maps-on-your-garmin-fenix-5-plus-forerunner-945-or-marq-series-watch.html)
+Upload the IMG files to your [Garmin Edge](https://www.dcrainmaker.com/2019/08/how-to-install-free-maps-on-your-garmin-edge.html) or [Garmin watch](https://www.dcrainmaker.com/2019/08/how-to-installing-free-maps-on-your-garmin-fenix-5-plus-forerunner-945-or-marq-series-watch.html)
 
 ## Generating your own grid
+You can generate your own grid using this project. This will require knowledge of git, Python and bash.
+```console
+# install mkgmap tool
+$ sudo apt install mkgmap
+
+# clone the repository
+$ git clone git@github.com:kbrazulewicz/squadrats2garmin.git
+$ cd squadrats2garmin
+```
+
 Garmin compatible grids are created by running `squadrats2garmin` script with a configuration file, ie.
 ```console
 # setup Python environment
@@ -48,11 +57,6 @@ $ source .venv/bin/activate
 $ ./squadrats2garmin.sh config/PL-Polska.json
 ```
 Read more about [configuration file format](config/README.md)  
-
-### Requirements
-- bash-compatible shell
-- python 3.10+
-- mkgmap (sudo install mkgmap)
 
 <!--
 ## Notes
