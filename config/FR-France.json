@@ -3,7 +3,7 @@
   "description": "Squadrats, France",
   "mapname_prefix": "97250",
   "zoom_14": [
-    "FR"
+    "FR-*"
   ],
   "zoom_17": [
     "FR-*"
