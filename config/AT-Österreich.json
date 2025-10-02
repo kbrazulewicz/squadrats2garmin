@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-AT-austria.img",
+  "description": "Squadrats, Austria",
+  "mapname_prefix": "97040",
+  "zoom_14": [
+    "AT-*"
+  ],
+  "zoom_17": [
+    "AT-*"
+  ]
+}
