@@ -1,3 +1,4 @@
+import re
 import sys
 import time
 from pathlib import Path
@@ -14,7 +15,7 @@ class PolyDownloader:
             'User-Agent': 'OSM-PolyDownloader/1.0'
         })
 
-    def download(self, relation_id, output_path, retry_count=5):
+    def download(self, relation_id: int, output_path: str, retry_count: int = 5):
         """Download POLY file with retries"""
 
         url = f"{self.base_url}/get_poly.py"
@@ -53,7 +54,7 @@ class OsmIdResolver:
     def __init__(self):
         self.api = overpy.Overpass()
 
-    def get_id(self, iso_code: str, retry_count: int = 5):
+    def get_id(self, iso_code: str, retry_count: int = 5) -> int:
         query: str
         if "-" in iso_code:
             query = f'''
@@ -102,12 +103,27 @@ def get_output_path(code: str):
             return f'{code}.poly'
 
 
+def download_poly(code: str, osm_id: int):
+    output_path = get_output_path(code=code)
+    if poly_downloader.download(relation_id=osm_id, output_path=output_path):
+        print(f'{code}: {output_path}')
+
 osm_id_resolver = OsmIdResolver()
 poly_downloader = PolyDownloader()
 
 for arg in sys.argv[1:]:
-    osm_id = arg if arg.isdigit() else osm_id_resolver.get_id(arg)
-    if osm_id:
-        output_path = get_output_path(code=arg)
-        if poly_downloader.download(osm_id, output_path):
-            print(f'{arg}: {output_path}')
+    # relation id
+    if arg.isdigit():
+        download_poly(code=arg, osm_id=int(arg))
+        continue
+
+    # country wildcard (all subdivisions)
+    match = re.match(r'^([A-Z]{2})-\*$', arg)
+    if match:
+        for subdivision in pycountry.subdivisions.get(country_code=match.group(1)):
+            code = subdivision.code
+            osm_id = osm_id_resolver.get_id(code)
+            download_poly(code=code, osm_id=osm_id)
+    else:
+        osm_id = osm_id_resolver.get_id(arg)
+        download_poly(code=arg, osm_id=osm_id)
