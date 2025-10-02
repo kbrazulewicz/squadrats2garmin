@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-PT-portugal.img",
+  "description": "Squadrats, PPortugal",
+  "mapname_prefix": "97620",
+  "zoom_14": [
+    "PT-*"
+  ],
+  "zoom_17": [
+    "PT-*"
+  ]
+}
