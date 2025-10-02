@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-NL-netherlands.img",
+  "description": "Squadrats, Netherlands",
+  "mapname_prefix": "97528",
+  "zoom_14": [
+    "NL-*"
+  ],
+  "zoom_17": [
+    "NL-*"
+  ]
+}
