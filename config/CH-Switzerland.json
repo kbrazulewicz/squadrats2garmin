@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-CH-switzerland.img",
+  "description": "Squadrats, Switzerland",
+  "mapname_prefix": "97756",
+  "zoom_14": [
+    "CH-*"
+  ],
+  "zoom_17": [
+    "CH-*"
+  ]
+}
