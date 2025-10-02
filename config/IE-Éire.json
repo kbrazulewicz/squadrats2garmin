@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-IE-ireland.img",
+  "description": "Squadrats, Ireland",
+  "mapname_prefix": "97372",
+  "zoom_14": [
+    "IE-*"
+  ],
+  "zoom_17": [
+    "IE-*"
+  ]
+}
