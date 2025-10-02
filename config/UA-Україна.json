@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-UA-ukraine.img",
+  "description": "Squadrats, Ukraine",
+  "mapname_prefix": "97804",
+  "zoom_14": [
+    "UA-*"
+  ],
+  "zoom_17": [
+    "UA-*"
+  ]
+}
