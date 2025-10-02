@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 import overpy
+import pycountry
 import requests
 
 class PolyDownloader:
@@ -86,12 +87,27 @@ class OsmIdResolver:
         return False
 
 
+def get_output_path(code: str):
+    if "-" in code:
+        subdivision = pycountry.subdivisions.get(code=code)
+        if subdivision:
+            return f'{code}-{subdivision.name.replace(" ", "-")}.poly'
+        else:
+            return f'{code}.poly'
+    else:
+        country = pycountry.countries.get(alpha_2=code)
+        if country:
+            return f'{code}-{country.name.replace(" ", "-")}.poly'
+        else:
+            return f'{code}.poly'
+
+
 osm_id_resolver = OsmIdResolver()
 poly_downloader = PolyDownloader()
 
 for arg in sys.argv[1:]:
-    osm_id = osm_id_resolver.get_id(arg)
+    osm_id = arg if arg.isdigit() else osm_id_resolver.get_id(arg)
     if osm_id:
-        output_path = f'{arg}.poly'
+        output_path = get_output_path(code=arg)
         if poly_downloader.download(osm_id, output_path):
             print(f'{arg}: {output_path}')
