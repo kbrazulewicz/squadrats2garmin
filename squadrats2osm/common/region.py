@@ -13,7 +13,7 @@ def get_country_code(code: str) -> str:
     return code if re.match(r'^[A-Z]{2}$', code) else None
 
 def get_subdivision_code(code: str) -> str:
-    return code if re.match(r'^[A-Z0-9]{2,3}$', code) else None
+    return code if re.match(r'^[A-Z0-9]{1,3}$', code) else None
 
 class Region(ABC):
     iso_code: str
@@ -63,7 +63,6 @@ class Subdivision(Region):
 
     def get_name(self) -> str:
         return f'{self.country.get_name()} - {self.name}'
-
 
 class Country(Region):
     subdivisions: dict[str, Subdivision]
