@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-FI-Finland.img",
+  "description": "Squadrats, Finland",
+  "mapname_prefix": "97246",
+  "zoom_14": [
+    "FI-*"
+  ],
+  "zoom_17": [
+    "FI-*"
+  ]
+}
