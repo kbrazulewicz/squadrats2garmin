@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-LU-luxembourg.img",
+  "description": "Squadrats, Luxembourg",
+  "mapname_prefix": "97442",
+  "zoom_14": [
+    "LU"
+  ],
+  "zoom_17": [
+    "LU"
+  ]
+}
