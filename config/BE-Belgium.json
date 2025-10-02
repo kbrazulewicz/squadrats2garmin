@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-BE-belgium.img",
+  "description": "Squadrats, Belgium",
+  "mapname_prefix": "97056",
+  "zoom_14": [
+    "BE-*"
+  ],
+  "zoom_17": [
+    "BE-*"
+  ]
+}
