@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-MK-north-macedonia.img",
+  "description": "Squadrats, North Macedonia",
+  "mapname_prefix": "97807",
+  "zoom_14": [
+    "MK-*"
+  ],
+  "zoom_17": [
+    "MK-*"
+  ]
+}
