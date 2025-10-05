@@ -49,7 +49,7 @@ class Subdivision(Region):
         if not subdivision:
             raise ValueError(f'Illegal subdivision ISO code {iso_code}')
 
-        super().__init__(iso_code, subdivision.name, poly)
+        super().__init__(iso_code=iso_code, name=subdivision.name, poly=poly)
         self.country = country
 
     def __repr__(self):
@@ -62,7 +62,20 @@ class Subdivision(Region):
         return self.country.get_country_name()
 
     def get_name(self) -> str:
-        return f'{self.get_country_name()} - {self.name}'
+        """
+        Returns the formatted name of the entity by cleaning predefined geographic
+        suffixes and appending the country name.
+
+        Returns
+        str
+            A formatted string containing the country name followed by the cleaned
+            name of the entity.
+        """
+        name = (self.name
+                .replace(", Unitatea teritorială autonomă (UTAG)", "")
+                .replace(", unitatea teritorială din", "")
+                )
+        return f'{self.get_country_name()} - {name}'
 
 class Country(Region):
     subdivisions: dict[str, Subdivision]
@@ -84,7 +97,14 @@ class Country(Region):
         return self.iso_code
 
     def get_country_name(self) -> str:
-        return self.__country.name
+        """
+        Retrieves the name of the country with specific formatting adjustments.
+
+        Returns:
+            str: The formatted name of the country.
+        """
+        return (self.__country.name
+                .replace(", Republic of", ""))
 
     def add_subdivision(self, iso_code, poly: Poly):
         self.subdivisions[iso_code] = Subdivision(country=self, iso_code=iso_code, poly=poly)
