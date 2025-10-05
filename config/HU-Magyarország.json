@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-HU-hungary.img",
+  "description": "Squadrats, Hungary",
+  "mapname_prefix": "97348",
+  "zoom_14": [
+    "HU-*"
+  ],
+  "zoom_17": [
+    "HU-*"
+  ]
+}
