@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-BA-bosnia-and-herzegovina.img",
+  "description": "Squadrats, Bosnia&Herzegovina",
+  "mapname_prefix": "97070",
+  "zoom_14": [
+    "BA-*"
+  ],
+  "zoom_17": [
+    "BA-*"
+  ]
+}
