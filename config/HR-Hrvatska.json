@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-HR-croatia.img",
+  "description": "Squadrats, Croatia",
+  "mapname_prefix": "97191",
+  "zoom_14": [
+    "HR-*"
+  ],
+  "zoom_17": [
+    "HR-*"
+  ]
+}
