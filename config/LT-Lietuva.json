@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-LT-Lithuania.img",
+  "description": "Squadrats, Lithuania",
+  "mapname_prefix": "97440",
+  "zoom_14": [
+    "LT-*"
+  ],
+  "zoom_17": [
+    "LT-*"
+  ]
+}
