@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-LI-Liechtenstein.img",
+  "description": "Squadrats, Liechtenstein",
+  "mapname_prefix": "97438",
+  "zoom_14": [
+    "LI"
+  ],
+  "zoom_17": [
+    "LI"
+  ]
+}
