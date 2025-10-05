@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-VA-vatican.img",
+  "description": "Squadrats, Vatican",
+  "mapname_prefix": "97336",
+  "zoom_14": [
+    "VA"
+  ],
+  "zoom_17": [
+    "VA"
+  ]
+}
