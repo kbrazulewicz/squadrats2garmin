@@ -100,7 +100,7 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
 
         sequence_number = 1
         for job in jobs:
-            # mapname_prefix is 5 characters long, and we're adding 3 digits of sequence number
+            # mapname_prefix is 5 characters long, and we're adding 3 digits of a sequence number
             config_file.write(f'mapname={config.mapname_prefix}{sequence_number:03d}\n')
             config_file.write(f'country-name={job.region.get_country_name()}\n')
             config_file.write(f'country-abbr={job.region.get_country_code()}\n')

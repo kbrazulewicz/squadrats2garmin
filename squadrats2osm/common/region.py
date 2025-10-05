@@ -62,7 +62,7 @@ class Subdivision(Region):
         return self.country.get_country_name()
 
     def get_name(self) -> str:
-        return f'{self.country.get_name()} - {self.name}'
+        return f'{self.get_country_name()} - {self.name}'
 
 class Country(Region):
     subdivisions: dict[str, Subdivision]
