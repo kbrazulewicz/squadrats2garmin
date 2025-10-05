@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-GR-greece.img",
+  "description": "Squadrats, Greece",
+  "mapname_prefix": "97300",
+  "zoom_14": [
+    "GR-*"
+  ],
+  "zoom_17": [
+    "GR-*"
+  ]
+}
