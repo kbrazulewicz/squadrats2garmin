@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-SM-san-marino.img",
+  "description": "Squadrats, San Marino",
+  "mapname_prefix": "97674",
+  "zoom_14": [
+    "SM"
+  ],
+  "zoom_17": [
+    "SM"
+  ]
+}
