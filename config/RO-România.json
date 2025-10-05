@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-RO-romania.img",
+  "description": "Squadrats, Romania",
+  "mapname_prefix": "97642",
+  "zoom_14": [
+    "RO-*"
+  ],
+  "zoom_17": [
+    "RO-*"
+  ]
+}
