@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-ME-montenegro.img",
+  "description": "Squadrats, Montenegro",
+  "mapname_prefix": "97499",
+  "zoom_14": [
+    "ME-*"
+  ],
+  "zoom_17": [
+    "ME-*"
+  ]
+}
