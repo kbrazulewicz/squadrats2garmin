@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-SI-Slovenia.img",
+  "description": "Squadrats, Slovenia",
+  "mapname_prefix": "97705",
+  "zoom_14": [
+    "SI-*"
+  ],
+  "zoom_17": [
+    "SI-*"
+  ]
+}
