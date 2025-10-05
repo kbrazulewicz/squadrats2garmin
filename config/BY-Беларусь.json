@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-BY-belarus.img",
+  "description": "Squadrats, Belarus",
+  "mapname_prefix": "97112",
+  "zoom_14": [
+    "BY-*"
+  ],
+  "zoom_17": [
+    "BY-*"
+  ]
+}
