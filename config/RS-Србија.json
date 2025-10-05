@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-RS-serbia.img",
+  "description": "Squadrats, Serbia",
+  "mapname_prefix": "97688",
+  "zoom_14": [
+    "RS-*"
+  ],
+  "zoom_17": [
+    "RS-*"
+  ]
+}
