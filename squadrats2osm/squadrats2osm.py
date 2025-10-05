@@ -5,7 +5,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 from common.job import Job
-from common.region import Region, RegionIndex, select_regions, Subdivision, Country
+from common.region import Region, RegionIndex, Subdivision
 from common.squadrats import generate_tiles, generate_grid
 from common.timer import timeit
 from common.zoom import Zoom, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
@@ -32,7 +32,7 @@ class Config:
             self.mapname_prefix = config['mapname_prefix']
         else:
             self.mapname_prefix = str(IMG_FAMILY_ID).ljust(IMG_MAPNAME_PREFIX_LENGTH, '0')
-        if (len(self.mapname_prefix) > IMG_MAPNAME_PREFIX_LENGTH):
+        if len(self.mapname_prefix) > IMG_MAPNAME_PREFIX_LENGTH:
             raise ValueError(f'Mapname prefix "{self.mapname_prefix}" is too long')
 
         self.regions = {
@@ -46,8 +46,8 @@ def process_config(filename: str, poly_index: RegionIndex) -> Config:
     with open(filename) as configFile:
         config = json.load(configFile)
 
-        regions_14: list[Region] = select_regions(poly_index=poly_index, regions=config['zoom_14'])
-        regions_17: list[Region] = select_regions(poly_index=poly_index, regions=config['zoom_17'])
+        regions_14: list[Region] = poly_index.select_regions(regions=config['zoom_14'])
+        regions_17: list[Region] = poly_index.select_regions(regions=config['zoom_17'])
 
         return Config(config=config, regions_14=regions_14, regions_17=regions_17)
 
@@ -81,12 +81,11 @@ def generate_osm(job: Job):
     with timeit(f'{job}: write OSM document {job.osm_file}'):
         job.osm_file.parent.mkdir(parents=True, exist_ok=True)
         ET.ElementTree(document).write(job.osm_file, encoding='utf-8', xml_declaration=True)
-        # ET.ElementTree(document).write(sys.stdout.buffer, encoding='utf-8', xml_declaration=True)
 
 
 def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
     with open(output, "w", encoding="utf-8") as config_file:
-        # images with 'unicode' options are not displayed on Garmin
+        # images with 'unicode' encoding are not displayed on Garmin
         config_file.write("latin1\n")
         config_file.write("transparent\n")
         config_file.write(f'output-dir={OUTPUT_PATH}\n')
@@ -127,7 +126,7 @@ def main(config_file: str) -> None:
 
     jobs: list[Job] = []
     for zoom in [ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS]:
-        for region in sorted(config.regions[zoom], key=lambda region: region.iso_code):
+        for region in sorted(config.regions[zoom], key=lambda r: r.iso_code):
             output = f'{OUTPUT_PATH}/{region.iso_code}-{zoom.zoom}.osm'
             job = Job(region=region, zoom=zoom, osm_file=pathlib.Path(output))
             generate_osm(job)
