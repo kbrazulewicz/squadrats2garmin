@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-IS-iceland.img",
+  "description": "Squadrats, Iceland",
+  "mapname_prefix": "97352",
+  "zoom_14": [
+    "IS-*"
+  ],
+  "zoom_17": [
+    "IS-*"
+  ]
+}
