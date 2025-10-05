@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-AL-albania.img",
+  "description": "Squadrats, Albania",
+  "mapname_prefix": "97008",
+  "zoom_14": [
+    "AL-*"
+  ],
+  "zoom_17": [
+    "AL-*"
+  ]
+}
