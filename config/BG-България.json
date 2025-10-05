@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-BG-Bulgaria.img",
+  "description": "Squadrats, Bulgaria",
+  "mapname_prefix": "97100",
+  "zoom_14": [
+    "BG-*"
+  ],
+  "zoom_17": [
+    "BG-*"
+  ]
+}
