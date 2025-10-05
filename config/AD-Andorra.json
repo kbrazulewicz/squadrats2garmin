@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-AD-andorra.img",
+  "description": "Squadrats, Andorra",
+  "mapname_prefix": "97020",
+  "zoom_14": [
+    "AD"
+  ],
+  "zoom_17": [
+    "AD"
+  ]
+}
