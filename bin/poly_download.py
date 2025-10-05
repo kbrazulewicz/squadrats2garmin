@@ -122,7 +122,8 @@ for arg in sys.argv[1:]:
     # country wildcard (all subdivisions)
     match = re.match(r'^([A-Z]{2})-\*$', arg)
     if match:
-        for subdivision in pycountry.subdivisions.get(country_code=match.group(1)):
+        subdivisions = pycountry.subdivisions.get(country_code=match.group(1))
+        for subdivision in sorted(subdivisions, key=lambda subdivision: subdivision.code):
             code = subdivision.code
             osm_id = osm_id_resolver.get_id(code)
             download_poly(code=code, osm_id=osm_id)
