@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-NO-norway.img",
+  "description": "Squadrats, Norway",
+  "mapname_prefix": "97578",
+  "zoom_14": [
+    "NO-*"
+  ],
+  "zoom_17": [
+    "NO-*"
+  ]
+}
