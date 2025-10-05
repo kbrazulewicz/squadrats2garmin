@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-MD-moldova.img",
+  "description": "Squadrats, Moldova",
+  "mapname_prefix": "97498",
+  "zoom_14": [
+    "MD-*"
+  ],
+  "zoom_17": [
+    "MD-*"
+  ]
+}
