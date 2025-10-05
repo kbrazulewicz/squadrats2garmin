@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-MT-Malta.img",
+  "description": "Squadrats, Malta",
+  "mapname_prefix": "97470",
+  "zoom_14": [
+    "MT-*"
+  ],
+  "zoom_17": [
+    "MT-*"
+  ]
+}
