@@ -23,7 +23,7 @@ if ! [[ -r "${CONFIG_FILE}" ]]; then
     exit 1
 fi
 
-IMG_FILE=$(jq -r '.output' ${CONFIG_FILE})
+IMG_FILE=$(jq -r '.output' "${CONFIG_FILE}")
 
 # init
 mkdir -p ${OUTPUT_DIR}
