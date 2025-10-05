@@ -1,0 +1,11 @@
+{
+  "output": "dist/europe/squadrats-MC-monaco.img",
+  "description": "Squadrats, Monaco",
+  "mapname_prefix": "97492",
+  "zoom_14": [
+    "MC"
+  ],
+  "zoom_17": [
+    "MC"
+  ]
+}
