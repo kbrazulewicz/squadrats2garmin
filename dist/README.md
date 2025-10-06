@@ -1,4 +1,7 @@
-# How to upload Squadrats grid to your Garmin device?
+#### [🇵🇱 po polsku](README.pl-PL.md)
+
+# Adding Squadrats grid to your Garmin device.
+
 1. Download an IMG file for the area of your interest. 
 2. Copy the IMG file to the storage area of your Garmin device
 - manual for [Garmin Edge](https://www.dcrainmaker.com/2019/08/how-to-install-free-maps-on-your-garmin-edge.html) devices

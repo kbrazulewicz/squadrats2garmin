@@ -1,3 +1,4 @@
+#### [🇵🇱 po polsku](README.pl-PL.MD)
 # Squadrats2Garmin tools
 Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches.
 
@@ -20,22 +21,22 @@ Bike computers:
 
 Smartwatches
 - Garmin Descent
+- Garmin Enduro
 - Garmin epix
 - Garmin Fenix 8, 7, 6, 5X and 5 Plus
 - Garmin Forerunner 965, 945
 - Garmin MARQ
 - Garmin tactix
 
-## Downloading pre-made grids
-Please check [dist](dist) directory for pre-made grids.
-Contact me if your country/province is missing, and you don't like playing around with commandline tools.
+## Pre-made grids
+Please check [dist](dist) directory for pre-made grids. Use the [instructions](dist/README.md) and go explore!
 
-### How to upload pre-made grid to your Garmin device?
-Upload the IMG files to your [Garmin Edge](https://www.dcrainmaker.com/2019/08/how-to-install-free-maps-on-your-garmin-edge.html) or [Garmin watch](https://www.dcrainmaker.com/2019/08/how-to-installing-free-maps-on-your-garmin-fenix-5-plus-forerunner-945-or-marq-series-watch.html)
+Contact me if your country/province is missing.
 
 ## Generating your own grid
-You can generate your own grid using this project. This will require knowledge of git, Python and bash.
-```console
+You can generate your own grid using this project. 
+This will require knowledge of `git`, `Python` `bash` and access to a Linux or macOS computer. 
+```shell
 # install mkgmap tool
 $ sudo apt install mkgmap
 
@@ -52,12 +53,21 @@ $ source .venv/bin/activate
 ```
 
 Garmin-compatible grids are created by running `squadrats2garmin` script, passing a configuration file as an argument, ie.
-```console
+```shell
 # run the script
 $ ./squadrats2garmin.sh config/PL-Polska.json
 ```
 Read more about [configuration file format](config/README.md)  
 
+## FAQ
+### Can I see the collected Squadrats?
+No. At the moment you are able to see the Squadrats grid without the information about the collected ones.
+### How do I use the generated grids?
+You can use them on your Garmin device by following the [instructions](dist/README.md).
+### How do I generate my own grids?
+See [generating your own grid](#generating-your-own-grid) section.
+### How do I contact you?
+Create a new [issue](https://github.com/kbrazulewicz/squadrats2garmin/issues) in this project.
 <!--
 ## Notes
 ### Polygon clipping
