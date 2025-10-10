@@ -9,9 +9,10 @@
 
 ## Pre-made areas
 
-### Squadrats + squadratinhos
-[🇪🇺 Europe - listing](europe)
+### Large squares only (compatible with StatsHunters, VeloViewer and Squadrats)
+[🇪🇺 Europe](europe/squadrats-europe.img)
 
+### Large and small squares (for Squadrats users)
 [🇦🇱 Albania](europe/squadrats-AL-albania.img)  
 [🇦🇩 Andorra](europe/squadrats-AD-andorra.img)  
 [🇦🇹 Austria](europe/squadrats-AT-austria.img)  
@@ -54,7 +55,4 @@
 [🇨🇭 Switzerland](europe/squadrats-CH-switzerland.img)  
 [🇺🇦 Ukraine](europe/squadrats-UA-ukraine.img)  
 [🇬🇧 United Kingdom](europe/squadrats-GB-united-kingdom.img)  
-[🇻🇦 Vatican](europe/squadrats-VA-vatican.img)  
-
-### Squadrats only
-[🇪🇺 Europe](europe/squadrats-europe.img)
+[🇻🇦 Vatican](europe/squadrats-VA-vatican.img)
