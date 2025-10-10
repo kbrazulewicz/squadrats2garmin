@@ -63,19 +63,13 @@ class Subdivision(Region):
 
     def get_name(self) -> str:
         """
-        Returns the formatted name of the entity by cleaning predefined geographic
-        suffixes and appending the country name.
+        Returns the formatted name of the entity by appending the country name.
 
         Returns
         str
-            A formatted string containing the country name followed by the cleaned
-            name of the entity.
+            A formatted string containing the country name followed by the name of the entity.
         """
-        name = (self.name
-                .replace(", Unitatea teritorială autonomă (UTAG)", "")
-                .replace(", unitatea teritorială din", "")
-                )
-        return f'{self.get_country_name()} - {name}'
+        return f'{self.get_country_name()} - {self.name}'
 
 class Country(Region):
     __country: pycountry.db.Country
@@ -97,14 +91,7 @@ class Country(Region):
         return self.iso_code
 
     def get_country_name(self) -> str:
-        """
-        Retrieves the name of the country with specific formatting adjustments.
-
-        Returns:
-            str: The formatted name of the country.
-        """
-        return (self.__country.name
-                .replace(", Republic of", ""))
+        return self.__country.name
 
     def add_subdivision(self, iso_code:str, poly: Poly):
         if iso_code not in self.__subdivisions:

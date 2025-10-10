@@ -84,7 +84,7 @@ def generate_osm(job: Job):
 
 
 def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
-    with open(output, "w", encoding="utf-8") as config_file:
+    with (open(output, "w", encoding="utf-8") as config_file):
         # images with 'unicode' encoding are not displayed on Garmin
         config_file.write("latin1\n")
         config_file.write("transparent\n")
@@ -100,6 +100,8 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         sequence_number = 1
         for job in jobs:
             # mapname_prefix is 5 characters long, and we're adding 3 digits of a sequence number
+            if sequence_number > 999:
+                raise ValueError("Too many mapfiles to merge")
             config_file.write(f'mapname={config.mapname_prefix}{sequence_number:03d}\n')
             config_file.write(f'country-name={job.region.get_country_name()}\n')
             config_file.write(f'country-abbr={job.region.get_country_code()}\n')
@@ -107,7 +109,16 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
                 config_file.write(f'region-name={job.region.get_name()}\n')
                 config_file.write(f'region-abbr={job.region.get_code()}\n')
 
-            config_file.write(f'description={job.region.get_name()} @{job.zoom.zoom}\n')
+
+            description = (f'{job.region.get_name()} @{job.zoom.zoom}'
+                # country name replacements
+                .replace(", Republic of", "")
+                .replace("Bosnia and Herzegovina", "BiH")
+                # region name replacements
+                .replace(", Unitatea teritorială autonomă (UTAG)", "")
+                .replace(", unitatea teritorială din", "")
+                           )
+            config_file.write(f'description={description}\n')
             config_file.write(f'input-file={job.osm_file.relative_to(OUTPUT_PATH)}\n')
 
             sequence_number += 1
