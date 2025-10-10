@@ -10,7 +10,7 @@
 ## Pre-made areas
 
 ### Squadrats + squadratinhos
-[🇪🇺 Europe](europe)
+[🇪🇺 Europe - listing](europe)
 
 [🇦🇱 Albania](europe/squadrats-AL-albania.img)  
 [🇦🇩 Andorra](europe/squadrats-AD-andorra.img)  
@@ -57,3 +57,4 @@
 [🇻🇦 Vatican](europe/squadrats-VA-vatican.img)  
 
 ### Squadrats only
+[🇪🇺 Europe](europe/squadrats-europe.img)
