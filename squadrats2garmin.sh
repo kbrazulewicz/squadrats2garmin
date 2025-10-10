@@ -40,5 +40,5 @@ mkgmap --read-config="${MKGMAP_OPTS}"
 if [[ -r "${OUTPUT_DIR}/gmapsupp.img" ]]; then
     mkdir -p "$(dirname "${IMG_FILE}")"
     mv ${OUTPUT_DIR}/gmapsupp.img "${IMG_FILE}"
-    # rm ${OUTPUT_DIR}/*
+    rm ${OUTPUT_DIR}/*
 fi
