@@ -19,6 +19,9 @@ Bike computers:
 - Edge 8x0 series
 - Edge 5x0 series (starting from Edge 520)
 
+Handheld devices:
+- GPSMAP 62, 65
+
 Smartwatches
 - Garmin Descent
 - Garmin Enduro

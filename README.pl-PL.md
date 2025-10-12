@@ -19,6 +19,9 @@ Komputery rowerowe:
 - Edge 8x0
 - Edge 5x0 (od Edge 520)
 
+Urządzenia podręczne:
+- GPSMAP 62, 65
+
 Zegarki
 - Garmin Descent
 - Garmin Enduro
