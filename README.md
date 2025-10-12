@@ -63,23 +63,23 @@ $ ./squadrats2garmin.sh config/PL-Polska.json
 Read more about [configuration file format](config/README.md)  
 
 ## FAQ
+
 ### Can I see the collected Squadrats?
 No. At the moment you are able to see the Squadrats grid without the information about the collected ones.
+
 ### How do I use the generated grids?
 You can use them on your Garmin device by following the [instructions](dist/README.md).
+
 ### How do I generate my own grids?
 See [generating your own grid](#generating-your-own-grid) section.
+
+### How do I display the grid in a different color?
+To change the default colors you need to generate a custom grid.
+- see [generating your own grid](#generating-your-own-grid) section for details how to generate your own grid
+- see `typ/squadrats.typ.txt` file for customization options
+  - `Type=0x11400` - Squadratinhos grid
+  - `Type=0x11410` - Squadrats grid (zoomed out)
+  - `Type=0x11411` - Squadrats grid (zoomed in)
+
 ### How do I contact you?
 Create a new [issue](https://github.com/kbrazulewicz/squadrats2garmin/issues) in this project.
-<!--
-## Notes
-### Polygon clipping
-- convex polygon (wypukły)
-- concave polygon (wklęsły)
-- [Point in polygon](https://en.wikipedia.org/wiki/Point_in_polygon)
-- [Line clipping](https://en.wikipedia.org/wiki/Line_clipping)
-- [Weiler–Atherton clipping algorithm](https://en.wikipedia.org/wiki/Weiler%E2%80%93Atherton_clipping_algorithm)
-- [Sutherland–Hodgman clipping algorithm](https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm) (convex only)
-- [Vatti clipping algorithm](https://en.wikipedia.org/wiki/Vatti_clipping_algorithm)
-- [Greiner–Hormann clipping algorithm](https://en.wikipedia.org/wiki/Greiner%E2%80%93Hormann_clipping_algorithm)
--->

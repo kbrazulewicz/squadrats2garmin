@@ -73,5 +73,13 @@ Zainstaluj gotowe siatki na swoim urządzeniu Garmin według [instrukcji](dist/R
 ### Jak mogę stworzyć własną siatkę?
 Zobacz sekcję [Generowanie własnej siatki kwadratów](#generowanie-własnej-siatki-kwadratów).
 
+### Jak mogę wyświetlić siatkę w innym kolorze?
+Aby użyć własnych kolorów potrzebujesz zmienić domyślną konfigurację.
+- zobacz sekcję [Generowanie własnej siatki kwadratów](#generowanie-własnej-siatki-kwadratów)
+- dokonaj niezbędnych modyfikcaji w pliku `typ/squadrats.typ.txt`
+  - `Type=0x11400` - siatka Squadratinhos
+  - `Type=0x11410` - siatka Squadrats (mapa w niskiej skali)
+  - `Type=0x11411` - siatka Squadrats (mapa w wysokiej skali)
+
 ### Jak mogę się z Tobą skontaktować?
 Utwórz nowe [issue](https://github.com/kbrazulewicz/squadrats2garmin/issues) w projekcie.
