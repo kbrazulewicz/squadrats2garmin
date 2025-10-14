@@ -83,3 +83,8 @@ To change the default colors you need to generate a custom grid.
 
 ### How do I contact you?
 Create a new [issue](https://github.com/kbrazulewicz/squadrats2garmin/issues) in this project.
+
+### How can I support you?
+Buy me a coffee:
+
+<a href="https://buycoffee.to/cykloprzygoda" target="_blank"><img src="https://buycoffee.to/img/share-button-primary.png" style="width: 156px; height: 40px" alt="Postaw mi kawę na buycoffee.to"></a>

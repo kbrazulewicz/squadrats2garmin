@@ -83,3 +83,6 @@ Aby użyć własnych kolorów potrzebujesz zmienić domyślną konfigurację.
 
 ### Jak mogę się z Tobą skontaktować?
 Utwórz nowe [issue](https://github.com/kbrazulewicz/squadrats2garmin/issues) w projekcie.
+
+### Jak mogę Cię wspierać?
+<a href="https://buycoffee.to/cykloprzygoda" target="_blank"><img src="https://buycoffee.to/img/share-button-primary.png" style="width: 156px; height: 40px" alt="Postaw mi kawę na buycoffee.to"></a>
