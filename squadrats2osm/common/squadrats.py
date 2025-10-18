@@ -1,3 +1,6 @@
+import logging
+import xml.etree.ElementTree as ET
+
 from collections import defaultdict
 from typing import NamedTuple
 
@@ -11,6 +14,8 @@ from common.timer import timeit
 from common.zoom import Zoom
 
 TAGS_WAY = [('name', 'grid')]
+
+logger = logging.getLogger(__name__)
 
 class UnexpectedBoundaryException(Exception):
     """Raised when an unexpected Boundary is found
@@ -298,3 +303,34 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
 
 def _osm_node(x: int, y: int, job: Job) -> Node:
     return Node(id=job.next_id(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))
+
+
+def generate_osm(job: Job):
+    logger.info(f'Generating OSM: {job} -> {job.osm_file}')
+
+    with timeit(f'{job}: generate_tiles'):
+        tiles = generate_tiles(poly=job.region.poly, job=job)
+
+    logger.debug(f'{job}: {sum(map(len, tiles.values()))} tiles')
+
+    with timeit(f'{job}: generate_grid'):
+        ways = generate_grid(tiles=tiles, job=job)
+
+    logger.debug(f'{job}: {len(ways)} ways')
+
+    unique_nodes = set()
+    with timeit(f'{job}: collect unique nodes'):
+        for w in ways:
+            unique_nodes.update(w.nodes)
+
+    logger.debug(f'{job}: {len(unique_nodes)} unique nodes')
+
+    with timeit(f'{job}: build OSM document'):
+        document = ET.Element("osm", {"version": '0.6'})
+        document.extend(n.to_xml() for n in sorted(unique_nodes, key=lambda node: node.id))
+        document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.id))
+        ET.indent(document)
+
+    with timeit(f'{job}: write OSM document {job.osm_file}'):
+        job.osm_file.parent.mkdir(parents=True, exist_ok=True)
+        ET.ElementTree(document).write(job.osm_file, encoding='utf-8', xml_declaration=True)
