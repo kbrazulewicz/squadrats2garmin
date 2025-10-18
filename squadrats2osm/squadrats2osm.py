@@ -63,9 +63,7 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         config_file.write("gmapsupp\n")
 
 
-def main(config_file: str) -> None:
-    logger.info("Generate poly index")
-    poly_index = RegionIndex("config/polygons")
+def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
     logger.info("Load input job")
     config = Config.parse(config_file, poly_index)
 
@@ -83,8 +81,12 @@ def main(config_file: str) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+
+    logger.info("Generate poly index")
+    poly_index = RegionIndex("config/polygons")
+
     match len(sys.argv):
         case 2:
-            main(sys.argv[1])
+            process_input_job(sys.argv[1], poly_index)
         case _:
-            main("config/squadrats2osm.json")
+            process_input_job("config/squadrats2osm.json", poly_index)
