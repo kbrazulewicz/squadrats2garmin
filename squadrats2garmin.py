@@ -115,7 +115,7 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser(description='Generate OSM files with Squadrats grid')
     parser.add_argument('-k', '--keep-output', action='store_true', help='Keep output files after processing')
-    parser.add_argument('-c', '--config-files', nargs='+', metavar='CONFIG_FILE', help='List of config files to process')
+    parser.add_argument('-c', '--config-files', required=True, nargs='+', metavar='CONFIG_FILE', help='List of config files to process')
     args = parser.parse_args()
 
     # create poly index
