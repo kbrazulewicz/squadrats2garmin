@@ -76,7 +76,7 @@ Zobacz sekcję [Generowanie własnej siatki kwadratów](#generowanie-własnej-si
 ### Jak mogę wyświetlić siatkę w innym kolorze?
 Aby użyć własnych kolorów potrzebujesz zmienić domyślną konfigurację.
 - zobacz sekcję [Generowanie własnej siatki kwadratów](#generowanie-własnej-siatki-kwadratów)
-- dokonaj niezbędnych modyfikcaji w pliku `typ/squadrats.typ.txt`
+- dokonaj niezbędnych modyfikcaji w pliku `etc/squadrats.typ.txt`
   - `Type=0x11400` - siatka Squadratinhos
   - `Type=0x11410` - siatka Squadrats (mapa w niskiej skali)
   - `Type=0x11411` - siatka Squadrats (mapa w wysokiej skali)

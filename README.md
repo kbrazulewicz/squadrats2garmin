@@ -76,7 +76,7 @@ See [generating your own grid](#generating-your-own-grid) section.
 ### How do I display the grid in a different color?
 To change the default colors you need to generate a custom grid.
 - see [generating your own grid](#generating-your-own-grid) section for details how to generate your own grid
-- see `typ/squadrats.typ.txt` file for customization options
+- see `etc/squadrats.typ.txt` file for customization options
   - `Type=0x11400` - Squadratinhos grid
   - `Type=0x11410` - Squadrats grid (zoomed out)
   - `Type=0x11411` - Squadrats grid (zoomed in)

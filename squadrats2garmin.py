@@ -20,7 +20,7 @@ IMG_SERIES_NAME = "Squadrats grid"
 logger = logging.getLogger(__name__)
 
 
-def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
+def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]) -> pathlib.Path:
     with (open(output, "w", encoding="utf-8") as config_file):
         # images with 'unicode' encoding are not displayed on Garmin
         config_file.write("latin1\n")
@@ -32,7 +32,7 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         config_file.write("product-id=1\n")
         config_file.write(f'series-name={IMG_SERIES_NAME}\n')
 
-        config_file.write("style-file=style/squadrats-default.style\n")
+        config_file.write("style-file=etc/squadrats-default.style\n")
 
         sequence_number = 1
         for job in jobs:
@@ -59,10 +59,12 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
 
             sequence_number += 1
 
-        config_file.write("input-file=../typ/squadrats.typ.txt\n")
+        config_file.write("input-file=../etc/squadrats.typ.txt\n")
 
         config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
+
+        return
 
 def generate_garmin_img(config: Config, jobs: list[Job]):
     # generate mkgmap config file
