@@ -58,7 +58,7 @@ $ source .venv/bin/activate
 Garmin-compatible grids are created by running `squadrats2garmin` script, passing a configuration file as an argument, ie.
 ```shell
 # run the script
-$ ./squadrats2garmin.sh config/PL-Polska.json
+$ python3 squadrats2garmin.py -c config/PL-Polska.json
 ```
 Read more about [configuration file format](config/README.md)  
 

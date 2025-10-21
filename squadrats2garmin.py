@@ -1,6 +1,8 @@
+import argparse
 import logging
+import os
 import pathlib
-import sys
+import subprocess
 
 from common.config import Config
 from common.job import Job
@@ -8,7 +10,7 @@ from common.region import RegionIndex, Subdivision
 from common.squadrats import generate_osm
 from common.zoom import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
-OUTPUT_PATH = "output"
+OUTPUT_PATH = pathlib.Path("output")
 
 IMG_FAMILY_ID = 9724
 IMG_MAPNAME_PREFIX_LENGTH = 5
@@ -23,7 +25,7 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         # images with 'unicode' encoding are not displayed on Garmin
         config_file.write("latin1\n")
         config_file.write("transparent\n")
-        config_file.write(f'output-dir={OUTPUT_PATH}\n')
+        config_file.write(f'output-dir={OUTPUT_PATH.name}\n')
 
         config_file.write(f'family-id={IMG_FAMILY_ID}\n')
         config_file.write(f'family-name={IMG_FAMILY_NAME}\n')
@@ -62,6 +64,28 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
 
+def generate_garmin_img(config: Config, jobs: list[Job]):
+    # generate mkgmap config file
+    mkgmap_config = OUTPUT_PATH / 'mkgmap.conf'
+    generate_mkgmap_config(output=mkgmap_config, config=config, jobs=jobs)
+
+    # generate Garmin IMG file
+    logger.info(f'Creating Garmin IMG file {config.output}')
+    result = subprocess.run(
+        ['mkgmap', f'--read-config={str(mkgmap_config)}'],
+        cwd=os.getcwd(),
+        capture_output=True,
+        text=True
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f'mkgmap failed: {result.stderr}')
+
+    gmapsupp_img = OUTPUT_PATH / 'gmapsupp.img'
+    if not gmapsupp_img.exists():
+        raise RuntimeError(f'gmapsupp.img not found')
+
+    gmapsupp_img.move(config.output)
+
 
 def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
     logger.info("Load input job")
@@ -70,23 +94,40 @@ def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
     jobs: list[Job] = []
     for zoom in [ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS]:
         for region in sorted(config.regions[zoom], key=lambda r: r.iso_code):
-            output = f'{OUTPUT_PATH}/{region.iso_code}-{zoom.zoom}.osm'
-            job = Job(region=region, zoom=zoom, osm_file=pathlib.Path(output))
+            osm_file = OUTPUT_PATH / f'{region.iso_code}-{zoom.zoom}.osm'
+            job = Job(region=region, zoom=zoom, osm_file=osm_file)
             generate_osm(job)
             jobs.append(job)
 
-    mkgmap_config = pathlib.Path(f'{OUTPUT_PATH}/mkgmap.conf')
-    generate_mkgmap_config(output=mkgmap_config, config=config, jobs=jobs)
+    generate_garmin_img(config=config, jobs=jobs)
+
+def remove_all_files(directory_path):
+    directory = pathlib.Path(directory_path)
+    for file_path in directory.iterdir():
+        if file_path.is_file():
+            file_path.unlink()
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
+    # parse arguments
+    parser = argparse.ArgumentParser(description='Generate OSM files with Squadrats grid')
+    parser.add_argument('-k', '--keep-output', action='store_true', help='Keep output files after processing')
+    parser.add_argument('-c', '--config-files', nargs='+', metavar='CONFIG_FILE', help='List of config files to process')
+    args = parser.parse_args()
+
+    # create poly index
     logger.info("Generate poly index")
     poly_index = RegionIndex("config/polygons")
 
-    match len(sys.argv):
-        case 2:
-            process_input_job(sys.argv[1], poly_index)
-        case _:
-            process_input_job("config/squadrats2osm.json", poly_index)
+    # create output directory
+    if not OUTPUT_PATH.exists():
+        OUTPUT_PATH.mkdir(parents=True)
+
+    # process input jobs
+    for config_file in args.config_files:
+        remove_all_files(OUTPUT_PATH)
+        process_input_job(config_file, poly_index)
+        if not args.keep_output:
+            remove_all_files(OUTPUT_PATH)

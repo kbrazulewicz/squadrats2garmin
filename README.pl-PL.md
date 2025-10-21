@@ -58,7 +58,7 @@ $ source .venv/bin/activate
 Aby wygenerować siatkę uruchom skrypt `squadrats2garmin` jako argument podając ścieżkę do pliku konfiguracyjnego, np.
 ```shell
 # uruchom skrypt
-$ ./squadrats2garmin.sh config/PL-Polska.json
+$ python3 squadrats2garmin.py -c config/PL-Polska.json
 ```
 Dowiedz się więcej o [formacie pliku konfiguracyjnego](config/README.md)
 
