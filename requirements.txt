@@ -1,7 +1,14 @@
+astroid==4.0.1
 certifi==2025.8.3
 charset-normalizer==3.4.3
+dill==0.4.0
 idna==3.10
+isort==7.0.0
+mccabe==0.7.0
 overpy==0.7
+platformdirs==4.5.0
 pycountry==24.6.1
+pylint==4.0.2
 requests==2.32.5
+tomlkit==0.13.3
 urllib3==2.5.0
