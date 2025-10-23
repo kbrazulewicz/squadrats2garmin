@@ -1,11 +1,16 @@
 import json
 import logging
+import pathlib
 
 from common.region import Region, RegionIndex
 from common.zoom import Zoom, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
+OUTPUT_PATH = pathlib.Path("output")
+
 IMG_FAMILY_ID = 9724
 IMG_MAPNAME_PREFIX_LENGTH = 5
+IMG_FAMILY_NAME = "Squadrats2Garmin 2025"
+IMG_SERIES_NAME = "Squadrats grid"
 
 logger = logging.getLogger(__name__)
 
