@@ -110,13 +110,14 @@ def remove_all_files(directory: pathlib.Path):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
     # parse arguments
     parser = argparse.ArgumentParser(description='Generate OSM files with Squadrats grid')
-    parser.add_argument('-k', '--keep-output', action='store_true', help='Keep output files after processing')
-    parser.add_argument('-c', '--config-files', required=True, nargs='+', metavar='CONFIG_FILE', help='List of config files to process')
+    parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
+    parser.add_argument('-k', '--keep-output', action='store_true', help='keep output files after processing')
+    parser.add_argument('-c', '--config-files', required=True, nargs='+', metavar='CONFIG_FILE', help='list of config files to process')
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
     # create poly index
     logger.info("Generate poly index")
