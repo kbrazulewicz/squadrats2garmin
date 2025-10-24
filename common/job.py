@@ -2,9 +2,20 @@
 """
 import pathlib
 
-from common.id import Id
 from common.region import Region
 from common.zoom import Zoom
+
+class Id:
+    """Unique id generator
+    """
+    id: int = -1
+
+    def next_id(self) -> int:
+        """Generate the next unique id
+        """
+        self.id -= 1
+        return self.id
+
 
 class Job:
     """Representation of the job context
