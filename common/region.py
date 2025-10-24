@@ -1,21 +1,29 @@
+"""Classes and functions to handle ISO-3166 regions
+"""
 import logging
+import re
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import pycountry
-import re
 
 from common.poly import Poly
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 def get_country_code(code: str) -> str:
+    """Match the input string with a pattern for ISO 3166-1 alpha-2 country code
+    """
     return code if re.match(r'^[A-Z]{2}$', code) else None
 
 def get_subdivision_code(code: str) -> str:
+    """Match the input string with a pattern for ISO 3166-2 subdivision code.
+    """
     return code if re.match(r'^[A-Z0-9]{1,3}$', code) else None
 
 class Region(ABC):
+    """Abstract base class for regions
+    """
     iso_code: str
     name: str
     poly: Poly
@@ -26,22 +34,29 @@ class Region(ABC):
         self.poly = poly
 
     def get_code(self) -> str:
+        """Get region code
+        """
         return self.iso_code
 
     def get_name(self) -> str:
+        """Get region name
+        """
         return self.name
 
     @abstractmethod
     def get_country_code(self) -> str:
-        pass
+        """Get region country code
+        """
 
     @abstractmethod
     def get_country_name(self) -> str:
-        pass
-
+        """Get region country name
+        """
 
 
 class Subdivision(Region):
+    """Representation of the ISO 3166-2 subdivision
+    """
     country: Region
 
     def __init__(self, *, country: Region, iso_code: str, poly: Poly):
@@ -71,9 +86,13 @@ class Subdivision(Region):
         """
         return f'{self.get_country_name()} - {self.name}'
 
+
 class Country(Region):
+    """Representation of the ISO 3166-1 country
+    """
     __country: pycountry.db.Country
     __subdivisions: dict[str, list[Subdivision]]
+    """subdivisions multimap (should be a regular dictionary but Norway was special)"""
 
     def __init__(self, iso_code: str, poly: Poly = None) -> None:
         country = pycountry.countries.get(alpha_2=iso_code)
@@ -85,7 +104,7 @@ class Country(Region):
         self.__subdivisions = {}
 
     def __repr__(self):
-        return f'Country({self.iso_code}, {[subdivision for subdivision in self.get_all_subdivisions()]})'
+        return f'Country({self.iso_code}, {self.get_all_subdivisions()})'
 
     def get_country_code(self) -> str:
         return self.iso_code
@@ -93,22 +112,29 @@ class Country(Region):
     def get_country_name(self) -> str:
         return self.__country.name
 
-    def add_subdivision(self, iso_code:str, poly: Poly):
+    def add_subdivision(self, iso_code: str, poly: Poly):
+        """Register a subdivision poly file
+        """
         if iso_code not in self.__subdivisions:
             self.__subdivisions[iso_code] = []
-        self.__subdivisions[iso_code].append(Subdivision(country=self, iso_code=iso_code, poly=poly))
+        self.__subdivisions[iso_code].append(
+            Subdivision(country=self, iso_code=iso_code, poly=poly)
+        )
 
     def get_all_subdivisions(self) -> list[Subdivision]:
+        """Get the list of all subdivisions"""
         return [subdivision for sublist in self.__subdivisions.values() for subdivision in sublist]
 
     def get_subdivisions(self, iso_code: str) -> list[Subdivision]:
+        """Get the list of subdivisions for a subdivision code"""
         if iso_code in self.__subdivisions:
             return self.__subdivisions[iso_code]
-        else:
-            return None
+        return None
 
 
 class RegionIndex:
+    """Loads polygons for all regions found in the filesystem
+    """
     country: dict[str, Country]
     subdivision: dict[str, Subdivision]
 
@@ -117,13 +143,14 @@ class RegionIndex:
         self.subdivision = {}
 
         root = Path(root_path)
-        logging.debug(f'Building polygon index from "{root}"')
+        logging.debug('Building polygon index from "%s"', root)
         for path in root.rglob('*.poly'):
             codes = path.stem.split("-", maxsplit=2)
 
             country_code = get_country_code(codes[0])
             if not country_code:
-                logging.debug(f'File {path} does not contain country code in the name - skipping')
+                logging.debug('File "%s" does not contain country code in the name - skipping',
+                              path)
                 continue
 
             # country poly
@@ -150,6 +177,12 @@ class RegionIndex:
         self.country[country_code].add_subdivision(iso_code=iso_code, poly=Poly(poly_path))
 
     def select_regions(self, regions: list[str]) -> list[Region]:
+        """Select regions from index according to the given list of regions.
+        Regions can be specified by:
+        - country code (country is returned)
+        - country wildcard ie PL-* (all subdivisions of a country are returned)
+        - subdivision code (subdivision is returned)
+        """
         result: list[Region] = []
         for region in regions:
             country_code, sep, subdivision_code = region.partition("-")
@@ -178,6 +211,9 @@ class RegionIndex:
                 if subdivisions:
                     result.extend(subdivisions)
                 else:
-                    raise ValueError(f'Missing border definitions for subdivision {region} in country {country.name}')
+                    raise ValueError(
+                        f'Missing border definitions for subdivision {region} '
+                        f'in country {country.name}'
+                    )
 
         return result
