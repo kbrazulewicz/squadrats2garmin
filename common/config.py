@@ -1,3 +1,5 @@
+"""Classes and methods to process input jobs
+"""
 import json
 import logging
 import pathlib
@@ -15,6 +17,8 @@ IMG_SERIES_NAME = "Squadrats grid"
 logger = logging.getLogger(__name__)
 
 class Config:
+    """Representation of a single input job
+    """
     output: str
     description: str
     mapname_prefix: str
@@ -37,9 +41,11 @@ class Config:
 
     @staticmethod
     def parse(filename: str, poly_index: RegionIndex) -> Config:
-        logger.debug(f'Processing input job from "{filename}"')
-        with open(filename) as configFile:
-            config = json.load(configFile)
+        """Parse input file and return a Config object
+        """
+        logger.debug('Processing input job from %s', filename)
+        with open(filename, encoding='UTF-8') as config_file:
+            config = json.load(config_file)
 
             regions_14: list[Region] = poly_index.select_regions(regions=config['zoom_14'])
             regions_17: list[Region] = poly_index.select_regions(regions=config['zoom_17'])
