@@ -1,3 +1,5 @@
+"""Classes and methods to handle map tiles
+"""
 from common.zoom import Zoom
 
 class Tile:
@@ -28,13 +30,14 @@ class Tile:
     def __repr__(self) -> str:
         """Overrides the default implementation
         """
-        return 'x {}; y {}; zoom {}'.format(self.x, self.y, self.zoom.zoom)
+        return f'Tile(x={self.x}, y={self.y}, zoom={self.zoom})'
 
     def __key(self):
-        # not including zoom because we do not expect existence of tiles of different zooms at the same time
-        return (self.x, self.y)
+        # not including zoom because we do not expect existence of tiles
+        # of different zooms at the same time
+        return self.x, self.y
 
-    def __hash(self):
+    def __hash__(self):
         return hash(self.__key())
 
     def __eq__(self, __o: object) -> bool:
@@ -45,7 +48,7 @@ class Tile:
         return NotImplemented
 
     @staticmethod
-    def tile_at(lat: float, lon: float, zoom: Zoom):
+    def tile_at(lat: float, lon: float, zoom: Zoom) -> Tile:
         """ Lon./lat. to tile numbers """
-        (xtile, ytile) = zoom.tile(lat=lat, lon=lon)
-        return Tile(x=xtile, y=ytile, zoom=zoom)
+        tile_x, tile_y = zoom.tile(lat=lat, lon=lon)
+        return Tile(x=tile_x, y=tile_y, zoom=zoom)
