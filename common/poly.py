@@ -1,3 +1,5 @@
+"""Classes and methods to read polygon files
+"""
 from common.geo import BoundingBox
 from common.geo import Coordinates
 
@@ -5,14 +7,13 @@ from common.geo import Coordinates
 class PolyFileFormatException(Exception):
     """Raised when a POLY file has an incorrect format
     """
-    pass
 
 class PolyFileIncorrectFiletypeException(PolyFileFormatException):
     """Raised when a POLY file has an incorrect filetype
     """
     def __init__(self, filetype) -> None:
         self.filetype = filetype
-        super().__init__('Expecting polygon filetype, got "{}" instead'.format(filetype))
+        super().__init__(f'Expecting polygon filetype, got "{filetype}" instead')
 
 class Poly:
     """Polygon definition
@@ -30,7 +31,7 @@ class Poly:
     coords: list[list[Coordinates]]
 
     def __init__(self, filename):
-        with open(filename) as f:
+        with open(filename, encoding='UTF-8') as f:
             self.coords = self.__read_poly_file(f)
 
         self.bounding_box = self.__calculate_bounding_box()
@@ -46,9 +47,10 @@ class Poly:
 
         for line in file:
             line = line.strip()
-            if line == 'END': break
-            if line.startswith('!'): 
-                """ ignore holes in the polygon """
+            if line == 'END':
+                break
+            if line.startswith('!'):
+                # ignore holes in the polygon
                 self.__read_polygon(file)
             else:
                 coords.append(self.__read_polygon(file))
@@ -62,7 +64,8 @@ class Poly:
 
         for line in file:
             line = line.strip()
-            if line == 'END': break
+            if line == 'END':
+                break
             (poly_lon, poly_lat) = (map(float, line.split()))
             coords.append(Coordinates(lat = poly_lat, lon = poly_lon))
 
