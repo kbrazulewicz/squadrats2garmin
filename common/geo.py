@@ -1,3 +1,4 @@
+"""Classes and methods for geo coordinates concepts"""
 from typing import NamedTuple
 
 class BoundingBox(NamedTuple):
@@ -7,7 +8,7 @@ class BoundingBox(NamedTuple):
     e: float
     s: float
     w: float
-    
+
 class Coordinates(NamedTuple):
     """Representation of the geographical coordinates
     
