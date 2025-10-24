@@ -1,3 +1,5 @@
+"""Classes and methods for creating a job context for a single region
+"""
 import pathlib
 
 from common.id import Id
@@ -23,4 +25,6 @@ class Job:
         return f'{self.region.iso_code}@{self.zoom.zoom}'
 
     def next_id(self) -> int:
+        """Generate id for the next OSM element
+        """
         return self._id.next_id()
