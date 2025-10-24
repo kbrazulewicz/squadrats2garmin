@@ -1,3 +1,5 @@
+"""Conversion between geo and tile coordinates for different zoom levels
+"""
 import math
 
 class Zoom:
@@ -16,32 +18,35 @@ class Zoom:
     def __repr__(self) -> str:
         """Override the default implementation
         """
-        return f"Zoom(zoom={self.zoom})"
-
-    def __key(self):
-        return self.zoom
+        return f'Zoom(zoom={self.zoom})'
 
     def __hash__(self):
-        return hash(self.__key())
+        return hash(self.zoom)
 
     def __eq__(self, __o: object) -> bool:
         """Override the default implementation
         """
         if isinstance(__o, Zoom):
-            return self.__key() == __o.__key()
+            return self.zoom == __o.zoom
         return NotImplemented
 
     def lat(self, y: int) -> float:
+        """Return the latitude of the north edge of the tile with y coordinate
+        """
         return math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / self.n))))
-    
+
     def lon(self, x: int) -> float:
-        return x / self.n * 360.0 - 180.0    
-    
+        """Return the longitude of the west edge of the tile with x coordinate
+        """
+        return x / self.n * 360.0 - 180.0
+
     def tile(self, lat: float, lon: float) -> tuple[int, int]:
-        xtile = int((lon + 180.0) / 360.0 * self.n)
-        ytile = int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self.n)
-        return (xtile, ytile)
-    
+        """Return tile coordinates (x, y) for given latitude and longitude
+        """
+        tile_x = int((lon + 180.0) / 360.0 * self.n)
+        tile_y = int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self.n)
+        return tile_x, tile_y
+
 # number of tiles: 4^14 = 268 435 456
 # number of nodes: (2^14 + 1)^2 = 268 468 225
 ZOOM_SQUADRATS: Zoom = Zoom(zoom = 14)
@@ -49,4 +54,3 @@ ZOOM_SQUADRATS: Zoom = Zoom(zoom = 14)
 # number of tiles: 4^17 = 17 179 869 184
 # number of nodes: (2^17 + 1)^2 = 17 180 131 329
 ZOOM_SQUADRATINHOS: Zoom = Zoom(zoom = 17)
-
