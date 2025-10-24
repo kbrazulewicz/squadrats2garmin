@@ -1,3 +1,7 @@
+"""Functions to provide interface to mkgmap tool
+
+See https://www.mkgmap.org.uk/
+"""
 import logging
 import os
 import pathlib
@@ -9,8 +13,11 @@ from common.region import Subdivision
 
 logger = logging.getLogger(__name__)
 
-def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]) -> pathlib.Path:
-    with (open(output, "w", encoding="utf-8") as config_file):
+
+def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
+    """Generate mkgmap config file
+    """
+    with open(output, 'w', encoding='UTF-8') as config_file:
         # images with 'unicode' encoding are not displayed on Garmin
         config_file.write("latin1\n")
         config_file.write("transparent\n")
@@ -53,9 +60,9 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
 
-        return
 
 def generate_garmin_img(config: Config, jobs: list[Job]):
+    """Generate a single Garmin IMG file from multiple jobs"""
     # generate mkgmap config file
     mkgmap_config = OUTPUT_PATH / 'mkgmap.conf'
     generate_mkgmap_config(output=mkgmap_config, config=config, jobs=jobs)
@@ -66,13 +73,14 @@ def generate_garmin_img(config: Config, jobs: list[Job]):
         ['mkgmap', f'--read-config={str(mkgmap_config)}'],
         cwd=os.getcwd(),
         capture_output=True,
-        text=True
+        text=True,
+        check=False
     )
     if result.returncode != 0:
         raise RuntimeError(f'mkgmap failed: {result.stderr}')
 
     gmapsupp_img = OUTPUT_PATH / 'gmapsupp.img'
     if not gmapsupp_img.exists():
-        raise RuntimeError(f'gmapsupp.img not found')
+        raise RuntimeError('gmapsupp.img not found')
 
     gmapsupp_img.move(config.output)
