@@ -26,6 +26,7 @@ def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
 
     generate_garmin_img(config=config, jobs=jobs)
 
+
 def remove_all_files(directory: pathlib.Path):
     """Remove all files from a directory"""
     for file_path in directory.iterdir():
@@ -33,7 +34,7 @@ def remove_all_files(directory: pathlib.Path):
             file_path.unlink()
 
 
-if __name__ == "__main__":
+def main():
     # parse arguments
     parser = argparse.ArgumentParser(description='Generate OSM files with Squadrats grid')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -61,3 +62,6 @@ if __name__ == "__main__":
         process_input_job(config_file=config_file, poly_index=poly_index)
         if not args.keep_output:
             remove_all_files(OUTPUT_PATH)
+
+if __name__ == "__main__":
+    main()

@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 class UnexpectedBoundaryException(Exception):
     """Raised when an unexpected Boundary is found
     """
-    pass
 
 class Boundary(NamedTuple):
     """Representation of the geographical coordinates
@@ -50,7 +49,8 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
             contour_tiles[boundary.y].append(boundary)
 
     with timeit(f'{job}: fill contours'):
-        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)), contour_tiles.items()))
+        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)),
+                        contour_tiles.items()))
 
 def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
     """Intersection of a line with a horizontal gridline
@@ -73,62 +73,62 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
 
     boundaries: list[Boundary] = []
 
-    dLat = b.lat - a.lat
-    (tileA, tileB) = [zoom.tile(lat = point.lat, lon = point.lon) for point in (a, b)]
-    minY = min(tileA[1], tileB[1])
-    maxY = max(tileA[1], tileB[1])
+    lat_delta = b.lat - a.lat
+    (tile_a, tile_b) = [zoom.tile(lat = point.lat, lon = point.lon) for point in (a, b)]
+    min_y = min(tile_a[1], tile_b[1])
+    max_y = max(tile_a[1], tile_b[1])
 
-    if dLat < 0:
+    if lat_delta < 0:
         # southward
-        for y in range(minY, maxY + 1):
+        for y in range(min_y, max_y + 1):
             lon1: float = None
             lon2: float = None
 
-            if y == minY:
+            if y == min_y:
                 lon1 = a.lon
             else:
                 lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
-            if y == maxY:
+            if y == max_y:
                 lon2 = b.lon
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
             boundaries.append(Boundary('R', y, max(lon1, lon2)))
 
-    elif dLat > 0:
+    elif lat_delta > 0:
         # northward
-        for y in range(minY, maxY + 1):
+        for y in range(min_y, max_y + 1):
             lon1: float = None
             lon2: float = None
 
-            if y == minY:
+            if y == min_y:
                 lon1 = b.lon
             else:
                 lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
-            if y == maxY:
+            if y == max_y:
                 lon2 = a.lon
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
             boundaries.append(Boundary('L', y, min(lon1, lon2)))
-    
-    elif dLat == 0:
-        y = minY
-        minX = min(tileA[1], tileB[1])
-        maxX = max(tileA[1], tileB[1])
+
+    elif lat_delta == 0:
+        y = min_y
+        min_x = min(tile_a[1], tile_b[1])
+        max_x = max(tile_a[1], tile_b[1])
 
         lon1: float = None
         lon2: float = None
 
-        for x in range(minX, maxX + 1):
-            if x == minX:
+        for x in range(min_x, max_x + 1):
+            if x == min_x:
                 lon1 = min(a.lon, b.lon)
             else:
                 lon1 = zoom.lon(x) if lon2 is None else lon2
-                
-            if x == maxX:
+
+            if x == max_x:
                 lon2 = max(a.lon, b.lon)
             else:
                 lon2 = zoom.lon(x + 1)
@@ -148,11 +148,17 @@ def generate_contour_for_polygon_area(poly_area: list[Coordinates], zoom: Zoom) 
 
     return boundaries
 
+
 def generate_contour_for_polygon(poly: Poly, job: Job) -> list[Boundary]:
-    return [b for area in poly.coords for b in generate_contour_for_polygon_area(poly_area=area, zoom=job.zoom)]
+    return [
+        b
+        for area in poly.coords
+        for b in generate_contour_for_polygon_area(poly_area=area, zoom=job.zoom)
+    ]
 
 def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
-    # sort the list by longitude and LR (important in case of the same longitude the L boundary needs preceed the R boundary)
+    # sort the list by longitude and LR
+    # (important in case of the same longitude the L boundary needs to preceed the R boundary)
     row.sort(key=lambda b: (b.lon, 0 if b.lr == 'R' else 1))
     return _generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
 
@@ -182,7 +188,6 @@ def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Ti
 
 
 def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int]:
-    
     if west is None:
         raise UnexpectedBoundaryException('West boundary not set')
 
@@ -190,13 +195,15 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
         raise UnexpectedBoundaryException('East boundary not set')
 
     if west.y != east.y:
-        raise UnexpectedBoundaryException('Boundaries on a different row. west={}, east={}'.format(west, east))
+        raise UnexpectedBoundaryException(
+            f'Boundaries on a different row. west={west}, east={east}'
+        )
 
     lat = zoom.lat(west.y)
-    (westX, westY) = zoom.tile(lat=lat, lon=west.lon)
-    (eastX, eastY) = zoom.tile(lat=lat, lon=east.lon)
+    (west_x, west_y) = zoom.tile(lat=lat, lon=west.lon)
+    (east_x, east_y) = zoom.tile(lat=lat, lon=east.lon)
 
-    return range(westX, eastX + 1)
+    return range(west_x, east_x + 1)
 
 
 def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
@@ -212,91 +219,111 @@ def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
 
     return tiles
 
-def node_cache_get_or_compute(nodeCache: dict, x, y, zoom) -> Node:
+def node_cache_get_or_compute(node_cache: dict, x, y, zoom) -> Node:
     k = (x, y)
-    if k in nodeCache:
-        return nodeCache[k]
-    else:
-        node = _osm_node(x, y, zoom)
-        nodeCache[k] = node
-        return node
+    if k in node_cache:
+        return node_cache[k]
+
+    node = _osm_node(x, y, zoom)
+    node_cache[k] = node
+    return node
 
 def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
 
-    if not tiles: return []
+    if not tiles:
+        return []
 
     ways: list[Way] = []
 
     # sort tiles by y, x
-    tilesByY = tiles
+    tiles_by_y = tiles
 
     # find the horizontal ranges
-    rangesByY = {y: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.x for tile in row]))) for (y, row) in tilesByY.items()}
+    ranges_by_y = {
+        y: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.x for tile in row])))
+        for (y, row) in tiles_by_y.items()
+    }
 
     # generate horizontal lines
-    prevY = None
-    for y in sorted(rangesByY.keys()):
-        if prevY is None or prevY + 1 != y:
+    prev_y = None
+    for y in sorted(ranges_by_y.keys()):
+        if prev_y is None or prev_y + 1 != y:
             # first row or a gap - generate top edge
-            ways.extend(_create_horizontal_ways_for_ranges(y=y, ranges=rangesByY[y], job=job))
-        
-        if y + 1 in rangesByY:
-            # generate bottom edge between current and next row
-            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=util.merge_ranges(rangesByY[y] + rangesByY[y + 1]), job=job))
-        else:
-            # generate bottom edge when next row is empty    
-            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=rangesByY[y], job=job))
+            ways.extend(_create_horizontal_ways_for_ranges(y=y, ranges=ranges_by_y[y], job=job))
 
-        prevY = y
+        if y + 1 in ranges_by_y:
+            # generate bottom edge between current and next row
+            ways.extend(
+                _create_horizontal_ways_for_ranges(
+                    y=y + 1,
+                    ranges=util.merge_ranges(ranges_by_y[y] + ranges_by_y[y + 1]),
+                    job=job))
+        else:
+            # generate bottom edge when next row is empty
+            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=ranges_by_y[y], job=job))
+
+        prev_y = y
 
     # sort tiles by x, y
-    tilesByX = defaultdict(list)
+    tiles_by_x = defaultdict(list)
     for row in tiles.values():
         for tile in row:
-            tilesByX[tile.x].append(tile)
+            tiles_by_x[tile.x].append(tile)
 
     # find the vertical ranges
-    rangesByX = {x: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.y for tile in column]))) for (x, column) in tilesByX.items()}
+    ranges_by_x = {
+        x: util.make_ranges_end_inclusive(util.find_ranges(sorted([tile.y for tile in column])))
+        for (x, column) in tiles_by_x.items()
+    }
 
     # generate vertical lines
-    prevX = None
-    for x in sorted(rangesByX.keys()):
-        if prevX is None or prevX + 1 != x:
+    prev_x = None
+    for x in sorted(ranges_by_x.keys()):
+        if prev_x is None or prev_x + 1 != x:
             # first column or a gap - generate left edge
-            ways.extend(_create_vertical_ways_for_ranges(x=x, ranges=rangesByX[x], job=job))
-        
-        if x + 1 in rangesByX:
-            # generate right edge between current and next column
-            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=util.merge_ranges(rangesByX[x] + rangesByX[x + 1]), job=job))
-        else:
-            # generate right edge when next column is empty    
-            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=rangesByX[x], job=job))
+            ways.extend(_create_vertical_ways_for_ranges(x=x, ranges=ranges_by_x[x], job=job))
 
-        prevX = x
+        if x + 1 in ranges_by_x:
+            # generate right edge between current and next column
+            ways.extend(
+                _create_vertical_ways_for_ranges(
+                    x=x + 1,
+                    ranges=util.merge_ranges(ranges_by_x[x] + ranges_by_x[x + 1]),
+                    job=job)
+            )
+        else:
+            # generate right edge when next column is empty
+            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=ranges_by_x[x], job=job))
+
+        prev_x = x
 
     return ways
 
 def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:
         return []
-    
+
     ways: list[Way] = []
 
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for x in range)
-        ways.append(Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
+        ways.append(
+            Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+        )
 
     return ways
 
 def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:
         return []
-    
+
     ways: list[Way] = []
 
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for y in range)
-        ways.append(Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)]))
+        ways.append(
+            Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+        )
 
     return ways
 
@@ -306,24 +333,25 @@ def _osm_node(x: int, y: int, job: Job) -> Node:
 
 
 def generate_osm(job: Job):
-    logger.info(f'Generating OSM: {job} -> {job.osm_file}')
+    """Generate a single OSM file for a job"""
+    logger.info('Generating OSM: %s -> %s', job, job.osm_file)
 
     with timeit(f'{job}: generate_tiles'):
         tiles = generate_tiles(poly=job.region.poly, job=job)
 
-    logger.debug(f'{job}: {sum(map(len, tiles.values()))} tiles')
+    logger.debug('%s: %d tiles', job, sum(map(len, tiles.values())))
 
     with timeit(f'{job}: generate_grid'):
         ways = generate_grid(tiles=tiles, job=job)
 
-    logger.debug(f'{job}: {len(ways)} ways')
+    logger.debug('%s: %d ways', job, len(ways))
 
     unique_nodes = set()
     with timeit(f'{job}: collect unique nodes'):
         for w in ways:
             unique_nodes.update(w.nodes)
 
-    logger.debug(f'{job}: {len(unique_nodes)} unique nodes')
+    logger.debug('%s: %d unique nodes', job, len(unique_nodes))
 
     with timeit(f'{job}: build OSM document'):
         document = ET.Element("osm", {"version": '0.6'})
