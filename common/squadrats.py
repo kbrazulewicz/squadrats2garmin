@@ -2,10 +2,10 @@ import logging
 import xml.etree.ElementTree as ET
 
 from collections import defaultdict
+from pygeoif.geometry import Point
 from typing import NamedTuple
 
 from common import util
-from common.geo import Coordinates
 from common.job import Job
 from common.osm import Node, Way
 from common.poly import Poly
@@ -52,20 +52,20 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
         return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)),
                         contour_tiles.items()))
 
-def line_intersection(a: Coordinates, b: Coordinates, lat: float) -> float:
+def line_intersection(a: Point, b: Point, lat: float) -> float:
     """Intersection of a line with a horizontal gridline
     """
-    return (a.lon * (b.lat - lat) - b.lon * (a.lat - lat)) / (b.lat - a.lat)
+    return (a.x * (b.y - lat) - b.x * (a.y - lat)) / (b.y - a.y)
 
 
-def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[Boundary]:
+def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
     """Calculate intersections of a line with the grid
 
     Parameters
     ----------
-    a : Coordinates
+    a : Point
         line beginning
-    b : Coordinates
+    b : Point
         line end
     zoom : Zoom
         zoom
@@ -73,8 +73,8 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
 
     boundaries: list[Boundary] = []
 
-    lat_delta = b.lat - a.lat
-    (tile_a, tile_b) = [zoom.tile(lat = point.lat, lon = point.lon) for point in (a, b)]
+    lat_delta = b.y - a.y
+    (tile_a, tile_b) = [zoom.tile(lat = point.y, lon = point.x) for point in (a, b)]
     min_y = min(tile_a[1], tile_b[1])
     max_y = max(tile_a[1], tile_b[1])
 
@@ -85,12 +85,12 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
             lon2: float = None
 
             if y == min_y:
-                lon1 = a.lon
+                lon1 = a.x
             else:
                 lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
             if y == max_y:
-                lon2 = b.lon
+                lon2 = b.x
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
@@ -103,12 +103,12 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
             lon2: float = None
 
             if y == min_y:
-                lon1 = b.lon
+                lon1 = b.x
             else:
                 lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
 
             if y == max_y:
-                lon2 = a.lon
+                lon2 = a.x
             else:
                 lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
 
@@ -124,12 +124,12 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
 
         for x in range(min_x, max_x + 1):
             if x == min_x:
-                lon1 = min(a.lon, b.lon)
+                lon1 = min(a.x, b.x)
             else:
                 lon1 = zoom.lon(x) if lon2 is None else lon2
 
             if x == max_x:
-                lon2 = max(a.lon, b.lon)
+                lon2 = max(a.x, b.x)
             else:
                 lon2 = zoom.lon(x + 1)
 
@@ -138,9 +138,9 @@ def line_grid_intersections(a: Coordinates, b: Coordinates, zoom: Zoom) -> list[
 
     return boundaries
 
-def generate_contour_for_polygon_area(poly_area: list[Coordinates], zoom: Zoom) -> list[Boundary]:
+def generate_contour_for_polygon_area(poly_area: list[Point], zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
-    point_a: Coordinates = None
+    point_a: Point = None
     for point_b in poly_area:
         if point_a is not None:
             boundaries.extend(line_grid_intersections(a=point_a, b=point_b, zoom=zoom))
@@ -308,7 +308,7 @@ def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], jo
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for x in range)
         ways.append(
-            Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+            Way(way_id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
         )
 
     return ways
@@ -322,14 +322,14 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for y in range)
         ways.append(
-            Way(id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+            Way(way_id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
         )
 
     return ways
 
 
 def _osm_node(x: int, y: int, job: Job) -> Node:
-    return Node(id=job.next_id(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))
+    return Node(node_id=job.next_id(), lon=job.zoom.lon(x), lat=job.zoom.lat(y))
 
 
 def generate_osm(job: Job):
@@ -355,8 +355,8 @@ def generate_osm(job: Job):
 
     with timeit(f'{job}: build OSM document'):
         document = ET.Element("osm", {"version": '0.6'})
-        document.extend(n.to_xml() for n in sorted(unique_nodes, key=lambda node: node.id))
-        document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.id))
+        document.extend(n.to_xml() for n in sorted(unique_nodes, key=lambda node: node.element_id))
+        document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.element_id))
         ET.indent(document)
 
     with timeit(f'{job}: write OSM document {job.osm_file}'):

@@ -15,7 +15,7 @@ class Coordinates(NamedTuple):
     Attributes
     ----------
     lat : float
-        latitute
+        latitude
     lon : float
         longitude
     """

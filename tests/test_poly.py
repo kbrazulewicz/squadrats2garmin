@@ -1,12 +1,11 @@
 import unittest
 
+from pygeoif.geometry import Point
+
 from common.poly import BoundingBox
 from common.poly import Poly
-from common.poly import Coordinates
 from common.poly import PolyFileIncorrectFiletypeException
-from common.tile import Tile
-from common.zoom import ZOOM_SQUADRATS
-from common.zoom import ZOOM_SQUADRATINHOS
+
 
 class TestPoly(unittest.TestCase):
     def test_wrong_format(self):
@@ -25,10 +24,10 @@ class TestPoly(unittest.TestCase):
         poly = Poly('tests/test_poly/pomorskie.poly')
         self.assertEqual(len(poly.coords), 1)
         self.assertEqual(len(poly.coords[0]), 215)
-        self.assertEqual(poly.coords[0][0], Coordinates(lat = 54.58, lon = 16.68))
-        self.assertEqual(poly.coords[0][100], Coordinates(lat = 53.665, lon = 18.465))
-        self.assertEqual(poly.coords[0][200], Coordinates(lat = 54.35, lon = 16.79))
-        self.assertEqual(poly.coords[0][214], Coordinates(lat = 54.58, lon = 16.68))
+        self.assertEqual(poly.coords[0][0], Point(y = 54.58, x = 16.68))
+        self.assertEqual(poly.coords[0][100], Point(y = 53.665, x = 18.465))
+        self.assertEqual(poly.coords[0][200], Point(y = 54.35, x = 16.79))
+        self.assertEqual(poly.coords[0][214], Point(y = 54.58, x = 16.68))
         
     def test_bounding_box(self):
         """

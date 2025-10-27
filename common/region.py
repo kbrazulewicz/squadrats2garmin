@@ -59,7 +59,7 @@ class Subdivision(Region):
     """
     country: Region
 
-    def __init__(self, *, country: Region, iso_code: str, poly: Poly):
+    def __init__(self, country: Region, iso_code: str, poly: Poly):
         subdivision = pycountry.subdivisions.get(code=iso_code)
         if not subdivision:
             raise ValueError(f'Illegal subdivision ISO code {iso_code}')

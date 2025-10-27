@@ -1,19 +1,23 @@
 """Classes and methods to read polygon files
 """
+from pygeoif.geometry import Point
+
 from common.geo import BoundingBox
-from common.geo import Coordinates
 
 
 class PolyFileFormatException(Exception):
     """Raised when a POLY file has an incorrect format
     """
 
+
 class PolyFileIncorrectFiletypeException(PolyFileFormatException):
     """Raised when a POLY file has an incorrect filetype
     """
+
     def __init__(self, filetype) -> None:
         self.filetype = filetype
         super().__init__(f'Expecting polygon filetype, got "{filetype}" instead')
+
 
 class Poly:
     """Polygon definition
@@ -24,11 +28,11 @@ class Poly:
 
     Attributes
     ----------
-    coords : list[list[Coordinates]]
+    coords : list[list[Point]]
         list of polygons
     """
 
-    coords: list[list[Coordinates]]
+    coords: list[list[Point]]
 
     def __init__(self, filename):
         with open(filename, encoding='UTF-8') as f:
@@ -57,7 +61,7 @@ class Poly:
 
         return coords
 
-    def __read_polygon(self, file):
+    def __read_polygon(self, file) -> list[Point]:
         """Read a single polygon section
         """
         coords = []
@@ -67,7 +71,7 @@ class Poly:
             if line == 'END':
                 break
             (poly_lon, poly_lat) = (map(float, line.split()))
-            coords.append(Coordinates(lat = poly_lat, lon = poly_lon))
+            coords.append(Point(x=poly_lon, y=poly_lat))
 
         return coords
 
@@ -80,9 +84,9 @@ class Poly:
         w = 180
         for poly in self.coords:
             for point in poly:
-                n = max(n, point.lat)
-                s = min(s, point.lat)
-                e = max(e, point.lon)
-                w = min(w, point.lon)
+                n = max(n, point.y)
+                s = min(s, point.y)
+                e = max(e, point.x)
+                w = min(w, point.x)
 
-        return BoundingBox(n = n, e = e, s = s, w = w)
+        return BoundingBox(n=n, e=e, s=s, w=w)
