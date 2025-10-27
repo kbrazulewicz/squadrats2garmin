@@ -2,7 +2,9 @@ import logging
 import xml.etree.ElementTree as ET
 
 from collections import defaultdict
-from pygeoif.geometry import Point
+
+from pygeoif import MultiPolygon
+from pygeoif.geometry import Point, Polygon
 from typing import NamedTuple
 
 from common import util
@@ -44,7 +46,7 @@ def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
     contour_tiles = defaultdict(list)
 
     with timeit(f'{job}: generate contours'):
-        contours: list[Boundary] = generate_contour_for_polygon(poly=poly, job=job)
+        contours: list[Boundary] = generate_contour_for_multipolygon(multipolygon=poly.coords, job=job)
         for boundary in contours:
             contour_tiles[boundary.y].append(boundary)
 
@@ -138,10 +140,10 @@ def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
 
     return boundaries
 
-def generate_contour_for_polygon_area(poly_area: list[Point], zoom: Zoom) -> list[Boundary]:
+def generate_contour_for_polygon(polygon: Polygon, zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
     point_a: Point = None
-    for point_b in poly_area:
+    for point_b in polygon.exterior.geoms:
         if point_a is not None:
             boundaries.extend(line_grid_intersections(a=point_a, b=point_b, zoom=zoom))
         point_a = point_b
@@ -149,11 +151,11 @@ def generate_contour_for_polygon_area(poly_area: list[Point], zoom: Zoom) -> lis
     return boundaries
 
 
-def generate_contour_for_polygon(poly: Poly, job: Job) -> list[Boundary]:
+def generate_contour_for_multipolygon(multipolygon: MultiPolygon, job: Job) -> list[Boundary]:
     return [
         b
-        for area in poly.coords
-        for b in generate_contour_for_polygon_area(poly_area=area, zoom=job.zoom)
+        for area in multipolygon.geoms
+        for b in generate_contour_for_polygon(polygon=area, zoom=job.zoom)
     ]
 
 def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
@@ -209,8 +211,9 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
 def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
     """Generate tiles for the rectangular area defined by the polygon bounding box
     """
-    tile_nw = Tile.tile_at(poly.bounding_box.n, poly.bounding_box.w, zoom)
-    tile_se = Tile.tile_at(poly.bounding_box.s, poly.bounding_box.e, zoom)
+    bounds = poly.bounding_box
+    tile_nw = Tile.tile_at(lon=bounds[0], lat=bounds[3], zoom=zoom)
+    tile_se = Tile.tile_at(lon=bounds[2], lat=bounds[1], zoom=zoom)
     tiles = []
 
     for y in range(tile_nw.y, tile_se.y + 1):

@@ -1,8 +1,7 @@
 import unittest
 
-from pygeoif.geometry import Point
+from pygeoif.geometry import Point, Polygon
 
-from common.poly import BoundingBox
 from common.poly import Poly
 from common.poly import PolyFileIncorrectFiletypeException
 
@@ -23,18 +22,21 @@ class TestPoly(unittest.TestCase):
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
         self.assertEqual(len(poly.coords), 1)
-        self.assertEqual(len(poly.coords[0]), 215)
-        self.assertEqual(poly.coords[0][0], Point(y = 54.58, x = 16.68))
-        self.assertEqual(poly.coords[0][100], Point(y = 53.665, x = 18.465))
-        self.assertEqual(poly.coords[0][200], Point(y = 54.35, x = 16.79))
-        self.assertEqual(poly.coords[0][214], Point(y = 54.58, x = 16.68))
+
+        pomorskie: Polygon = next(poly.coords.geoms)
+
+        self.assertEqual(213, len(pomorskie.exterior.geoms))
+        self.assertEqual(Point(16.68, 54.58), pomorskie.exterior.geoms[0])
+        self.assertEqual(Point(18.355, 53.665), pomorskie.exterior.geoms[100])
+        self.assertEqual(Point(16.8, 54.39), pomorskie.exterior.geoms[200])
+        self.assertEqual(Point(16.68, 54.58), pomorskie.exterior.geoms[212])
         
     def test_bounding_box(self):
         """
         Test that bounding box is properly calculated
         """
         poly = Poly('tests/test_poly/pomorskie.poly')
-        self.assertEqual(poly.bounding_box, BoundingBox(n = 54.855, e = 19.67, s = 53.47, w = 16.68))
+        self.assertEqual((16.68, 53.47, 19.67, 54.855), poly.bounding_box)
 
 
 if __name__ == '__main__':

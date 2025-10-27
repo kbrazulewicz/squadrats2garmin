@@ -1,8 +1,8 @@
 """Classes and methods to read polygon files
 """
-from pygeoif.geometry import Point
-
-from common.geo import BoundingBox
+from pygeoif import LinearRing, MultiPolygon
+from pygeoif.geometry import LineString, Polygon
+from pygeoif.types import Point2D
 
 
 class PolyFileFormatException(Exception):
@@ -28,26 +28,30 @@ class Poly:
 
     Attributes
     ----------
-    coords : list[list[Point]]
+    coords : MultiPolygon
         list of polygons
     """
 
-    coords: list[list[Point]]
+    coords: MultiPolygon
 
     def __init__(self, filename):
         with open(filename, encoding='UTF-8') as f:
             self.coords = self.__read_poly_file(f)
 
-        self.bounding_box = self.__calculate_bounding_box()
+    @property
+    def bounding_box(self):
+        return self.coords.bounds
 
-    def __read_poly_file(self, file):
+    def __read_poly_file(self, file) -> MultiPolygon:
         """Read the contents of the POLY file
         """
         filetype = file.readline().rstrip('\n')
         if filetype != 'polygon':
             raise PolyFileIncorrectFiletypeException(filetype)
 
-        coords = []
+        polygons: list[Polygon] = []
+        shell: LineString = None
+        holes: list[LineString] = []
 
         for line in file:
             line = line.strip()
@@ -55,38 +59,29 @@ class Poly:
                 break
             if line.startswith('!'):
                 # ignore holes in the polygon
-                self.__read_polygon(file)
+                holes.append(self.__read_linear_ring(file))
             else:
-                coords.append(self.__read_polygon(file))
+                if shell:
+                    polygons.append(Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
+                    shell = None
+                    holes = []
+                shell = self.__read_linear_ring(file)
 
-        return coords
+        if shell:
+            polygons.append(Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
 
-    def __read_polygon(self, file) -> list[Point]:
+        return MultiPolygon(polygons=[p.coords for p in polygons])
+
+    def __read_linear_ring(self, file) -> LinearRing:
         """Read a single polygon section
         """
-        coords = []
+        geoms: list[Point2D] = []
 
         for line in file:
             line = line.strip()
             if line == 'END':
                 break
             (poly_lon, poly_lat) = (map(float, line.split()))
-            coords.append(Point(x=poly_lon, y=poly_lat))
+            geoms.append((poly_lon, poly_lat))
 
-        return coords
-
-    def __calculate_bounding_box(self) -> BoundingBox:
-        """Calculate bounding box for a given set of coordinates
-        """
-        n = -90
-        s = 90
-        e = -180
-        w = 180
-        for poly in self.coords:
-            for point in poly:
-                n = max(n, point.y)
-                s = min(s, point.y)
-                e = max(e, point.x)
-                w = min(w, point.x)
-
-        return BoundingBox(n=n, e=e, s=s, w=w)
+        return LinearRing(geoms)
