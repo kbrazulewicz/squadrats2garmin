@@ -6,8 +6,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import pycountry
+from pygeoif import MultiPolygon
 
-from common.poly import Poly
+from common.poly import parse_poly_file
 
 logger = logging.getLogger(__name__)
 
@@ -24,24 +25,32 @@ def get_subdivision_code(code: str) -> str:
 class Region(ABC):
     """Abstract base class for regions
     """
-    iso_code: str
-    name: str
-    poly: Poly
+    _iso_code: str
+    _name: str
+    _geoms: MultiPolygon
 
-    def __init__(self, iso_code: str, name: str, poly: Poly):
-        self.iso_code = iso_code
-        self.name = name
-        self.poly = poly
+    def __init__(self, iso_code: str, name: str, coordinates: MultiPolygon):
+        self._iso_code = iso_code
+        self._name = name
+        self._geoms = coordinates
 
-    def get_code(self) -> str:
+    @property
+    def code(self) -> str:
         """Get region code
         """
-        return self.iso_code
+        return self._iso_code
 
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         """Get region name
         """
-        return self.name
+        return self._name
+
+    @property
+    def coords(self) -> MultiPolygon:
+        """Get region coordinates
+        """
+        return self._geoms
 
     @abstractmethod
     def get_country_code(self) -> str:
@@ -59,16 +68,16 @@ class Subdivision(Region):
     """
     country: Region
 
-    def __init__(self, country: Region, iso_code: str, poly: Poly):
+    def __init__(self, country: Region, iso_code: str, coordinates: MultiPolygon):
         subdivision = pycountry.subdivisions.get(code=iso_code)
         if not subdivision:
             raise ValueError(f'Illegal subdivision ISO code {iso_code}')
 
-        super().__init__(iso_code=iso_code, name=subdivision.name, poly=poly)
+        super().__init__(iso_code=iso_code, name=subdivision.name, coordinates=coordinates)
         self.country = country
 
     def __repr__(self):
-        return f'Subdivision("{self.iso_code}")'
+        return f'Subdivision("{self.code}")'
 
     def get_country_code(self) -> str:
         return self.country.get_country_code()
@@ -76,7 +85,8 @@ class Subdivision(Region):
     def get_country_name(self) -> str:
         return self.country.get_country_name()
 
-    def get_name(self) -> str:
+    @property
+    def name(self) -> str:
         """
         Returns the formatted name of the entity by appending the country name.
 
@@ -84,7 +94,7 @@ class Subdivision(Region):
         str
             A formatted string containing the country name followed by the name of the entity.
         """
-        return f'{self.get_country_name()} - {self.name}'
+        return f'{self.get_country_name()} - {self._name}'
 
 
 class Country(Region):
@@ -94,31 +104,31 @@ class Country(Region):
     __subdivisions: dict[str, list[Subdivision]]
     """subdivisions multimap (should be a regular dictionary but Norway was special)"""
 
-    def __init__(self, iso_code: str, poly: Poly = None) -> None:
+    def __init__(self, iso_code: str, coordinates: MultiPolygon = None) -> None:
         country = pycountry.countries.get(alpha_2=iso_code)
         if not country:
             raise ValueError(f'Illegal country ISO code {iso_code}')
 
-        super().__init__(iso_code=iso_code, name=country.name, poly=poly)
+        super().__init__(iso_code=iso_code, name=country.name, coordinates=coordinates)
         self.__country = country
         self.__subdivisions = {}
 
     def __repr__(self):
-        return f'Country({self.iso_code}, {self.get_all_subdivisions()})'
+        return f'Country({self._iso_code}, {self.get_all_subdivisions()})'
 
     def get_country_code(self) -> str:
-        return self.iso_code
+        return self.code
 
     def get_country_name(self) -> str:
         return self.__country.name
 
-    def add_subdivision(self, iso_code: str, poly: Poly):
+    def add_subdivision(self, iso_code: str, coordinates: MultiPolygon):
         """Register a subdivision poly file
         """
         if iso_code not in self.__subdivisions:
             self.__subdivisions[iso_code] = []
         self.__subdivisions[iso_code].append(
-            Subdivision(country=self, iso_code=iso_code, poly=poly)
+            Subdivision(country=self, iso_code=iso_code, coordinates=coordinates)
         )
 
     def get_all_subdivisions(self) -> list[Subdivision]:
@@ -166,7 +176,7 @@ class RegionIndex:
             self._add_subdivision(country_code, subdivision_code, path)
 
     def _add_country(self, country_code: str, poly_path: Path):
-        self.country[country_code] = Country(iso_code=country_code, poly=Poly(poly_path))
+        self.country[country_code] = Country(iso_code=country_code, coordinates=parse_poly_file(poly_path))
 
     def _add_subdivision(self, country_code: str, subdivision_code: str, poly_path: Path):
         iso_code = "-".join([country_code, subdivision_code])
@@ -174,7 +184,7 @@ class RegionIndex:
         if not country_code in self.country:
             self.country[country_code] = Country(iso_code=country_code)
 
-        self.country[country_code].add_subdivision(iso_code=iso_code, poly=Poly(poly_path))
+        self.country[country_code].add_subdivision(iso_code=iso_code, coordinates=parse_poly_file(poly_path))
 
     def select_regions(self, regions: list[str]) -> list[Region]:
         """Select regions from index according to the given list of regions.
@@ -198,7 +208,7 @@ class RegionIndex:
             country = self.country[country_code]
             if not subdivision_code:
                 # selected country
-                if country.poly:
+                if country.coords:
                     result.append(country)
                 else:
                     raise ValueError(f'Missing border definitions for country {country_code}')

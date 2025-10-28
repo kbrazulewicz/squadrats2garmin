@@ -10,7 +10,6 @@ from typing import NamedTuple
 from common import util
 from common.job import Job
 from common.osm import Node, Way
-from common.poly import Poly
 from common.tile import Tile
 from common.timer import timeit
 from common.zoom import Zoom
@@ -40,13 +39,13 @@ class Boundary(NamedTuple):
     lon: float
 
 
-def generate_tiles(poly: Poly, job: Job) -> dict[int, list[Tile]]:
+def generate_tiles(poly: MultiPolygon, job: Job) -> dict[int, list[Tile]]:
     """Generate a list of tiles of a given zoom covering the entire polygon
     """
     contour_tiles = defaultdict(list)
 
     with timeit(f'{job}: generate contours'):
-        contours: list[Boundary] = generate_contour_for_multipolygon(multipolygon=poly.coords, job=job)
+        contours: list[Boundary] = generate_contour_for_multipolygon(multipolygon=poly, job=job)
         for boundary in contours:
             contour_tiles[boundary.y].append(boundary)
 
@@ -208,10 +207,10 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
     return range(west_x, east_x + 1)
 
 
-def _generate_tiles_by_bounding_box(poly: Poly, zoom: Zoom):
+def _generate_tiles_by_bounding_box(poly: MultiPolygon, zoom: Zoom):
     """Generate tiles for the rectangular area defined by the polygon bounding box
     """
-    bounds = poly.bounding_box
+    bounds = poly.bounds
     tile_nw = Tile.tile_at(lon=bounds[0], lat=bounds[3], zoom=zoom)
     tile_se = Tile.tile_at(lon=bounds[2], lat=bounds[1], zoom=zoom)
     tiles = []
@@ -340,7 +339,7 @@ def generate_osm(job: Job):
     logger.info('Generating OSM: %s -> %s', job, job.osm_file)
 
     with timeit(f'{job}: generate_tiles'):
-        tiles = generate_tiles(poly=job.region.poly, job=job)
+        tiles = generate_tiles(poly=job.region.coords, job=job)
 
     logger.debug('%s: %d tiles', job, sum(map(len, tiles.values())))
 

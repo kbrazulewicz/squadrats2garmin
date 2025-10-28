@@ -2,7 +2,7 @@ import unittest
 
 from pygeoif.geometry import Point, Polygon
 
-from common.poly import Poly
+from common.poly import parse_poly_file
 from common.poly import PolyFileIncorrectFiletypeException
 
 
@@ -12,7 +12,7 @@ class TestPoly(unittest.TestCase):
         Test that it can recognize a proper filetype
         """
         with self.assertRaises(PolyFileIncorrectFiletypeException) as cm:
-            poly = Poly('tests/test_poly/wrong_format.poly')
+            poly = parse_poly_file('tests/test_poly/wrong_format.poly')
 
         self.assertEqual(str(cm.exception), 'Expecting polygon filetype, got "not-polygon" instead')
 
@@ -20,10 +20,10 @@ class TestPoly(unittest.TestCase):
         """
         Test that it can load properly formatted POLY file
         """
-        poly = Poly('tests/test_poly/pomorskie.poly')
-        self.assertEqual(len(poly.coords), 1)
+        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
+        self.assertEqual(1, len(list(poly.geoms)))
 
-        pomorskie: Polygon = next(poly.coords.geoms)
+        pomorskie: Polygon = next(poly.geoms)
 
         self.assertEqual(213, len(pomorskie.exterior.geoms))
         self.assertEqual(Point(16.68, 54.58), pomorskie.exterior.geoms[0])
@@ -35,8 +35,8 @@ class TestPoly(unittest.TestCase):
         """
         Test that bounding box is properly calculated
         """
-        poly = Poly('tests/test_poly/pomorskie.poly')
-        self.assertEqual((16.68, 53.47, 19.67, 54.855), poly.bounding_box)
+        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
+        self.assertEqual((16.68, 53.47, 19.67, 54.855), poly.bounds)
 
 
 if __name__ == '__main__':

@@ -39,10 +39,10 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
             config_file.write(f'country-name={job.region.get_country_name()}\n')
             config_file.write(f'country-abbr={job.region.get_country_code()}\n')
             if isinstance(job.region, Subdivision):
-                config_file.write(f'region-name={job.region.get_name()}\n')
-                config_file.write(f'region-abbr={job.region.get_code()}\n')
+                config_file.write(f'region-name={job.region.name}\n')
+                config_file.write(f'region-abbr={job.region.code}\n')
 
-            description = (f'{job.region.get_name()} @{job.zoom.zoom}'
+            description = (f'{job.region.name} @{job.zoom.zoom}'
                            # country name replacements
                            .replace(", Republic of", "")
                            .replace("Bosnia and Herzegovina", "BiH")

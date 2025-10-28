@@ -4,7 +4,7 @@ import common.squadrats
 from pygeoif.geometry import Point
 
 from common.job import Job
-from common.poly import Poly
+from common.poly import parse_poly_file
 from common.region import Subdivision, Country
 from common.tile import Tile
 from common.zoom import ZOOM_SQUADRATS
@@ -44,7 +44,7 @@ class TestSquadrats(unittest.TestCase):
     def test_tiles_by_bounding_box(self):
         """Test that tiles are properly generated for the bounding box method
         """
-        poly = Poly('tests/test_poly/pomorskie.poly')
+        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
         squadrats = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
         self.assertEqual(len(squadrats), 14933)
         squadratinhos = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
@@ -192,8 +192,8 @@ class TestSquadrats(unittest.TestCase):
         """
         Test that tiles are properly generated
         """
-        poly = Poly('tests/test_poly/pomorskie.poly')
-        region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', poly=poly)
+        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
+        region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', coordinates=poly)
         squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None))
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
         squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None))

@@ -33,7 +33,7 @@ class Job:
         self._id = Id()
 
     def __str__(self) -> str:
-        return f'{self.region.iso_code}@{self.zoom.zoom}'
+        return f'{self.region.code}@{self.zoom.zoom}'
 
     def next_id(self) -> int:
         """Generate id for the next OSM element

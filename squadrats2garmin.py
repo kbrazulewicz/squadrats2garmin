@@ -18,8 +18,8 @@ def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
 
     jobs: list[Job] = []
     for zoom in [ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS]:
-        for region in sorted(config.regions[zoom], key=lambda r: r.iso_code):
-            osm_file = OUTPUT_PATH / f'{region.iso_code}-{zoom.zoom}.osm'
+        for region in sorted(config.regions[zoom], key=lambda r: r.code):
+            osm_file = OUTPUT_PATH / f'{region.code}-{zoom.zoom}.osm'
             job = Job(region=region, zoom=zoom, osm_file=osm_file)
             generate_osm(job)
             jobs.append(job)
