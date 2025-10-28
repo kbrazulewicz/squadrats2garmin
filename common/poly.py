@@ -5,6 +5,8 @@ POLY file contains lines with longitude and latitude of points creating polygon.
 Points are ordered clockwise
 https://wiki.openstreetmap.org/wiki/Osmosis/Polygon_Filter_File_Format
 """
+from pathlib import Path
+from typing import cast
 from pygeoif import LinearRing, MultiPolygon
 from pygeoif.geometry import LineString, Polygon
 from pygeoif.types import Point2D
@@ -24,10 +26,10 @@ class PolyFileIncorrectFiletypeException(PolyFileFormatException):
         super().__init__(f'Expecting polygon filetype, got "{filetype}" instead')
 
 
-def parse_poly_file(filename: str) -> MultiPolygon:
+def parse_poly_file(path: Path) -> MultiPolygon:
     """Read the contents of the POLY file
     """
-    with open(filename, encoding='UTF-8') as f:
+    with path.open(encoding='UTF-8') as f:
         filetype = f.readline().rstrip('\n')
         if filetype != 'polygon':
             raise PolyFileIncorrectFiletypeException(filetype)
@@ -42,13 +44,12 @@ def parse_poly_file(filename: str) -> MultiPolygon:
                 break
             if line.startswith('!'):
                 # ignore holes in the polygon
-                holes.append(__read_linear_ring(f))
+                holes.append(LinearRing([p for p in _read_points(f)]))
             else:
                 if shell:
                     polygons.append(Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
-                    shell = None
                     holes = []
-                shell = __read_linear_ring(f)
+                shell = LinearRing([p for p in _read_points(f)])
 
         if shell:
             polygons.append(Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
@@ -56,16 +57,9 @@ def parse_poly_file(filename: str) -> MultiPolygon:
         return MultiPolygon(polygons=[p.coords for p in polygons])
 
 
-def __read_linear_ring(file) -> LinearRing:
-    """Read a single polygon section
-    """
-    geoms: list[Point2D] = []
-
+def _read_points(file):
     for line in file:
         line = line.strip()
         if line == 'END':
             break
-        (poly_lon, poly_lat) = (map(float, line.split()))
-        geoms.append((poly_lon, poly_lat))
-
-    return LinearRing(geoms)
+        yield cast("Point2D", tuple(float(c) for c in line.split()))

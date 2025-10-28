@@ -1,4 +1,6 @@
 import unittest
+from pathlib import Path
+
 import common.squadrats
 
 from pygeoif.geometry import Point
@@ -15,25 +17,25 @@ class TestSquadrats(unittest.TestCase):
     """Test functionality provided by the Squadrats module"""
 
     def test_line_intersection(self):
-        pointA: Point = Point(y=0, x=0)
-        pointB: Point = Point(y=5, x=7)
+        point_a: Point = Point(y=0, x=0)
+        point_b: Point = Point(y=5, x=7)
 
         # intersections with the ends of the line
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=pointA.y), pointA.x)
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=pointB.y), pointB.x)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_a.y), point_a.x)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_b.y), point_b.x)
 
         # other intersections
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=1), 1.4)
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=2), 2.8)
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=3), 4.2)
-        self.assertEqual(common.squadrats.line_intersection(a=pointA, b=pointB, lat=4), 5.6)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=1), 1.4)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=2), 2.8)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=3), 4.2)
+        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=4), 5.6)
 
     def test_line_grid_intersections(self):
-        pointS: Point = Point(y=0.0, x=0.0)
-        pointN: Point = Point(y=0.1, x=0.1)
+        point_s: Point = Point(y=0.0, x=0.0)
+        point_n: Point = Point(y=0.1, x=0.1)
 
-        boundariesNorthward = common.squadrats.line_grid_intersections(a=pointS, b=pointN, zoom=ZOOM_SQUADRATS)
-        boundariesSouthward = common.squadrats.line_grid_intersections(a=pointN, b=pointS, zoom=ZOOM_SQUADRATS)
+        boundariesNorthward = common.squadrats.line_grid_intersections(a=point_s, b=point_n, zoom=ZOOM_SQUADRATS)
+        boundariesSouthward = common.squadrats.line_grid_intersections(a=point_n, b=point_s, zoom=ZOOM_SQUADRATS)
 
         self.assertEqual(len(boundariesNorthward), 6)
         self.assertEqual(len(boundariesSouthward), 6)
@@ -44,7 +46,7 @@ class TestSquadrats(unittest.TestCase):
     def test_tiles_by_bounding_box(self):
         """Test that tiles are properly generated for the bounding box method
         """
-        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
+        poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
         squadrats = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
         self.assertEqual(len(squadrats), 14933)
         squadratinhos = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
@@ -192,7 +194,7 @@ class TestSquadrats(unittest.TestCase):
         """
         Test that tiles are properly generated
         """
-        poly = parse_poly_file('tests/test_poly/pomorskie.poly')
+        poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
         region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', coordinates=poly)
         squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None))
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
