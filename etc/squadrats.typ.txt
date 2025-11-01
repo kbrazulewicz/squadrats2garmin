@@ -41,44 +41,42 @@ Xpm="0 0 2 0"
 Type=0x10F0A
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
-DayOutlineColor:#00FF00
-NightOutlineColor:#00AA00
 Xpm="32 32 4 1"
 "X c #00AA00"
 "  c none"
 "3 c #00FF00"
 "4 c none"
-"X       X       X       X       "
+"X   X   X   X   X   X   X   X   "
 "                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
+"X   X   X   X   X   X   X   X   "
 "                                "
-"    X       X       X       X   "
+"  X   X   X   X   X   X   X   X "
 "                                "
+"X   X   X   X   X   X   X   X   "
 "                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
-"X       X       X       X       "
+"X   X   X   X   X   X   X   X   "
 "                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
+"X   X   X   X   X   X   X   X   "
 "                                "
-"    X       X       X       X   "
+"  X   X   X   X   X   X   X   X "
 "                                "
+"X   X   X   X   X   X   X   X   "
 "                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
-"X       X       X       X       "
+"X   X   X   X   X   X   X   X   "
 "                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
+"X   X   X   X   X   X   X   X   "
 "                                "
-"    X       X       X       X   "
-"                                "
-"                                "
-"                                "
-"X       X       X       X       "
-"                                "
-"                                "
-"                                "
-"    X       X       X       X   "
-"                                "
-"                                "
+"  X   X   X   X   X   X   X   X "
 "                                "
 ;12345678901234567890123456789012
 [end]
@@ -95,6 +93,22 @@ Xpm="0 0 2 0"
 "a c #005500"
 "b c #005500"
 [end]
+
+
+[_line]
+; Visited squadrats border
+; CUSTOMIZABLE_LINE_1
+String=Visited squadrats
+String=0x15,Odwiedzone kwadraty
+DayOutlineColor:#00FF00
+NightOutlineColor:#00AA00
+Type=0x10E00
+LineWidth=2
+Xpm="0 0 2 0"
+"1 c #00AA00"
+"2 c #00FF00"
+[end]
+
 
 [_line]
 ; Ubersquadrat
