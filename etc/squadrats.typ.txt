@@ -8,60 +8,72 @@ CodePage=1252
 Garmin custom types: https://gpspohod.ucoz.ru/j-typ.htm#06
 Garmin color palettes: https://developer.garmin.com/connect-iq/connect-iq-faq/how-do-i-optimize-bitmaps/
 Garmin colors: https://developer.garmin.com/connect-iq/api-docs/Toybox/Graphics.html
+6-bit RGB palette: https://lospec.com/palette-list/6-bit-rgb
 [End]
 
 [_drawOrder]
 Type=0x10F09,1
+Type=0x10F0A,1
 Type=0x10F13,2
 Type=0x10F14,2
 [end]
 
 [_polygon]
-; style for the collected squadrat
+; style for visited squadrat
 ; CUSTOMIZABLE_AREA_10
-; LightSkyBlue 87CEFA
+; COLOR_DK_GREEN 0x00AA00
 Type=0x10F09
-String=Squadrat
+String=Visited squadrat - zoom in
 Xpm="32 32 2 1"
-"X c #87CEFA"
+"X c #00AA00"
 "  c none"
-"XX      XX      XX      XX      "
-"XXX    XXXX    XXXX    XXXX    X"
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"   XXXX    XXXX    XXXX    XXXX "
-"    XX      XX      XX      XX  "
-"   XXXX    XXXX    XXXX    XXXX "
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"XXX    XXXX    XXXX    XXXX    X"
-"XX      XX      XX      XX      "
-"XXX    XXXX    XXXX    XXXX    X"
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"   XXXX    XXXX    XXXX    XXXX "
-"    XX      XX      XX      XX  "
-"   XXXX    XXXX    XXXX    XXXX "
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"XXX    XXXX    XXXX    XXXX    X"
-"XX      XX      XX      XX      "
-"XXX    XXXX    XXXX    XXXX    X"
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"   XXXX    XXXX    XXXX    XXXX "
-"    XX      XX      XX      XX  "
-"   XXXX    XXXX    XXXX    XXXX "
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"XXX    XXXX    XXXX    XXXX    X"
-"XX      XX      XX      XX      "
-"XXX    XXXX    XXXX    XXXX    X"
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"   XXXX    XXXX    XXXX    XXXX "
-"    XX      XX      XX      XX  "
-"   XXXX    XXXX    XXXX    XXXX "
-"  XX  XX  XX  XX  XX  XX  XX  XX"
-"XXX    XXXX    XXXX    XXXX    X"
+"X       X       X       X       "
+"                                "
+"                                "
+"                                "
+"    X       X       X       X   "
+"                                "
+"                                "
+"                                "
+"X       X       X       X       "
+"                                "
+"                                "
+"                                "
+"    X       X       X       X   "
+"                                "
+"                                "
+"                                "
+"X       X       X       X       "
+"                                "
+"                                "
+"                                "
+"    X       X       X       X   "
+"                                "
+"                                "
+"                                "
+"X       X       X       X       "
+"                                "
+"                                "
+"                                "
+"    X       X       X       X   "
+"                                "
+"                                "
+"                                "
 ;12345678901234567890123456789012
 [end]
 
 [_polygon]
-; style for the collected squadratinho
+; style for visited squadrat - zoomed out
+; CUSTOMIZABLE_AREA_11
+; COLOR_DK_GREEN 0x00AA00
+Type=0x10F0A
+String=Visited squadrat - zoom in
+Xpm="0 0 1 0"
+"0 c #00AA00"
+[end]
+
+[_polygon]
+; style for visited squadratinho
 ; CUSTOMIZABLE_AREA_20
 ; DarkGreen 006400
 Type=0x10F13

@@ -44,7 +44,7 @@ class Tile:
         """Overrides the default implementation
         """
         if isinstance(__o, Tile):
-            return (self.__key() == __o.__key())
+            return self.__key() == __o.__key()
         return NotImplemented
 
     @staticmethod

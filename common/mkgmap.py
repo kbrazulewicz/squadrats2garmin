@@ -17,18 +17,18 @@ logger = logging.getLogger(__name__)
 def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]):
     """Generate mkgmap config file
     """
-    with open(output, 'w', encoding='UTF-8') as config_file:
+    with output.open('w', encoding='UTF-8') as config_file:
         # images with 'unicode' encoding are not displayed on Garmin
-        config_file.write("latin1\n")
-        config_file.write("transparent\n")
+        config_file.write('latin1\n')
+        config_file.write('transparent\n')
         config_file.write(f'output-dir={OUTPUT_PATH.name}\n')
 
         config_file.write(f'family-id={IMG_FAMILY_ID}\n')
         config_file.write(f'family-name={IMG_FAMILY_NAME}\n')
-        config_file.write("product-id=1\n")
+        config_file.write('product-id=1\n')
         config_file.write(f'series-name={IMG_SERIES_NAME}\n')
 
-        config_file.write("style-file=etc/squadrats-default.style\n")
+        config_file.write('style-file=etc/squadrats-default.style\n')
 
         sequence_number = 1
         for job in jobs:
@@ -60,6 +60,17 @@ def generate_mkgmap_config(output: pathlib.Path, config: Config, jobs: list[Job]
         config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
 
+def run_mkgmap(config: pathlib.Path):
+    result = subprocess.run(
+        ['mkgmap', f'--read-config={str(config)}'],
+        cwd=os.getcwd(),
+        capture_output=True,
+        text=True,
+        check=False
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f'mkgmap failed: {result.stderr}')
+
 
 def generate_garmin_img(config: Config, jobs: list[Job]):
     """Generate a single Garmin IMG file from multiple jobs"""
@@ -69,15 +80,7 @@ def generate_garmin_img(config: Config, jobs: list[Job]):
 
     # generate Garmin IMG file
     logger.info('Creating Garmin IMG file %s', config.output)
-    result = subprocess.run(
-        ['mkgmap', f'--read-config={str(mkgmap_config)}'],
-        cwd=os.getcwd(),
-        capture_output=True,
-        text=True,
-        check=False
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f'mkgmap failed: {result.stderr}')
+    run_mkgmap(config=mkgmap_config)
 
     gmapsupp_img = OUTPUT_PATH / 'gmapsupp.img'
     if not gmapsupp_img.exists():

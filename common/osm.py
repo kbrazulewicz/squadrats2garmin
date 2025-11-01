@@ -15,6 +15,15 @@ class OSMElement(ABC):
         self._element_id = element_id
         self._tags = tags if tags else []
 
+    def __hash__(self) -> int:
+        return hash((self.name, self.element_id))
+
+    def __eq__(self, __o: object) -> bool:
+        if isinstance(__o, OSMElement):
+            return self.name == __o.name and self.element_id == __o.element_id
+        return NotImplemented
+
+
     @property
     def name(self) -> str:
         """Element name"""
@@ -39,9 +48,7 @@ class OSMElement(ABC):
         """Generate XML representation of Element
         """
         node = ET.Element(self.name, self.get_element_attributes())
-        for (k, v) in self.tags:
-            node.append(Tag(k, v).to_xml())
-
+        node.extend(tag.to_xml() for tag in self.tags)
         return node
 
 
@@ -51,6 +58,9 @@ class Tag:
     def __init__(self, k: str, v: str):
         self.k = k
         self.v = v
+
+    def __repr__(self):
+        return f'Tag(k={self.k}, v={self.v})'
 
     def to_xml(self) -> ET.Element:
         """Generate XML representation of Tag object
