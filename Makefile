@@ -6,3 +6,8 @@ test:
 
 test1:
 	python3 -m unittest tests.test_poly.TestPoly.test_generate_tiles_for_a_row1
+
+kml:
+	python3 kmlread.py
+	mv output/gmapsupp.img output/gmapsupp-abc.img
+	cp output/gmapsupp-abc.img /Volumes/GARMIN/Garmin
