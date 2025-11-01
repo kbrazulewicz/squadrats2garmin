@@ -26,8 +26,6 @@ Type=0x10F14,2
 Type=0x10F09
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
-DayOutlineColor:#00FF00
-NightOutlineColor:#00AA00
 Xpm="0 0 2 0"
 "0 c #00AA00"
 "1 c #00FF00"
@@ -46,38 +44,38 @@ Xpm="32 32 4 1"
 "  c none"
 "3 c #00FF00"
 "4 c none"
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
-"X   X   X   X   X   X   X   X   "
-"                                "
-"  X   X   X   X   X   X   X   X "
-"                                "
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
 ;12345678901234567890123456789012
 [end]
 
@@ -96,14 +94,24 @@ Xpm="0 0 2 0"
 
 
 [_line]
-; Visited squadrats border
+; style for the border of visited squadrats (zoom out)
 ; CUSTOMIZABLE_LINE_1
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
-DayOutlineColor:#00FF00
-NightOutlineColor:#00AA00
 Type=0x10E00
-LineWidth=2
+LineWidth=1
+Xpm="0 0 2 0"
+"1 c #000000"
+"2 c #00FF00"
+[end]
+
+[_line]
+; style for the border of visited squadrats (zoom in)
+; CUSTOMIZABLE_LINE_2
+String=Visited squadrats
+String=0x15,Odwiedzone kwadraty
+Type=0x10E01
+LineWidth=1
 Xpm="0 0 2 0"
 "1 c #00AA00"
 "2 c #00FF00"
