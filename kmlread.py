@@ -77,7 +77,7 @@ def generate_mkgmap_config(output: pathlib.Path, input: pathlib.Path):
 
         config_file.write('style-file=etc/squadrats-default.style\n')
 
-        config_file.write('mapname=97000001\n')
+        config_file.write(f'mapname={IMG_FAMILY_ID}0001\n')
         config_file.write('description=Visited squadrats\n')
         config_file.write(f'input-file={input.relative_to(OUTPUT_PATH)}\n')
 

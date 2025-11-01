@@ -10,7 +10,7 @@ The default style used for Squadrats.
 }
 
 <<<options>>>
-#levels: 0:24, 1:22, 2:20, 3:18, 4:16, 5:14
+# levels: 0:23, 1:22, 2:20, 3:18, 4:16
 
 <<<lines>>>
 # Squadrats grid
@@ -20,21 +20,12 @@ name=grid & zoom=14 [0x11411 resolution 23-24]
 # Squadratinho grid
 name=grid & zoom=17 [0x11400 resolution 23-24]
 
-#name=ubersquadrat [0x10E09]
-#name=ubersquadratinho [0x10E13]
-#name=squadrats [0x10E09 resolution 20]
-#name=squadratinhos [0x10E13 resolution 22-23 continue]
 
 <<<polygons>>>
-# visited squadrats - zoomed out
-name=squadrats [0x10F0C resolution 16 continue]
-# visited squadrats
-name=squadrats [0x10F0B resolution 18]
-#name=squadratinhos [0x10F14 resolution 22-23 continue]
-#name=squadratinhos [0x10F13 resolution 24]
+# visited squadrats (zoom out)
+name=squadrats [0x10F09 resolution 16-19 continue]
+# visited squadrats (zoom in)
+name=squadrats [0x10F0A resolution 20-24]
+
 
 <<<relations>>>
-# visited squadrats - zoomed out
-name=squadrats [0x10F0C resolution 16 continue]
-# visited squadrats
-name=squadrats [0x10F0B resolution 18]
