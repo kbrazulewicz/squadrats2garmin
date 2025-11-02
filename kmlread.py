@@ -1,4 +1,6 @@
+import argparse
 import itertools
+import logging
 import pathlib
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -8,57 +10,73 @@ from typing import Iterator
 from fastkml import KML
 from fastkml.utils import find
 from fastkml import Placemark
-from pygeoif import LinearRing, MultiPolygon
+from pygeoif import LinearRing, MultiPolygon, Polygon
 
 import common.osm
-from common.config import VisitedSquadratsConfig, IMG_FAMILY_ID_VISITED_SQUADRATS
+from common.config import VisitedSquadratsConfig, IMG_FAMILY_ID_VISITED_SQUADRATS, OUTPUT_DIR
 from common.mkgmap import run_mkgmap, write_mkgmap_config_headers
+from common.timer import timeit
 
+logger = logging.getLogger(__name__)
 
-def linear_ring_to_way(geom: LinearRing, node_id: Iterator[int], way_id: Iterator[int]) -> common.osm.Way:
+def linear_ring_to_way(geom: LinearRing, id_generator: Iterator[int]) -> common.osm.Way:
+    """Parse pygeoif.LinearRing"""
     # first and last node are the same and this needs to be the same object in OSM file
     nodes = [
-        common.osm.Node(node_id=next(node_id), lon=point[0], lat=point[1])
+        common.osm.Node(node_id=next(id_generator), lon=point[0], lat=point[1])
         for point in itertools.islice(geom.coords, 0, len(geom.coords) - 1)
     ]
     nodes.append(nodes[0])
-    return common.osm.Way(way_id=next(way_id), nodes=nodes)
+    return common.osm.Way(way_id=next(id_generator), nodes=nodes)
 
-def multipolygon_to_relation(geom: MultiPolygon, tags: list[common.osm.Tag]=None) -> common.osm.MultiPolygon:
-    node_id: Iterator[int] = itertools.count(start=1)
-    way_id: Iterator[int] = itertools.count(start=1)
-    relation_id: Iterator[int] = itertools.count(start=1)
-
+def parse_polygons(geoms: Iterator[Polygon], id_generator: Iterator[int], tags: list[common.osm.Tag]=None) -> common.osm.MultiPolygon:
+    """Parse pygeoif.Polygon"""
     outer: list[common.osm.Way] = []
     inner: list[common.osm.Way] = []
 
-    for geom in geom.geoms:
-        outer.append(linear_ring_to_way(geom=geom.exterior, node_id=node_id, way_id=way_id))
-        for i in geom.interiors:
-            inner.append(linear_ring_to_way(geom=i, node_id=node_id, way_id=way_id))
+    with timeit(msg='Building OSM data structure'):
+        for geom in geoms:
+            outer.append(linear_ring_to_way(geom=geom.exterior, id_generator=id_generator))
+            for i in geom.interiors:
+                inner.append(linear_ring_to_way(geom=i, id_generator=id_generator))
 
-    return common.osm.MultiPolygon(relation_id=next(relation_id), outer_rings=outer, inner_rings=inner, tags=tags)
+        return common.osm.MultiPolygon(relation_id=next(id_generator), outer_rings=outer, inner_rings=inner, tags=tags)
+
+def placemark_to_osm(document: ET.Element, placemark: Placemark, id_generator: Iterator[int], tags: list[common.osm.Tag]):
+    """Write fastkml.Placemark to OSM XML"""
+    multipolygon: common.osm.MultiPolygon
+    if isinstance(placemark.geometry, MultiPolygon):
+        multipolygon = parse_polygons(geoms=placemark.geometry.geoms, id_generator=id_generator, tags=tags)
+    elif isinstance(placemark.geometry, Polygon):
+        multipolygon = parse_polygons(geoms=[placemark.geometry], id_generator=id_generator, tags=tags)
+    else:
+        return
+
+    nodes: set[common.osm.Node] = set()
+    ways: set[common.osm.Way] = set()
+    for way in itertools.chain(multipolygon.outer_rings, multipolygon.inner_rings):
+        nodes.update(way.nodes)
+        ways.add(way)
+
+    # nodes first
+    document.extend(e.to_xml() for e in sorted(nodes, key=lambda e: e.element_id))
+    # then ways
+    document.extend(e.to_xml() for e in sorted(ways, key=lambda e: e.element_id))
+    # then relation
+    document.append(multipolygon.to_xml())
+
 
 def to_osm(path: Path, kml):
-    squadrats: Placemark = find(kml, name='squadrats')
+    document = ET.Element("osm", {"version": '0.6'})
+    id_generator: Iterator[int] = itertools.count(start=1)
 
-    if isinstance(squadrats.geometry, MultiPolygon):
-        osm_relation = multipolygon_to_relation(geom=squadrats.geometry, tags=[common.osm.Tag('name', 'squadrats')])
-        nodes: set[common.osm.Node] = set()
-        ways: set[common.osm.Way] = set()
-        for way in itertools.chain(osm_relation.outer_rings, osm_relation.inner_rings):
-            nodes.update(way.nodes)
-            ways.add(way)
+    for name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
+        with timeit(msg=f'Processing {name}'):
+            placemark: Placemark = find(kml, name=name)
+            placemark_to_osm(document=document, placemark=placemark, id_generator=id_generator, tags=[common.osm.Tag('name', name)])
 
-        document = ET.Element("osm", {"version": '0.6'})
-        # nodes first
-        document.extend(e.to_xml() for e in sorted(nodes, key=lambda e: e.element_id))
-        # then ways
-        document.extend(e.to_xml() for e in sorted(ways, key=lambda e: e.element_id))
-        # then relation
-        document.append(osm_relation.to_xml())
-        ET.indent(document)
-        ET.ElementTree(document).write(path, encoding='utf-8', xml_declaration=True)
+    ET.indent(document)
+    ET.ElementTree(document).write(path, encoding='utf-8', xml_declaration=True)
 
 
 def generate_mkgmap_config(config_path: pathlib.Path, config: VisitedSquadratsConfig, input: pathlib.Path):
@@ -76,18 +94,39 @@ def generate_mkgmap_config(config_path: pathlib.Path, config: VisitedSquadratsCo
         config_file.write("gmapsupp\n")
 
 
-kml_file=Path('squadrats-2025-10-24.kml')
-osm_file=Path('output/squadrats-2025-10-24.osm')
-mkgmap_config=Path('output/mkgmap.cfg')
-img_file=Path('output/squadrats-2025-10-24.img')
+def main():
+    parser = argparse.ArgumentParser(description="Convert Squadrat's 'visited squadrats' KML to Garmin IMG map")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='verbose output')
+    parser.add_argument('-k', '--keep-output', action='store_true',
+                        help='keep output files after processing')
+    parser.add_argument('-i', '--input-file', required=True,
+                        help="Squadrat's 'visited squadrats' KML")
+    parser.add_argument('-o', '--output-file', required=True,
+                        help='Output file')
+    args = parser.parse_args()
 
-config = VisitedSquadratsConfig({
-    'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
-    'description': 'Visited Squadrats',
-    'output': img_file.name
-})
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
-k = KML.parse(kml_file)
-to_osm(path=osm_file, kml=k)
-generate_mkgmap_config(config_path=mkgmap_config, config=config, input=osm_file)
-run_mkgmap(config=mkgmap_config)
+    osm_file = OUTPUT_DIR / 'squadrats-visited.osm'
+    mkgmap_config = OUTPUT_DIR / 'mkgmap.cfg'
+    img_file = OUTPUT_DIR / 'squadrats-visited.img'
+
+    config = VisitedSquadratsConfig({
+        'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
+        'description': 'Visited Squadrats',
+        'output': img_file.name
+    })
+
+    k: KML
+    with timeit(msg=f'Processing {args.input_file}'):
+        k = KML.parse(Path(args.input_file))
+
+    with timeit(msg=f'Writing {osm_file}'):
+        to_osm(path=osm_file, kml=k)
+
+    generate_mkgmap_config(config_path=mkgmap_config, config=config, input=osm_file)
+    run_mkgmap(config=mkgmap_config)
+
+if __name__ == "__main__":
+    main()
