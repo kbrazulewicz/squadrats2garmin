@@ -11,11 +11,19 @@ The default style used for Squadrats.
 
 <<<options>>>
 # Map Visibility: auto
-# 17
+# 16 -
+# 17 - 20km
 # 18 - 12km
 # 19 -
 # 20 - 3km
-levels: 0:23, 1:22, 2:20, 3:18, 4:16
+# 22 - 800m
+# 23 -
+# level 4: visited squadrats (low resolution)
+# level 3: visited squadrats (medium resolution)
+# level 2: visited squadrats (medium resolution), squadrats grid (low resolution)
+# level 1: visited squadrats (high resolution), squadrats grid (low resolution)
+# level 0: visited squadrats (high resolution), squadrats grid (high resolution), squadratinhos grid
+levels: 0:23, 1:22, 2:20, 3:17, 4:16
 
 <<<lines>>>
 # Squadrats grid
@@ -26,13 +34,13 @@ name=grid & zoom=14 [0x11411 level 0]
 name=grid & zoom=17 [0x11400 level 0]
 
 # Visited squadrats border
-name=squadrats [0x10E00 level 3-3 continue]
-name=squadrats [0x10E01 level 2]
+name=squadrats [0x10E00 level 3]
 
 <<<polygons>>>
 # Visited squadrats
-name=squadrats [0x10F09 level 3-3 continue]
-name=squadrats [0x10F0A level 2]
+name=squadrats [0x10F09 level 4-4 continue]
+name=squadrats [0x10F0A level 2-3 continue]
+name=squadrats [0x10F0B level 1]
 
 
 <<<relations>>>
