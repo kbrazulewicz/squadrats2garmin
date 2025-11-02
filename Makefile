@@ -1,5 +1,13 @@
+GARMIN=/Volumes/GARMIN/Garmin
+
+
 run:
 	python3 squadrats2osm.py ../config/squadrats2osm.json
+
+grid-pl:
+	python3 squadrats2garmin.py --config-files config/PL-Polska.json
+	cp dist/europe/squadrats-PL-poland.img
+	ls -l dist/europe/*-PL-*.img $(GARMIN)
 
 test:
 	python3 -m unittest -v
@@ -18,4 +26,4 @@ mkgmap:
 	mkgmap --read-config=output/mkgmap.cfg
 	mv output/gmapsupp.img output/squadrats-visited.img
 	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
-	cp output/squadrats-visited.img /Volumes/GARMIN/Garmin
+	cp output/squadrats-visited.img $(GARMIN)
