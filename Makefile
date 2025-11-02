@@ -9,7 +9,13 @@ test1:
 
 kml:
 	rm -rf output/*
-	python3 kmlread.py
+	python3 kmlread.py --verbose --input-file squadrats-2025-10-24.kml --output-file output/squadrats-visited.img
+	mv output/gmapsupp.img output/squadrats-visited.img
+	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
+	cp output/squadrats-visited.img /Volumes/GARMIN/Garmin
+
+mkgmap:
+	mkgmap --read-config=output/mkgmap.cfg
 	mv output/gmapsupp.img output/squadrats-visited.img
 	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img /Volumes/GARMIN/Garmin
