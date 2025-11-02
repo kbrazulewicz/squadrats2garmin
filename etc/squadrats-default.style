@@ -26,15 +26,19 @@ The default style used for Squadrats.
 levels: 0:23, 1:22, 2:20, 3:17, 4:16
 
 <<<lines>>>
-# Squadrats grid
+# squadrats grid
 name=grid & zoom=14 [0x11410 level 1-2 continue]
 name=grid & zoom=14 [0x11411 level 0]
 
-# Squadratinho grid
+# squadratinho grid
 name=grid & zoom=17 [0x11400 level 0]
 
-# Visited squadrats border
+# visited squadrats border
 name=squadrats [0x10E00 level 3]
+
+# ubersquadrat & ubversquadratinho
+name=ubersquadrat [0x10E09 level 4]
+name=ubersquadratinho [0x10E0A level 3]
 
 <<<polygons>>>
 # Visited squadrats
@@ -45,3 +49,5 @@ name=squadrats [0x10F0B level 1]
 
 <<<relations>>>
 name=squadrats { name '${name}' }
+name=ubersquadrat { name '${name}' }
+name=ubersquadratinho { name '${name}' }

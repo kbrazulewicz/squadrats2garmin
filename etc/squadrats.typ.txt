@@ -161,21 +161,21 @@ Xpm="0 0 2 0"
 [_line]
 ; Ubersquadrat
 ; CUSTOMIZABLE_LINE_10
-; Green 008000
+; COLOR_RED 0xFF0000
 Type=0x10E09
 LineWidth=3
 Xpm="0 0 1 0"
-"a c #008000"
+"1 c #FF0000"
 [end]
 
 [_line]
 ; Ubersquadratinho
-; CUSTOMIZABLE_LINE_20
-; DarkGreen 006400
-Type=0x10E13
+; CUSTOMIZABLE_LINE_11
+; COLOR_DK_RED 0xAA0000
+Type=0x10E0A
 LineWidth=3
 Xpm="0 0 1 0"
-"a c #006400"
+"1 c #AA0000"
 [end]
 
 [_line]
@@ -191,7 +191,7 @@ Xpm="0 0 2 0"
 [end]
 
 [_line]
-; Squadrat grid - zoomed out
+; Squadrat grid (low resolution)
 ; CUSTOMIZABLE_LINE_209
 ; day mode - COLOR_BLACK 0x000000
 ; night mode - COLOR_GREEN 0x00FF00
@@ -203,7 +203,7 @@ Xpm="0 0 2 0"
 [end]
 
 [_line]
-; Squadrat grid - zoomed in
+; Squadrat grid (high resolution)
 ; CUSTOMIZABLE_LINE_210
 ; day mode - COLOR_BLACK 0x000000
 ; night mode - COLOR_GREEN 0x00FF00
