@@ -11,4 +11,5 @@ kml:
 	rm -rf output/*
 	python3 kmlread.py
 	mv output/gmapsupp.img output/squadrats-visited.img
+	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img /Volumes/GARMIN/Garmin

@@ -2,7 +2,7 @@ import argparse
 import logging
 import pathlib
 
-from common.config import Config, OUTPUT_PATH
+from common.config import RegionConfig, OUTPUT_DIR
 from common.job import Job
 from common.mkgmap import generate_garmin_img
 from common.region import RegionIndex
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
     """Generate grid according to the config file and convert it into Garmin IMG file"""
     logger.info("Load input job")
-    config = Config.parse(config_file, poly_index)
+    config = RegionConfig.parse(config_file, poly_index)
 
     jobs: list[Job] = []
     for zoom in [ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS]:
         for region in sorted(config.regions[zoom], key=lambda r: r.code):
-            osm_file = OUTPUT_PATH / f'{region.code}-{zoom.zoom}.osm'
+            osm_file = OUTPUT_DIR / f'{region.code}-{zoom.zoom}.osm'
             job = Job(region=region, zoom=zoom, osm_file=osm_file)
             generate_osm(job)
             jobs.append(job)
@@ -52,16 +52,16 @@ def main():
     poly_index = RegionIndex("config/polygons")
 
     # create output directory
-    if not OUTPUT_PATH.exists():
-        OUTPUT_PATH.mkdir(parents=True)
+    if not OUTPUT_DIR.exists():
+        OUTPUT_DIR.mkdir(parents=True)
 
     # process input jobs
     for config_file in args.config_files:
         # clear output directory before processing
-        remove_all_files(OUTPUT_PATH)
+        remove_all_files(OUTPUT_DIR)
         process_input_job(config_file=config_file, poly_index=poly_index)
         if not args.keep_output:
-            remove_all_files(OUTPUT_PATH)
+            remove_all_files(OUTPUT_DIR)
 
 if __name__ == "__main__":
     main()

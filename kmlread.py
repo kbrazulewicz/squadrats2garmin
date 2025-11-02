@@ -6,13 +6,13 @@ from pathlib import Path
 from typing import Iterator
 
 from fastkml import KML
-from fastkml.utils import find, find_all
+from fastkml.utils import find
 from fastkml import Placemark
-from pygeoif import LinearRing, MultiPolygon, Polygon
+from pygeoif import LinearRing, MultiPolygon
 
 import common.osm
-from common.config import OUTPUT_PATH, IMG_FAMILY_ID, IMG_FAMILY_NAME, IMG_SERIES_NAME
-from common.mkgmap import run_mkgmap
+from common.config import VisitedSquadratsConfig, IMG_FAMILY_ID_VISITED_SQUADRATS
+from common.mkgmap import run_mkgmap, write_mkgmap_config_headers
 
 
 def linear_ring_to_way(geom: LinearRing, node_id: Iterator[int], way_id: Iterator[int]) -> common.osm.Way:
@@ -61,28 +61,18 @@ def to_osm(path: Path, kml):
         ET.ElementTree(document).write(path, encoding='utf-8', xml_declaration=True)
 
 
-def generate_mkgmap_config(output: pathlib.Path, input: pathlib.Path):
+def generate_mkgmap_config(config_path: pathlib.Path, config: VisitedSquadratsConfig, input: pathlib.Path):
     """Generate mkgmap config file
     """
-    with output.open('w', encoding='UTF-8') as config_file:
-        # images with 'unicode' encoding are not displayed on Garmin
-        config_file.write('latin1\n')
-        config_file.write('transparent\n')
-        config_file.write(f'output-dir={OUTPUT_PATH.name}\n')
+    with config_path.open('w', encoding='UTF-8') as config_file:
+        write_mkgmap_config_headers(file=config_file, config=config)
 
-        config_file.write(f'family-id={IMG_FAMILY_ID}\n')
-        config_file.write(f'family-name={IMG_FAMILY_NAME}\n')
-        config_file.write('product-id=1\n')
-        config_file.write(f'series-name={IMG_SERIES_NAME}\n')
+        config_file.write(f'mapname={config.img_family_id}0001\n')
+        config_file.write(f'description={config.description}\n')
+        config_file.write(f'input-file={input.relative_to(config.output_dir)}\n')
 
-        config_file.write('style-file=etc/squadrats-default.style\n')
-
-        config_file.write(f'mapname={IMG_FAMILY_ID}0001\n')
-        config_file.write('description=Visited squadrats\n')
-        config_file.write(f'input-file={input.relative_to(OUTPUT_PATH)}\n')
-
-        config_file.write('input-file=../etc/squadrats.typ.txt\n')
-        config_file.write(f'description=Visited squadrats\n')
+        config_file.write(f'input-file={config.typ_file}\n')
+        config_file.write(f'description={config.description}\n')
         config_file.write("gmapsupp\n")
 
 
@@ -91,9 +81,13 @@ osm_file=Path('output/squadrats-2025-10-24.osm')
 mkgmap_config=Path('output/mkgmap.cfg')
 img_file=Path('output/squadrats-2025-10-24.img')
 
+config = VisitedSquadratsConfig({
+    'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
+    'description': 'Visited Squadrats',
+    'output': img_file.name
+})
+
 k = KML.parse(kml_file)
 to_osm(path=osm_file, kml=k)
-generate_mkgmap_config(output=mkgmap_config, input=osm_file)
+generate_mkgmap_config(config_path=mkgmap_config, config=config, input=osm_file)
 run_mkgmap(config=mkgmap_config)
-
-# https://wiki.openstreetmap.org/wiki/Relation:multipolygon#Examples_in_XML
