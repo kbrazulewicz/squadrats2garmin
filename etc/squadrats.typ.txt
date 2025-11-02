@@ -1,5 +1,5 @@
 [_id]
-;FID and ProductCode are ta
+;FID and ProductCode are taken from command line
 ;FID=9724
 ;ProductCode=1
 CodePage=1252
@@ -24,13 +24,11 @@ Type=0x10F14,2
 [_polygon]
 ; style for visited squadrats (low resolution)
 ; CUSTOMIZABLE_AREA_10
-; COLOR_DK_GREEN 0x00AA00
-; COLOR_GREEN 0x00FF00
 Type=0x10F09
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="0 0 2 0"
-"0 c #CCCCFF"
+"X c #9999FF"
 "1 c #0000FF"
 [end]
 
@@ -130,8 +128,6 @@ Xpm="32 32 4 1"
 [_polygon]
 ; visited squadratinhos
 ; CUSTOMIZABLE_AREA_21
-; day mode - Green 008000
-; night mode - DarkGreen 006400
 Type=0x10F14
 String=Visited squadratinhos
 String=0x15,Odwiedzone kwadraciki
@@ -205,7 +201,6 @@ Xpm="0 0 2 0"
 [_line]
 ; Ubersquadrat
 ; CUSTOMIZABLE_LINE_10
-; COLOR_RED 0xFF0000
 Type=0x10E09
 LineWidth=3
 Xpm="0 0 1 0"
@@ -215,7 +210,6 @@ Xpm="0 0 1 0"
 [_line]
 ; Ubersquadratinho
 ; CUSTOMIZABLE_LINE_11
-; COLOR_DK_RED 0xAA0000
 Type=0x10E0A
 LineWidth=3
 Xpm="0 0 1 0"
@@ -225,8 +219,6 @@ Xpm="0 0 1 0"
 [_line]
 ; Squadratinho grid
 ; CUSTOMIZABLE_LINE_193
-; day mode - COLOR_DK_GRAY 0x555555
-; night mode - COLOR_GREEN 0x00FF00
 Type=0x11400
 LineWidth=1
 Xpm="0 0 2 0"
@@ -237,8 +229,6 @@ Xpm="0 0 2 0"
 [_line]
 ; Squadrat grid (low resolution)
 ; CUSTOMIZABLE_LINE_209
-; day mode - COLOR_BLACK 0x000000
-; night mode - COLOR_GREEN 0x00FF00
 Type=0x11410
 LineWidth=1
 Xpm="0 0 2 0"
@@ -249,8 +239,6 @@ Xpm="0 0 2 0"
 [_line]
 ; Squadrat grid (high resolution)
 ; CUSTOMIZABLE_LINE_210
-; day mode - COLOR_BLACK 0x000000
-; night mode - COLOR_GREEN 0x00FF00
 Type=0x11411
 LineWidth=3
 Xpm="0 0 2 0"
