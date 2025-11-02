@@ -25,6 +25,7 @@ The default style used for Squadrats.
 # level 0: visited squadrats (high resolution), squadrats grid (high resolution), squadratinhos grid
 levels: 0:23, 1:22, 2:20, 3:17, 4:16
 
+
 <<<lines>>>
 # squadrats grid
 name=grid & zoom=14 [0x11410 level 1-2 continue]
@@ -36,15 +37,22 @@ name=grid & zoom=17 [0x11400 level 0]
 # visited squadrats border
 name=squadrats [0x10E00 level 3]
 
+# visited squadratinhos border
+name=squadratinhos [0x10E01 level 0]
+
 # ubersquadrat & ubversquadratinho
 name=ubersquadrat [0x10E09 level 4]
 name=ubersquadratinho [0x10E0A level 3]
 
+
 <<<polygons>>>
-# Visited squadrats
+# visited squadrats
 name=squadrats [0x10F09 level 4-4 continue]
 name=squadrats [0x10F0A level 2-3 continue]
 name=squadrats [0x10F0B level 1]
+
+# visited squadratinhos
+name=squadratinhos [0x10F14 level 0]
 
 
 <<<relations>>>

@@ -18,7 +18,6 @@ Type=0x10F09,1
 Type=0x10F0A,1
 Type=0x10F0B,1
 ; visited squadratinhos
-Type=0x10F13,2
 Type=0x10F14,2
 [end]
 
@@ -31,22 +30,20 @@ Type=0x10F09
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="0 0 2 0"
-"0 c #00AA00"
-"1 c #00FF00"
+"0 c #CCCCFF"
+"1 c #0000FF"
 [end]
 
 [_polygon]
 ; style for visited squadrats (medium resolution)
 ; CUSTOMIZABLE_AREA_11
-; COLOR_DK_GREEN 0x00AA00
-; COLOR_GREEN 0x00FF00
 Type=0x10F0A
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="32 32 4 1"
-"X c #00AA00"
+"X c #9999FF"
 "  c none"
-"3 c #00FF00"
+"3 c #0000FF"
 "4 c none"
 "X X X X X X X X X X X X X X X X "
 "X XXX XXX XXX XXX XXX XXX XXX XX"
@@ -86,15 +83,13 @@ Xpm="32 32 4 1"
 [_polygon]
 ; style for visited squadrats (high resolution)
 ; CUSTOMIZABLE_AREA_12
-; COLOR_DK_GREEN 0x00AA00
-; COLOR_GREEN 0x00FF00
 Type=0x10F0B
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="32 32 4 1"
-"X c #00AA00"
+"X c #9999FF"
 "  c none"
-"3 c #00FF00"
+"3 c #0000FF"
 "4 c none"
 "X X X X X X X X X X X X X X X X "
 " X   X   X   X   X   X   X   X  "
@@ -133,28 +128,77 @@ Xpm="32 32 4 1"
 
 
 [_polygon]
-; style for the collected squadratinho - zoomed out
+; visited squadratinhos
 ; CUSTOMIZABLE_AREA_21
 ; day mode - Green 008000
 ; night mode - DarkGreen 006400
 Type=0x10F14
-String=Squadratinho
-Xpm="0 0 2 0"
-"a c #005500"
-"b c #005500"
+String=Visited squadratinhos
+String=0x15,Odwiedzone kwadraciki
+Xpm="32 32 4 1"
+"X c #000099"
+"  c none"
+"3 c #0000FF"
+"4 c none"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+"X X X X X X X X X X X X X X X X "
+" X   X   X   X   X   X   X   X  "
+"X X X X X X X X X X X X X X X X "
+"   X   X   X   X   X   X   X   X"
+;12345678901234567890123456789012
 [end]
 
 
 [_line]
-; style for the border of visited squadrats
+; border of visited squadrats
 ; CUSTOMIZABLE_LINE_1
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Type=0x10E00
 LineWidth=1
 Xpm="0 0 2 0"
-"1 c #005500"
-"2 c #00FF00"
+"1 c #000055"
+"2 c #0000FF"
+[end]
+
+
+[_line]
+; border of visited squadratinhos
+; CUSTOMIZABLE_LINE_2
+String=Visited squadratinhos
+String=0x15,Odwiedzone kwadraciki
+Type=0x10E01
+LineWidth=1
+Xpm="0 0 2 0"
+"1 c #000055"
+"2 c #0000FF"
 [end]
 
 
