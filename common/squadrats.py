@@ -310,7 +310,7 @@ def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], jo
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for x in range)
         ways.append(
-            Way(way_id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+            Way(way_id=job.next_id(), nodes=[node1, node2], tags=TAGS_WAY + [('zoom', job.zoom.zoom)])
         )
 
     return ways
@@ -324,7 +324,7 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
     for range in ranges:
         (node1, node2) = (_osm_node(x, y, job) for y in range)
         ways.append(
-            Way(way_id=job.next_id(), nodes=[node1, node2], tags=[*TAGS_WAY, ('zoom', job.zoom.zoom)])
+            Way(way_id=job.next_id(), nodes=[node1, node2], tags=TAGS_WAY + [('zoom', job.zoom.zoom)])
         )
 
     return ways

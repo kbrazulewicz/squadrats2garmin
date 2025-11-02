@@ -7,6 +7,8 @@ from abc import ABC
 # 4^17 = 17 179 869 184
 WAY_BASE_ID  = 100000000000
 
+type Tag = tuple[str, str]
+
 class OSMElement(ABC):
     """Abstract class representing an OSM element"""
 
@@ -48,28 +50,11 @@ class OSMElement(ABC):
         """Generate XML representation of Element
         """
         node = ET.Element(self.name, self.get_element_attributes())
-        node.extend(tag.to_xml() for tag in self.tags)
+        node.extend(
+            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
+            for tag in self.tags
+        )
         return node
-
-
-class Tag:
-    """Representation of an OSM tag
-    """
-    def __init__(self, k: str, v: str):
-        self.k = k
-        self.v = v
-
-    def __repr__(self):
-        return f'Tag(k={self.k}, v={self.v})'
-
-    def to_xml(self) -> ET.Element:
-        """Generate XML representation of Tag object
-        """
-        return ET.Element('tag', {
-            'k': self.k,
-            'v': str(self.v)
-        })
-
 
 
 class Node(OSMElement):
@@ -151,7 +136,7 @@ class MultiPolygon(OSMElement):
     def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] = None, tags: list[Tag] = None) -> None:
         if not tags:
             tags = []
-        tags = [Tag('type', 'multipolygon')] + tags
+        tags = [('type', 'multipolygon')] + tags
         super().__init__(name='relation', element_id=relation_id, tags=tags)
         self.outer_rings = outer_rings
         self.inner_rings = inner_rings if inner_rings else []

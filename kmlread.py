@@ -73,7 +73,7 @@ def to_osm(path: Path, kml):
     for name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
         with timeit(msg=f'Processing {name}'):
             placemark: Placemark = find(kml, name=name)
-            placemark_to_osm(document=document, placemark=placemark, id_generator=id_generator, tags=[common.osm.Tag('name', name)])
+            placemark_to_osm(document=document, placemark=placemark, id_generator=id_generator, tags=[('name', name)])
 
     ET.indent(document)
     ET.ElementTree(document).write(path, encoding='utf-8', xml_declaration=True)
