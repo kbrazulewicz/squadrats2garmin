@@ -10,6 +10,7 @@ import subprocess
 from common.config import RegionConfig, Config
 from common.job import Job
 from common.region import Subdivision
+from common.timer import timeit
 
 logger = logging.getLogger(__name__)
 
@@ -66,15 +67,16 @@ def generate_mkgmap_config(output: pathlib.Path, config: RegionConfig, jobs: lis
         config_file.write("gmapsupp\n")
 
 def run_mkgmap(config: pathlib.Path):
-    result = subprocess.run(
-        ['mkgmap', f'--read-config={str(config)}'],
-        cwd=os.getcwd(),
-        capture_output=True,
-        text=True,
-        check=False
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f'mkgmap failed: {result.stderr}')
+    with timeit(msg=f'Running mkgmap --read-config={config}'):
+        result = subprocess.run(
+            ['mkgmap', f'--read-config={str(config)}'],
+            cwd=os.getcwd(),
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f'mkgmap failed: {result.stderr}')
 
 
 def generate_garmin_img(config: RegionConfig, jobs: list[Job]):
