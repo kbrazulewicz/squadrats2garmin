@@ -1,0 +1,11 @@
+{
+  "output": "dist/asia/squadrats-JP-japan.img",
+  "description": "Squadrats, Japan",
+  "mapname_prefix": "97392",
+  "zoom_14": [
+    "JP-*"
+  ],
+  "zoom_17": [
+    "JP-*"
+  ]
+}
