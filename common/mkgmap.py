@@ -93,4 +93,5 @@ def generate_garmin_img(config: RegionConfig, jobs: list[Job]):
     if not gmapsupp_img.exists():
         raise RuntimeError('gmapsupp.img not found')
 
+    pathlib.Path(config.output).parent.mkdir(parents=True, exist_ok=True)
     gmapsupp_img.move(config.output)

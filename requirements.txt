@@ -1,3 +1,4 @@
+python>=3.14
 arrow==1.4.0
 astroid==4.0.1
 certifi==2025.8.3
