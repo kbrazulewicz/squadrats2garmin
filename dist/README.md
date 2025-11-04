@@ -13,6 +13,9 @@
 [🇪🇺 Europe](europe/squadrats-europe.img)
 
 ### Large and small squares (for Squadrats users)
+#### Asia
+[Japan](asia/squadrats-JP-japan.img)
+#### Europe
 [🇦🇱 Albania](europe/squadrats-AL-albania.img)  
 [🇦🇩 Andorra](europe/squadrats-AD-andorra.img)  
 [🇦🇹 Austria](europe/squadrats-AT-austria.img)  
