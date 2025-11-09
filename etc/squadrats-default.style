@@ -17,7 +17,7 @@ The default style used for Squadrats.
 # 19 -
 # 20 - 3km
 # 22 - 800m
-# 23 -
+# 23 - 300m
 # level 4: visited squadrats (low resolution)
 # level 3: visited squadrats (medium resolution)
 # level 2: visited squadrats (medium resolution), squadrats grid (low resolution)
@@ -42,7 +42,7 @@ name=squadratinhos [0x10E01 level 0]
 
 # ubersquadrat & ubversquadratinho
 name=ubersquadrat [0x10E09 level 4]
-name=ubersquadratinho [0x10E0A level 3]
+name=ubersquadratinho [0x10E0A level 0]
 
 
 <<<polygons>>>
