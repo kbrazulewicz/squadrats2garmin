@@ -20,7 +20,7 @@ clean:
 	rm -rf output/*
 
 kml-to-osm: clean
-	python3 kmlread.py --verbose --input-file squadrats.kml --output-file output/squadrats-visited.img
+	python3 visited-squadrats.py --verbose --input-file squadrats.kml --output-file output/squadrats-visited.img
 
 kml: kml-to-osm
 	mv output/gmapsupp.img output/squadrats-visited.img
