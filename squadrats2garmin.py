@@ -7,7 +7,7 @@ from common.job import Job
 from common.mkgmap import generate_garmin_img
 from common.region import RegionIndex
 from common.squadrats import generate_osm
-from common.zoom import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
+from common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
 logger = logging.getLogger(__name__)
 

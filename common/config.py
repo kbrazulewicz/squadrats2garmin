@@ -6,7 +6,7 @@ import pathlib
 from abc import ABC
 
 from common.region import Region, RegionIndex
-from common.zoom import Zoom, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
+from common.tile import Zoom, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
 OUTPUT_DIR = pathlib.Path("output")
 

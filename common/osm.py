@@ -3,6 +3,8 @@
 import xml.etree.ElementTree as ET
 from abc import ABC
 
+from pygeoif.types import Point2D
+
 # all squadratinhos
 # 4^17 = 17 179 869 184
 WAY_BASE_ID  = 100000000000
@@ -56,27 +58,40 @@ class OSMElement(ABC):
         )
         return node
 
+    @staticmethod
+    def element_to_xml(name: str, attrs: dict, tags: list[Tag]) -> ET.Element:
+        element = ET.Element(name, attrs)
+        element.extend(
+            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
+            for tag in tags
+        )
+        return element
+
 
 class Node(OSMElement):
     """Representation of an OSM Node entity
        See https://wiki.openstreetmap.org/wiki/Node
     """
 
-    lat : float = None
-    """Node's latitude in degrees"""
+    _geom: Point2D
+    """[0] is longitude, [1] is latitude"""
 
-    lon : float = None
-    """Node's longitude in degrees"""
-
-    def __init__(self, node_id: int, lat: float, lon: float, tags: list[Tag] = None) -> None:
+    def __init__(self, node_id: int, geom: Point2D, tags: list[Tag] = None) -> None:
         super().__init__(name='node', element_id=node_id, tags=tags)
-        self.lat = lat
-        self.lon = lon
+        self._geom = geom
 
     def __repr__(self) -> str:
         """String representation of the Node object
         """
         return f'Node(node_id={self.element_id}, lat={self.lat}, lon {self.lon})'
+
+    @property
+    def lon(self):
+        return self._geom[0]
+
+    @property
+    def lat(self):
+        return self._geom[1]
 
     def get_element_attributes(self) -> dict:
         return super().get_element_attributes() | {
@@ -84,21 +99,6 @@ class Node(OSMElement):
             'lon': str(self.lon)
         }
 
-
-class NodeRef:
-    """Representation of an OSM NodeRef entity
-    """
-    ref : int = None
-
-    def __init__(self, node: Node) -> None:
-        self.ref = node.element_id
-
-    def to_xml(self) -> ET.Element:
-        """Generate XML representation of NodeRef object
-        """
-        return ET.Element('nd', {
-            'ref': str(self.ref)
-        })
 
 class Way(OSMElement):
     """Representation of an OSM Way entity
@@ -108,16 +108,36 @@ class Way(OSMElement):
     nodes: list[Node] = None
     """Ways' nodes"""
 
-    def __init__(self, way_id: int, nodes: list[Node], tags: list[Tag] = None) -> None:
+    _refs: list[int] = None
+
+    def __init__(self, way_id: int, refs: list[int] = None, nodes: list[Node] = None, tags: list[Tag] = None) -> None:
         super().__init__(name='way', element_id=way_id, tags=tags)
-        self.nodes = nodes
+        if refs:
+            self._refs = refs
+        elif nodes:
+            self.nodes = nodes
+            self._refs = [node.element_id for node in nodes]
+        else:
+            raise
 
     def to_xml(self) -> ET.Element:
         """Generate XML representation of Way object
         """
         way = super().to_xml()
-        for node in self.nodes:
-            way.append(NodeRef(node).to_xml())
+        for ref in self._refs:
+            way.append(
+                ET.Element('nd', {
+                    'ref': str(ref)
+                })
+            )
+
+        return way
+
+    @staticmethod
+    def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
+        way = ET.Element('way', {'id': str(element_id)})
+        for ref in refs:
+            way.append(ET.Element('nd', {'ref': str(ref)}))
 
         return way
 
@@ -167,6 +187,34 @@ class MultiPolygon(OSMElement):
                 ET.Element('member', {
                     'type': 'way',
                     'ref': str(way.element_id),
+                    'role': 'inner'
+                })
+            )
+
+        return relation
+
+
+    @staticmethod
+    def element_to_xml(element_id: int, outer_rings: list[int], inner_rings: list[int] = None, tags: list[Tag] = None) -> ET.Element:
+        if not tags:
+            tags = []
+        tags = [('type', 'multipolygon')] + tags
+
+        relation = OSMElement.element_to_xml('relation', {'id': str(element_id)}, tags=tags)
+        for way_id in outer_rings:
+            relation.append(
+                ET.Element('member', {
+                    'type': 'way',
+                    'ref': str(way_id),
+                    'role': 'outer'
+                })
+            )
+
+        for way_id in inner_rings:
+            relation.append(
+                ET.Element('member', {
+                    'type': 'way',
+                    'ref': str(way_id),
                     'role': 'inner'
                 })
             )

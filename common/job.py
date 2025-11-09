@@ -5,7 +5,7 @@ import pathlib
 from typing import Iterator
 
 from common.region import Region
-from common.zoom import Zoom
+from common.tile import Zoom
 
 class Job:
     """Representation of the job context

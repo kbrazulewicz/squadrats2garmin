@@ -1,8 +1,7 @@
 import unittest
 
-from common.zoom import Zoom
-from common.zoom import ZOOM_SQUADRATS
-from common.zoom import ZOOM_SQUADRATINHOS
+from common.tile import ZOOM_SQUADRATS
+from common.tile import ZOOM_SQUADRATINHOS
 
 class TestZoom(unittest.TestCase):
     """Test functionality provided by the Zoom module"""

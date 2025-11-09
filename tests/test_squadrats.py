@@ -1,16 +1,13 @@
 import unittest
 from pathlib import Path
 
-import common.squadrats
-
 from pygeoif.geometry import Point
 
+import common.squadrats
 from common.job import Job
 from common.poly import parse_poly_file
 from common.region import Subdivision, Country
-from common.tile import Tile
-from common.zoom import ZOOM_SQUADRATS
-from common.zoom import ZOOM_SQUADRATINHOS
+from common.tile import Tile, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
 
 class TestSquadrats(unittest.TestCase):
@@ -31,8 +28,8 @@ class TestSquadrats(unittest.TestCase):
         self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=4), 5.6)
 
     def test_line_grid_intersections(self):
-        point_s: Point = Point(y=0.0, x=0.0)
-        point_n: Point = Point(y=0.1, x=0.1)
+        point_s: Point = Point(0.0, 0.0)
+        point_n: Point = Point(0.1, 0.1)
 
         boundariesNorthward = common.squadrats.line_grid_intersections(a=point_s, b=point_n, zoom=ZOOM_SQUADRATS)
         boundariesSouthward = common.squadrats.line_grid_intersections(a=point_n, b=point_s, zoom=ZOOM_SQUADRATS)
@@ -188,7 +185,7 @@ class TestSquadrats(unittest.TestCase):
                 expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
 
                 result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
-                self.assertEqual(result, [Tile(x=x, y=y, zoom=job.zoom) for x in expectedArray])
+                self.assertEqual(result, [Tile(coords=(x, y), zoom=job.zoom) for x in expectedArray])
 
     def test_generate_tiles(self):
         """
@@ -200,21 +197,6 @@ class TestSquadrats(unittest.TestCase):
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
         squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None))
         self.assertEqual(sum(map(len, squadratinhos.values())), 657749)
-
-    # def test_generate_tiles_along_the_line(self):
-    #     zoom = ZOOM_SQUADRATS
-
-    #     result = _generate_tiles_along_the_line(pointA = Coordinates(lat = 0, lon = 0), pointB = Coordinates(lat = 0.1, lon = 0.1), zoom = zoom)
-    #     self.assertEqual(len(result), 10)
-    #     self.assertEqual(result[0],  Tile.tile_at(lon = 0.08, lat = 0.1, zoom = zoom))
-    #     self.assertEqual(result[1],  Tile.tile_at(lon = 0.1, lat = 0.1, zoom = zoom))
-    #     self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = zoom))
-
-    #     result = _generate_tiles_along_the_line(pointA = Coordinates(lat = 0, lon = 0), pointB = Coordinates(lat = 1, lon = 1), zoom = zoom)
-    #     self.assertEqual(len(result), 92)
-    #     self.assertEqual(result[0],  Tile.tile_at(lon = 0.98, lat = 1, zoom = zoom))
-    #     self.assertEqual(result[1],  Tile.tile_at(lon = 1, lat = 1, zoom = zoom))
-    #     self.assertEqual(result[-1], Tile.tile_at(lon = 0, lat = 0, zoom = zoom))
 
 
 if __name__ == '__main__':
