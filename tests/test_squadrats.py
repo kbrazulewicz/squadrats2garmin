@@ -182,10 +182,10 @@ class TestSquadrats(unittest.TestCase):
                 y = 1
                 job = Job(region=None, zoom=ZOOM_SQUADRATS, osm_file=None)
                 row = [common.squadrats.Boundary(lon=job.zoom.lon(i[0]), lr=i[1], y=y) for i in input]
-                expectedArray = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
+                expected_array = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
 
                 result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
-                self.assertEqual(result, [Tile(coords=(x, y), zoom=job.zoom) for x in expectedArray])
+                self.assertEqual(result, [Tile(x, y) for x in expected_array])
 
     def test_generate_tiles(self):
         """

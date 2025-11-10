@@ -2,24 +2,42 @@ import unittest
 
 from pygeoif.geometry import Point
 
-from common.tile import Tile, ZOOM_SQUADRATS
+from common.tile import ZOOM_SQUADRATS
+from common.tile import ZOOM_SQUADRATINHOS
 
 
-class TestTile(unittest.TestCase):
-    def test_tile_at(self):
-        """Test Tile.tile_at method
-        """
+class TestZoom(unittest.TestCase):
+    """Test functionality provided by the Zoom module"""
 
-        self.assertEqual(Tile((8192, 8192), ZOOM_SQUADRATS), Tile.tile_at(Point(0,0), ZOOM_SQUADRATS))
+    def test_lat(self):
+        # squadrats
+        for (y, lat) in [(4096, 66.513260), (8192, 0.0), (12288, -66.513260)]:
+            with self.subTest(y = y, lat = lat):
+                self.assertAlmostEqual(ZOOM_SQUADRATS.lat(y), lat, places = 6)
 
-        self.assertEqual(Tile((8647, 8649), ZOOM_SQUADRATS), Tile.tile_at(Point(10, -10), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((8647, 8192), ZOOM_SQUADRATS), Tile.tile_at(Point(10,0), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((8647, 7734), ZOOM_SQUADRATS), Tile.tile_at(Point(10,10), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((8192, 7734), ZOOM_SQUADRATS), Tile.tile_at(Point(0,10), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((7736, 7734), ZOOM_SQUADRATS), Tile.tile_at(Point(-10,10), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((7736, 8192), ZOOM_SQUADRATS), Tile.tile_at(Point(-10, 0), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((7736, 8649), ZOOM_SQUADRATS), Tile.tile_at(Point(-10, -10), ZOOM_SQUADRATS))
-        self.assertEqual(Tile((8192, 8649), ZOOM_SQUADRATS), Tile.tile_at(Point(0,-10), ZOOM_SQUADRATS))
+        # squadratinhos
+        for (y, lat) in [(32768, 66.513260), (65536, 0.0), (98304, -66.513260)]:
+            with self.subTest(y = y, lat = lat):
+                self.assertAlmostEqual(ZOOM_SQUADRATINHOS.lat(y), lat, places = 6)
+
+    def test_point_to_tile(self):
+        """Test Zoom.point_to_tile method"""
+        for (lon, lat, x, y) in [
+            (  0,   0, 8192, 8192),
+            ( 10, -10, 8647, 8649),
+            ( 10,   0, 8647, 8192),
+            ( 10,  10, 8647, 7734),
+            (  0,  10, 8192, 7734),
+            (-10,  10, 7736, 7734),
+            (-10,   0, 7736, 8192),
+            (-10, -10, 7736, 8649),
+            (  0, -10, 8192, 8649),
+        ]:
+            with self.subTest(lon=lon, lat=lat, x=x, y=y):
+                tile = ZOOM_SQUADRATS.point_to_tile(Point(x=lon, y=lat))
+                self.assertEqual(tile.x, x)
+                self.assertEqual(tile.y, y)
+        pass
 
 if __name__ == '__main__':
     unittest.main()

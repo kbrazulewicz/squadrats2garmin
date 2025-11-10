@@ -10,7 +10,7 @@ from typing import NamedTuple
 from common import util
 from common.job import Job
 from common.osm import Node, Way
-from common.tile import Tile, TilePoint, Zoom
+from common.tile import Tile, Zoom
 from common.timer import timeit
 
 TAGS_WAY = [('name', 'grid')]
@@ -74,9 +74,9 @@ def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
 
     lat_delta = b.y - a.y
-    (tile_a, tile_b) = [zoom.tile(point) for point in (a, b)]
-    min_y = min(tile_a[1], tile_b[1])
-    max_y = max(tile_a[1], tile_b[1])
+    (tile_a, tile_b) = [zoom.point_to_tile(point) for point in (a, b)]
+    min_y = min(tile_a.y, tile_b.y)
+    max_y = max(tile_a.y, tile_b.y)
 
     if lat_delta < 0:
         # southward
@@ -184,7 +184,7 @@ def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Ti
     if east is not None:
         tiles_x.update(_generate_tile_range(west=west, east=east, zoom=zoom))
 
-    return [Tile(coords=(x, row[0].y), zoom=zoom) for x in list(tiles_x)]
+    return [Tile(x, row[0].y) for x in list(tiles_x)]
 
 
 def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int]:
@@ -200,8 +200,8 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
         )
 
     lat = zoom.lat(west.y)
-    (west_x, west_y) = zoom.tile(Point(west.lon, lat))
-    (east_x, east_y) = zoom.tile(Point(east.lon, lat))
+    (west_x, west_y) = zoom.point_to_tile(Point(west.lon, lat))
+    (east_x, east_y) = zoom.point_to_tile(Point(east.lon, lat))
 
     return range(west_x, east_x + 1)
 
@@ -210,13 +210,13 @@ def _generate_tiles_by_bounding_box(poly: MultiPolygon, zoom: Zoom):
     """Generate tiles for the rectangular area defined by the polygon bounding box
     """
     bounds = poly.bounds
-    tile_nw = Tile.tile_at(Point(x=bounds[0], y=bounds[3]), zoom=zoom)
-    tile_se = Tile.tile_at(Point(x=bounds[2], y=bounds[1]), zoom=zoom)
+    tile_nw = zoom.point_to_tile(Point(x=bounds[0], y=bounds[3]))
+    tile_se = zoom.point_to_tile(Point(x=bounds[2], y=bounds[1]))
     tiles = []
 
     for y in range(tile_nw.y, tile_se.y + 1):
         for x in range(tile_nw.x, tile_se.x + 1):
-            tiles.append(Tile(coords=(x, y), zoom=zoom))
+            tiles.append(Tile(x, y))
 
     return tiles
 
@@ -297,7 +297,7 @@ def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], jo
     ways: list[Way] = []
 
     for range in ranges:
-        (node1, node2) = (_osm_node(TilePoint(x, y), job) for x in range)
+        (node1, node2) = (_osm_node(Tile(x, y), job) for x in range)
         ways.append(
             Way(way_id=job.next_id(), nodes=[node1, node2], tags=TAGS_WAY + [('zoom', job.zoom.zoom)])
         )
@@ -311,7 +311,7 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
     ways: list[Way] = []
 
     for range in ranges:
-        (node1, node2) = (_osm_node(TilePoint(x, y), job) for y in range)
+        (node1, node2) = (_osm_node(Tile(x, y), job) for y in range)
         ways.append(
             Way(way_id=job.next_id(), nodes=[node1, node2], tags=TAGS_WAY + [('zoom', job.zoom.zoom)])
         )
@@ -319,8 +319,8 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
     return ways
 
 
-def _osm_node(point: TilePoint, job: Job) -> Node:
-    point = job.zoom.geo_coords(point)
+def _osm_node(tile: Tile, job: Job) -> Node:
+    point = job.zoom.tile_to_point(tile)
     return Node(node_id=job.next_id(), geom=point.coords[0])
 
 
