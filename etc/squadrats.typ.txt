@@ -19,6 +19,17 @@ Type=0x10F0A,1
 Type=0x10F0B,1
 ; visited squadratinhos
 Type=0x10F14,2
+Type=0x10F15,2
+; grid
+Type=0x11400,3
+Type=0x11410,3
+Type=0x11411,3
+; visited border
+Type=0x10E00,4
+Type=0x10E01,4
+; ubersquadrat and ubersquadratinhos
+Type=0x10E09,5
+Type=0x10E0A,5
 [end]
 
 [_polygon]
@@ -28,8 +39,8 @@ Type=0x10F09
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="0 0 2 0"
-"X c #9999FF"
-"1 c #0000FF"
+"X c #0000CC"
+"1 c #00FF00"
 [end]
 
 [_polygon]
@@ -39,42 +50,42 @@ Type=0x10F0A
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="32 32 4 1"
-"X c #9999FF"
+"X c #0000CC"
 "  c none"
-"3 c #0000FF"
+"3 c #00FF00"
 "4 c none"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"X XXX XXX XXX XXX XXX XXX XXX XX"
+" X X X X X X X X X X X X X X X X"
 "X X X X X X X X X X X X X X X X "
-"XXX XXX XXX XXX XXX XXX XXX XXX "
+" X X X X X X X X X X X X X X X X"
 ;12345678901234567890123456789012
 [end]
 
@@ -85,9 +96,9 @@ Type=0x10F0B
 String=Visited squadrats
 String=0x15,Odwiedzone kwadraty
 Xpm="32 32 4 1"
-"X c #9999FF"
+"X c #0000CC"
 "  c none"
-"3 c #0000FF"
+"3 c #00FF00"
 "4 c none"
 "X X X X X X X X X X X X X X X X "
 " X   X   X   X   X   X   X   X  "
@@ -132,42 +143,88 @@ Type=0x10F14
 String=Visited squadratinhos
 String=0x15,Odwiedzone kwadraciki
 Xpm="32 32 4 1"
-"X c #000099"
+"X c #0000CC"
 "  c none"
-"3 c #0000FF"
+"3 c #00FF00"
 "4 c none"
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
 "X X X X X X X X X X X X X X X X "
-" X   X   X   X   X   X   X   X  "
+"X XXX XXX XXX XXX XXX XXX XXX XX"
 "X X X X X X X X X X X X X X X X "
-"   X   X   X   X   X   X   X   X"
+"XXX XXX XXX XXX XXX XXX XXX XXX "
+;12345678901234567890123456789012
+[end]
+
+[_polygon]
+; visited squadratinhos
+; CUSTOMIZABLE_AREA_22
+Type=0x10F15
+String=Visited squadratinhos
+String=0x15,Odwiedzone kwadraciki
+Xpm="32 32 4 1"
+"X c #0000CC"
+"  c none"
+"3 c #00FF00"
+"4 c none"
+"   XX                           "
+"   XX                           "
+"   XX                           "
+"XXXXXXXX                        "
+"XXXXXXXX                        "
+"   XX                           "
+"   XX                           "
+"   XX                           "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                   XX           "
+"                   XX           "
+"                   XX           "
+"                XXXXXXXX        "
+"                XXXXXXXX        "
+"                   XX           "
+"                   XX           "
+"                   XX           "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
+"                                "
 ;12345678901234567890123456789012
 [end]
 
@@ -222,7 +279,7 @@ Xpm="0 0 1 0"
 Type=0x11400
 LineWidth=1
 Xpm="0 0 2 0"
-"1 c #555555"
+"1 c #000000"
 "2 c #00FF00"
 [end]
 
