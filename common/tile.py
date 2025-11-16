@@ -53,7 +53,7 @@ class Zoom:
 
     @property
     def zoom(self):
-        return self.zoom
+        return self._zoom
 
     def lat(self, y: int) -> float:
         """Return the latitude of the north edge of the tile with y coordinate
