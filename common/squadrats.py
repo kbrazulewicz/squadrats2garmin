@@ -3,9 +3,14 @@ import xml.etree.ElementTree as ET
 
 from collections import defaultdict
 
+import geojson
+import requests
 from pygeoif import MultiPolygon
 from pygeoif.geometry import Point, Polygon
 from typing import NamedTuple
+
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from common import util
 from common.job import Job
@@ -16,6 +21,36 @@ from common.timer import timeit
 TAGS_WAY = [('name', 'grid')]
 
 logger = logging.getLogger(__name__)
+
+class SquadratsClient:
+    def __init__(self):
+        self._session = requests.Session()
+        self._session.headers.update({
+            'User-Agent': 'SquadratsClient/1.0'
+        })
+
+        retry = Retry(
+            total=5,
+            backoff_factor=2,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self._session.mount('https://', adapter)
+
+        self._timeout = 10
+
+    def _get_geojson(self, user_id: str) -> dict:
+        response = self._session.get(f'https://mainframe-api.squadrats.com/anonymous/squadrants/{user_id}/geojson', timeout=self._timeout)
+        response.raise_for_status()
+        return response.json()
+
+    def get_trophies(self, user_id: str) -> geojson.feature.FeatureCollection:
+        geojson_info = self._get_geojson(user_id)
+
+        response = self._session.get(geojson_info['url'], timeout=self._timeout)
+        response.raise_for_status()
+        return geojson.loads(response.text)
+
 
 class UnexpectedBoundaryException(Exception):
     """Raised when an unexpected Boundary is found

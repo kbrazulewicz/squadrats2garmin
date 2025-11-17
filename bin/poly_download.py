@@ -8,48 +8,56 @@ from pathlib import Path
 import overpy
 import pycountry
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 
 class PolyDownloader:
     def __init__(self, base_url="http://polygons.openstreetmap.fr"):
-        self.base_url = base_url
-        self.session = requests.Session()
-        self.session.headers.update({
+        self._base_url = base_url
+        self._session = requests.Session()
+        self._session.headers.update({
             'User-Agent': 'OSM-PolyDownloader/1.0'
         })
 
-    def download(self, relation_id: int, output_path: str, retry_count: int = 5):
+        retry = Retry(
+            total=5,
+            backoff_factor=2,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self._session.mount('http://', adapter)
+        self._session.mount('https://', adapter)
+
+
+    def download(self, relation_id: int, output_path: str):
         """Download POLY file with retries"""
 
-        url = f"{self.base_url}/get_poly.py"
+        url = f"{self._base_url}/get_poly.py"
         params = {
             "id": relation_id,
             "params": "0.020000-0.020000-0.020000"
         }
         output_path = Path(output_path)
 
-        for attempt in range(retry_count):
-            try:
-                response = self.session.get(url, params=params, timeout=30)
-                response.raise_for_status()
+        try:
+            response = self._session.get(url, params=params, timeout=30)
+            response.raise_for_status()
 
-                # Check if the response is actually a POLY file
-                if not response.text.startswith('polygon\n'):
-                    raise ValueError("Response is not a valid POLY file")
+            # Check if the response is actually a POLY file
+            if not response.text.startswith('polygon\n'):
+                raise ValueError("Response is not a valid POLY file")
 
-                # Create the parent directory if needed
-                output_path.parent.mkdir(parents=True, exist_ok=True)
+            # Create the parent directory if needed
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
-                # Write file
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write(response.text)
-                return True
+            # Write file
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            return True
 
-            except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {e}")
-                if attempt < retry_count - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-
-        return False
+        except Exception as e:
+            return False
 
 
 class OsmIdResolver:

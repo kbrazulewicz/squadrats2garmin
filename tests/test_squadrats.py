@@ -9,6 +9,14 @@ from common.poly import parse_poly_file
 from common.region import Subdivision, Country
 from common.tile import Tile, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
+class TestSquadratsClient(unittest.TestCase):
+
+    def setUp(self):
+        self._client = common.squadrats.SquadratsClient()
+
+    def test_get_trophies(self):
+        self._client.get_trophies(user_id='P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1')
+
 
 class TestSquadrats(unittest.TestCase):
     """Test functionality provided by the Squadrats module"""

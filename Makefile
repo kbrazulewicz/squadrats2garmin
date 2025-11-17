@@ -9,6 +9,11 @@ grid-pl:
 	ls -l dist/europe/*-PL-*.img
 	cp dist/europe/*-PL-*.img $(GARMIN)
 
+grid-es: clean
+	python3 squadrats2garmin.py --verbose --config-files config/ES-España.json
+	ls -l dist/europe/*-ES-*.img
+#	cp dist/europe/*-PL-*.img $(GARMIN)
+
 test:
 	python3 -m unittest -v
 
@@ -19,16 +24,19 @@ test1:
 clean:
 	rm -rf output/*
 
-kml-to-osm: clean
-	python3 visited-squadrats.py --verbose --input-file squadrats.kml --output-file output/squadrats-visited.img
+visited-kml: clean
+	python3 visited-squadrats.py --verbose --kml-file squadrats.kml --output-file output/squadrats-visited.img
 
-kml: kml-to-osm
+visited-user-id: clean
+	python3 visited-squadrats.py --verbose --user-id P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 --output-file output/squadrats-visited.img
+
+visited: visited-user-id
 	mv output/gmapsupp.img output/squadrats-visited.img
-	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
+	#scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img $(GARMIN)
 
 mkgmap:
 	mkgmap --read-config=output/mkgmap.cfg
 	mv output/gmapsupp.img output/squadrats-visited.img
-	scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
+	#scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img $(GARMIN)
