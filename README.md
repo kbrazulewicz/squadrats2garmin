@@ -48,17 +48,13 @@ $ git clone git@github.com:kbrazulewicz/squadrats2garmin.git
 $ cd squadrats2garmin
 
 # setup Python environment
-$ python3 -m venv .venv
-$ pip install -r requirements.txt
-
-# activate Python environment
-$ source .venv/bin/activate
+$ uv sync
 ```
 
 Garmin-compatible grids are created by running `squadrats2garmin` script, passing a configuration file as an argument, ie.
 ```shell
 # run the script
-$ python3 squadrats2garmin.py -c config/PL-Polska.json
+$ uv run squadrats2garmin.py -c config/PL-Polska.json
 ```
 Read more about [configuration file format](config/README.md)  
 

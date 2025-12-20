@@ -1,0 +1,12 @@
+[project]
+name = "Squadrats2Garmin"
+version = "0.2.0"
+description = "Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastkml>=1.4.0",
+    "geojson>=3.2.0",
+    "pycountry>=24.6.1",
+    "requests>=2.32.5",
+]

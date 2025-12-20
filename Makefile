@@ -5,12 +5,12 @@ run:
 	python3 squadrats2osm.py ../config/squadrats2osm.json
 
 grid-pl:
-	python3 squadrats2garmin.py --verbose --config-files config/PL-Polska.json
+	uv run squadrats2garmin.py --verbose --config-files config/PL-Polska.json
 	ls -l dist/europe/*-PL-*.img
 	cp dist/europe/*-PL-*.img $(GARMIN)
 
 grid-es: clean
-	python3 squadrats2garmin.py --verbose --config-files config/ES-España.json
+	uv run squadrats2garmin.py --verbose --config-files config/ES-España.json
 	ls -l dist/europe/*-ES-*.img
 #	cp dist/europe/*-PL-*.img $(GARMIN)
 
@@ -25,10 +25,10 @@ clean:
 	rm -rf output/*
 
 visited-kml: clean
-	python3 visited-squadrats.py --verbose --kml-file squadrats.kml --output-file output/squadrats-visited.img
+	uv run visited-squadrats.py --verbose --kml-file squadrats.kml --output-file output/squadrats-visited.img
 
 visited-user-id: clean
-	python3 visited-squadrats.py --verbose --user-id P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 --output-file output/squadrats-visited.img
+	uv run visited-squadrats.py --verbose --user-id P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 --output-file output/squadrats-visited.img
 
 visited: visited-user-id
 	mv output/gmapsupp.img output/squadrats-visited.img
