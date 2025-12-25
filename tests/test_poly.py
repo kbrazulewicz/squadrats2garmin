@@ -3,8 +3,8 @@ from pathlib import Path
 
 from pygeoif.geometry import Point, Polygon
 
-from common.poly import parse_poly_file
-from common.poly import PolyFileIncorrectFiletypeException
+from squadrats2garmin.common.poly import parse_poly_file
+from squadrats2garmin.common.poly import PolyFileIncorrectFiletypeException
 
 
 class TestPoly(unittest.TestCase):

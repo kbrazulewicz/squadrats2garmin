@@ -1,0 +1,61 @@
+<<<version>>>
+1
+
+<<<info>>>
+summary: Squadrats style
+version: 1.0
+
+description {
+The default style used for Squadrats.
+}
+
+<<<options>>>
+# Map Visibility: auto
+# 16 -
+# 17 - 20km
+# 18 - 12km
+# 19 -
+# 20 - 3km
+# 22 - 800m
+# 23 - 300m
+# level 4: squadrats (visited:low resolution)
+# level 3: squadrats (visited:medium resolution)
+# level 2: squadrats (visited:medium resolution + grid:low resolution)
+# level 1: squadrats (visited:high resolution + grid:low resolution)
+# level 0: squadrats (visited:high resolution + grid:high resolution), squadratinhos (visited + grid)
+#levels: 0:23, 1:22, 2:20, 3:17, 4:16
+levels: 0:24, 1:23, 2:22, 3:20, 4:17, 5:15
+
+
+<<<lines>>>
+# squadrats grid
+name=grid & zoom=14 [0x11410 level 2-3 continue]
+name=grid & zoom=14 [0x11411 level 1]
+# visited squadrats border
+name=squadrats [0x10E00 level 4]
+
+# squadratinho grid
+name=grid & zoom=17 [0x11400 level 1]
+# visited squadratinhos border
+name=squadratinhos [0x10E01 level 1]
+
+# ubersquadrat & ubversquadratinho
+name=ubersquadrat [0x10E09 level 5]
+name=ubersquadratinho [0x10E0A level 1]
+
+
+<<<polygons>>>
+# visited squadrats
+name=squadrats [0x10F09 level 5-5 continue]
+name=squadrats [0x10F0A level 4-3 continue]
+name=squadrats [0x10F0B level 2]
+
+# visited squadratinhos
+name=squadratinhos [0x10F14 level 1-1 continue]
+name=squadratinhos [0x10F15 level 0]
+
+<<<relations>>>
+name=squadrats { name '${name}' }
+name=squadratinhos { name '${name}' }
+name=ubersquadrat { name '${name}' }
+name=ubersquadratinho { name '${name}' }

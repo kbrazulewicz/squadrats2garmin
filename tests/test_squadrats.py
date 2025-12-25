@@ -3,16 +3,16 @@ from pathlib import Path
 
 from pygeoif.geometry import Point
 
-import common.squadrats
-from common.job import Job
-from common.poly import parse_poly_file
-from common.region import Subdivision, Country
-from common.tile import Tile, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
+import squadrats2garmin.common.squadrats
+from squadrats2garmin.common.job import Job
+from squadrats2garmin.common.poly import parse_poly_file
+from squadrats2garmin.common.region import Subdivision, Country
+from squadrats2garmin.common.tile import Tile, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
 class TestSquadratsClient(unittest.TestCase):
 
     def setUp(self):
-        self._client = common.squadrats.SquadratsClient()
+        self._client = squadrats2garmin.common.squadrats.SquadratsClient()
 
     def test_get_trophies(self):
         self._client.get_trophies(user_id='P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1')
@@ -26,21 +26,21 @@ class TestSquadrats(unittest.TestCase):
         point_b: Point = Point(y=5, x=7)
 
         # intersections with the ends of the line
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_a.y), point_a.x)
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_b.y), point_b.x)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_a.y), point_a.x)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_b.y), point_b.x)
 
         # other intersections
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=1), 1.4)
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=2), 2.8)
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=3), 4.2)
-        self.assertEqual(common.squadrats.line_intersection(a=point_a, b=point_b, lat=4), 5.6)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=1), 1.4)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=2), 2.8)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=3), 4.2)
+        self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=4), 5.6)
 
     def test_line_grid_intersections(self):
         point_s: Point = Point(0.0, 0.0)
         point_n: Point = Point(0.1, 0.1)
 
-        boundariesNorthward = common.squadrats.line_grid_intersections(a=point_s, b=point_n, zoom=ZOOM_SQUADRATS)
-        boundariesSouthward = common.squadrats.line_grid_intersections(a=point_n, b=point_s, zoom=ZOOM_SQUADRATS)
+        boundariesNorthward = squadrats2garmin.common.squadrats.line_grid_intersections(a=point_s, b=point_n, zoom=ZOOM_SQUADRATS)
+        boundariesSouthward = squadrats2garmin.common.squadrats.line_grid_intersections(a=point_n, b=point_s, zoom=ZOOM_SQUADRATS)
 
         self.assertEqual(len(boundariesNorthward), 6)
         self.assertEqual(len(boundariesSouthward), 6)
@@ -52,9 +52,9 @@ class TestSquadrats(unittest.TestCase):
         """Test that tiles are properly generated for the bounding box method
         """
         poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
-        squadrats = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
+        squadrats = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
         self.assertEqual(len(squadrats), 14933)
-        squadratinhos = common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
+        squadratinhos = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
         self.assertEqual(len(squadratinhos), 939807)
 
     def test_generate_tiles_for_a_row(self):
@@ -189,10 +189,10 @@ class TestSquadrats(unittest.TestCase):
             with self.subTest(input=input, expected=expected):
                 y = 1
                 job = Job(region=None, zoom=ZOOM_SQUADRATS, osm_file=None)
-                row = [common.squadrats.Boundary(lon=job.zoom.lon(i[0]), lr=i[1], y=y) for i in input]
+                row = [squadrats2garmin.common.squadrats.Boundary(lon=job.zoom.lon(i[0]), lr=i[1], y=y) for i in input]
                 expected_array = [i + 1 for i in range(len(expected)) if expected[i] == 'X']
 
-                result = common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
+                result = squadrats2garmin.common.squadrats._generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
                 self.assertEqual(result, [Tile(x, y) for x in expected_array])
 
     def test_generate_tiles(self):
@@ -201,9 +201,9 @@ class TestSquadrats(unittest.TestCase):
         """
         poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
         region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', coordinates=poly)
-        squadrats = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None))
+        squadrats = squadrats2garmin.common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None))
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
-        squadratinhos = common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None))
+        squadratinhos = squadrats2garmin.common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None))
         self.assertEqual(sum(map(len, squadratinhos.values())), 657749)
 
 

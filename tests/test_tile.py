@@ -2,8 +2,8 @@ import unittest
 
 from pygeoif.geometry import Point
 
-from common.tile import ZOOM_SQUADRATS
-from common.tile import ZOOM_SQUADRATINHOS
+from squadrats2garmin.common.tile import ZOOM_SQUADRATS
+from squadrats2garmin.common.tile import ZOOM_SQUADRATINHOS
 
 
 class TestZoom(unittest.TestCase):

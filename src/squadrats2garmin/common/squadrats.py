@@ -12,11 +12,11 @@ from typing import NamedTuple
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from common import util
-from common.job import Job
-from common.osm import Node, Way
-from common.tile import Tile, Zoom
-from common.timer import timeit
+from squadrats2garmin.common import util
+from squadrats2garmin.common.job import Job
+from squadrats2garmin.common.osm import Node, Way
+from squadrats2garmin.common.tile import Tile, Zoom
+from squadrats2garmin.common.timer import timeit
 
 TAGS_WAY = [('name', 'grid')]
 

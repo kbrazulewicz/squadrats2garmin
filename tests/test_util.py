@@ -1,7 +1,7 @@
 import unittest
 
-from common.util import find_ranges
-from common.util import merge_ranges
+from squadrats2garmin.common.util import find_ranges
+from squadrats2garmin.common.util import merge_ranges
 
 class TestUtil(unittest.TestCase):
     def test_find_ranges(self):

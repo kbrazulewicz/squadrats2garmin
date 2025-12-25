@@ -2,6 +2,7 @@ import argparse
 import itertools
 import logging
 import pathlib
+import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator
@@ -12,11 +13,10 @@ from fastkml import KML
 from fastkml import Placemark
 from fastkml.utils import find
 
-from common.config import VisitedSquadratsConfig, IMG_FAMILY_ID_VISITED_SQUADRATS, OUTPUT_DIR
-from common.mkgmap import run_mkgmap, write_mkgmap_config_headers
-from common.osm import Node, Tag, MultiPolygon, Way
-from common.squadrats import SquadratsClient
-from common.timer import timeit
+from squadrats2garmin.common.mkgmap import IMG_FAMILY_ID_VISITED_SQUADRATS, VisitedSquadratsConfig, run_mkgmap
+from squadrats2garmin.common.osm import Node, Tag, MultiPolygon, Way
+from squadrats2garmin.common.squadrats import SquadratsClient
+from squadrats2garmin.common.timer import timeit
 
 logger = logging.getLogger(__name__)
 
@@ -139,22 +139,9 @@ def geojson_to_osm(path: Path, feature_collection: geojson.feature.FeatureCollec
         visited_squadrats.write_document(path=path)
 
 
-def generate_mkgmap_config(config_path: pathlib.Path, config: VisitedSquadratsConfig, input: pathlib.Path):
-    """Generate mkgmap config file
-    """
-    with config_path.open('w', encoding='UTF-8') as config_file:
-        write_mkgmap_config_headers(file=config_file, config=config)
-
-        config_file.write(f'mapname={config.img_family_id}0001\n')
-        config_file.write(f'description={config.description}\n')
-        config_file.write(f'input-file={input.relative_to(config.output_dir)}\n')
-
-        config_file.write(f'input-file={config.typ_file}\n')
-        config_file.write(f'description={config.description}\n')
-        config_file.write("gmapsupp\n")
-
 def parse_kml(path: pathlib.Path) -> KML:
     return KML.parse(path)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Convert Squadrat's 'visited squadrats' KML to Garmin IMG map")
@@ -170,26 +157,30 @@ def main():
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
-    osm_file = OUTPUT_DIR / 'squadrats-visited.osm'
-    mkgmap_config = OUTPUT_DIR / 'mkgmap.cfg'
-    img_file = OUTPUT_DIR / 'squadrats-visited.img'
+    with tempfile.TemporaryDirectory(prefix="mkgmap-", delete=True) as tmp_dir_name:
+        tmp_dir = Path(tmp_dir_name)
+        osm_path = tmp_dir / 'squadrats-visited.osm'
 
-    config = VisitedSquadratsConfig({
-        'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
-        'description': 'Visited Squadrats',
-        'output': img_file.name
-    })
+        if args.kml_file is not None:
+            k: KML = parse_kml(Path(args.kml_file))
+            kml_to_osm(path=osm_path, kml=k)
+        elif args.user_id is not None:
+            squadrats_client = SquadratsClient()
+            trophies = squadrats_client.get_trophies(user_id=args.user_id)
+            geojson_to_osm(path=osm_path, feature_collection=trophies)
 
-    if args.kml_file is not None:
-        k: KML = parse_kml(Path(args.kml_file))
-        kml_to_osm(path=osm_file, kml=k)
-    elif args.user_id is not None:
-        squadrats_client = SquadratsClient()
-        trophies = squadrats_client.get_trophies(user_id=args.user_id)
-        geojson_to_osm(path=osm_file, feature_collection=trophies)
+        img_path = Path(args.output_file)
+        config = VisitedSquadratsConfig(config={
+            'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
+            'description': 'Visited Squadrats',
+            'output_dir': tmp_dir,
+            'output': img_path
+        }, osm_path=osm_path)
+        config_path = tmp_dir / 'mkgmap.cfg'
 
-    generate_mkgmap_config(config_path=mkgmap_config, config=config, input=osm_file)
-    run_mkgmap(config=mkgmap_config)
+        config.write_mkgmap_config(config_path=config_path)
+        run_mkgmap(config_path=config_path)
+        config.move_output_file_to_final_location()
 
 if __name__ == "__main__":
     main()

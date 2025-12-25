@@ -8,7 +8,7 @@ from pathlib import Path
 import pycountry
 from pygeoif import MultiPolygon
 
-from common.poly import parse_poly_file
+from squadrats2garmin.common.poly import parse_poly_file
 
 logger = logging.getLogger(__name__)
 

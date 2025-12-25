@@ -1,6 +1,6 @@
 import unittest
 
-from common.osm import Node
+from squadrats2garmin.common.osm import Node
 
 class TestNode(unittest.TestCase):
     def test_node_to_xml(self):

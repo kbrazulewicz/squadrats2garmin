@@ -1,0 +1,2 @@
+from squadrats2garmin.squadrats2garmin import main as squadrats_grid
+from squadrats2garmin.visited_squadrats import main as visited_squadrats

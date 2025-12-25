@@ -1,5 +1,3 @@
-from common.tile import Tile
-
 def find_ranges(nums: list[int]) -> list[tuple[int, int]]:
     if not nums: return []
 

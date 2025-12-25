@@ -4,8 +4,8 @@ import itertools
 import pathlib
 from typing import Iterator
 
-from common.region import Region
-from common.tile import Zoom
+from squadrats2garmin.common.region import Region
+from squadrats2garmin.common.tile import Zoom
 
 class Job:
     """Representation of the job context

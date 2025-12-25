@@ -2,12 +2,11 @@ import argparse
 import logging
 import pathlib
 
-from common.config import RegionConfig, OUTPUT_DIR
-from common.job import Job
-from common.mkgmap import generate_garmin_img
-from common.region import RegionIndex
-from common.squadrats import generate_osm
-from common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
+from squadrats2garmin.common.job import Job
+from squadrats2garmin.common.mkgmap import RegionConfig, OUTPUT_DIR, generate_garmin_img
+from squadrats2garmin.common.region import RegionIndex
+from squadrats2garmin.common.squadrats import generate_osm
+from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
 logger = logging.getLogger(__name__)
 
