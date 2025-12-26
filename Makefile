@@ -1,20 +1,30 @@
 GARMIN=/Volumes/GARMIN/Garmin
 
+VERSION=0.2.0
+
 clean:
 	rm -f dist/squadrats2garmin-*.tar.gz
 	rm -f dist/squadrats2garmin-*-py3-none-any.whl
 	rm -f docker/squadrats2garmin-*.tar.gz
+	rm -f docker/squadrats2garmin-*-py3-none-any.whl
 	rm -rf output/*
 
 package:
 	uv build
-	cp dist/squadrats2garmin-*.tar.gz docker
+	cp dist/squadrats2garmin-$(VERSION)-py3-none-any.whl docker
 
 docker: package
 	docker build \
 		--build-arg MKGMAP_VERSION=r4923 \
 		--build-arg SQUADRATS2GARMIN_VERSION=0.2.0 \
+		--tag kbrazulewicz/squadrats2garmin \
 		docker
+
+docker-run:
+	docker run -it \
+		--env SQUADRATS2GARMIN_VERBOSE=true \
+		--mount type=bind,source=.,target=/output \
+		kbrazulewicz/squadrats2garmin
 
 
 test:
