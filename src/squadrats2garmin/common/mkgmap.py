@@ -28,66 +28,70 @@ _IMG_MAPNAME_PREFIX_LENGTH = 5
 
 class Config(ABC):
 
-    def __init__(self, config:dict) -> None:
-        self._img_family_id = config['img_family_id']
-        self._img_family_name = config['img_family_name'] if 'img_family_name' in config else _IMG_FAMILY_NAME
-        self._img_product_id = _IMG_PRODUCT_ID
-        self._img_series_name = config['series_name']
-        self._description = config['description']
-        self._output_dir = config['output_dir'] if 'output_dir' in config else OUTPUT_DIR
-        self._output = config['output']
-        self._style_file = None
-        self._typ_file = None
+    def __init__(self, output: Path, config: dict) -> None:
+        config = {
+            'style_file': None,
+            'typ_file': None,
+        } | config
+        self.__img_family_id = config['img_family_id']
+        self.__img_family_name = config['img_family_name'] if 'img_family_name' in config else _IMG_FAMILY_NAME
+        self.__img_product_id = _IMG_PRODUCT_ID
+        self.__img_series_name = config['series_name']
+        self.__description = config['description']
+        self.__output_dir = config['output_dir'] if 'output_dir' in config else OUTPUT_DIR
+        self.__output = output
+        self.__style_file = config['style_file']
+        self.__typ_file = config['typ_file']
 
     @property
     def output_dir(self) -> Path:
         """mkgmap's output directory"""
-        return self._output_dir
+        return self.__output_dir
 
     @property
     def output(self) -> Path:
-        return self._output
+        return self.__output
 
     @property
     def description(self) -> str:
-        return self._description
+        return self.__description
 
     @property
     def img_family_id(self) -> str:
-        return self._img_family_id
+        return self.__img_family_id
 
     @property
     def img_family_name(self) -> str:
-        return self._img_family_name
+        return self.__img_family_name
 
     @property
     def img_product_id(self) -> str:
-        return self._img_product_id
+        return self.__img_product_id
 
     @property
     def img_series_name(self) -> str:
-        return self._img_series_name
+        return self.__img_series_name
 
     @property
     def style_file(self) -> Path:
-        return self._style_file
+        return self.__style_file
 
     @property
     def typ_file(self) -> Path:
-        return self._typ_file
+        return self.__typ_file
 
     def _use_default_style_and_typ(self) -> None:
         """Use default style file and typ file
         Depends on the self.output_dir
         """
         mkgmap_resources = resources.files("squadrats2garmin.config.mkgmap")
-        if not self._style_file:
+        if not self.__style_file:
             with resources.as_file(mkgmap_resources.joinpath("squadrats-default.style")) as style_file:
-                self._style_file = style_file.copy_into(self.output_dir)
+                self.__style_file = style_file.copy_into(self.output_dir)
 
-        if not self._typ_file:
+        if not self.__typ_file:
             with resources.as_file(mkgmap_resources.joinpath("squadrats.typ.txt")) as typ_file:
-                self._typ_file = typ_file.copy_into(self.output_dir)
+                self.__typ_file = typ_file.copy_into(self.output_dir)
 
     def write_mkgmap_config_headers(self, config_file) -> None:
         # images with 'unicode' encoding are not displayed on Garmin
@@ -137,8 +141,8 @@ class RegionConfig(Config):
     mapname_prefix: str
     regions: dict[Zoom, list[Region]]
 
-    def __init__(self, config:dict, regions_14: list[Region], regions_17: list[Region]) -> None:
-        super().__init__(config=config)
+    def __init__(self, output: Path, config: dict, regions_14: list[Region], regions_17: list[Region]) -> None:
+        super().__init__(output=output, config=config)
 
         if 'mapname_prefix' in config:
             self.mapname_prefix = config['mapname_prefix']
@@ -156,17 +160,17 @@ class RegionConfig(Config):
     def parse(filename: str, poly_index: RegionIndex) -> RegionConfig:
         """Parse input file and return a Config object
         """
-        logger.debug('Processing input job from %s', filename)
+        logger.debug("Processing input job from %s", filename)
         with open(filename, encoding='UTF-8') as config_file:
             config = json.load(config_file) | {
                 'img_family_id': IMG_FAMILY_ID_SQUADRATS_GRID,
-                'series_name': 'Squadrats grid'
+                'series_name': "Squadrats grid"
             }
 
             regions_14: list[Region] = poly_index.select_regions(regions=config['zoom_14'])
             regions_17: list[Region] = poly_index.select_regions(regions=config['zoom_17'])
 
-            return RegionConfig(config=config, regions_14=regions_14, regions_17=regions_17)
+            return RegionConfig(output=Path(config['output']), config=config, regions_14=regions_14, regions_17=regions_17)
 
     def build_garmin_img(self, jobs: list[Job]) -> Path:
         """Generate a single Garmin IMG file from multiple jobs"""
@@ -180,7 +184,7 @@ class RegionConfig(Config):
 
 
 class VisitedSquadratsConfig(Config):
-    def __init__(self, config: dict, osm_path: Path) -> None:
+    def __init__(self, config: dict, osm_path: Path, output: Path) -> None:
         """
         Create VisitedSquadratsConfig object
         :param config:
@@ -188,10 +192,10 @@ class VisitedSquadratsConfig(Config):
         """
         config = {
             'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
-            'description': 'Visited Squadrats',
-            'series_name': 'Visited Squadrats'
+            'description': "Visited Squadrats",
+            'series_name': "Visited Squadrats"
         } | config
-        super().__init__(config=config)
+        super().__init__(config=config, output=output)
         self._osm_path = osm_path
 
     @property

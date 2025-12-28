@@ -1,18 +1,17 @@
 import argparse
 import itertools
 import logging
-import pathlib
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator
 
-# import fastkml.geometry
+import fastkml.geometry
 import geojson
-# from fastkml import KML
-# from fastkml import Placemark
-# from fastkml.utils import find
+from fastkml import KML
+from fastkml import Placemark
+from fastkml.utils import find
 
 from squadrats2garmin.common.mkgmap import VisitedSquadratsConfig
 from squadrats2garmin.common.osm import Node, Tag, MultiPolygon, Way
@@ -23,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 class VisitedSquadrats:
+    __KML_PLACEMARKS: list[str] = ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']
+    __GEOJSON_FEATURES: list[str] = ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']
+
     _document: ET.Element
     _id_generator: Iterator[int]
 
@@ -106,46 +108,34 @@ class VisitedSquadrats:
             case 'Polygon':
                 self.parse_geojson_multipolygon(polygons=[feature.geometry.coordinates], tags=tags)
 
-    def write_document(self, path: Path):
-        ET.indent(self._document)
-        ET.ElementTree(self._document).write(path, encoding='utf-8', xml_declaration=True)
+    def write_document(self, file: Path):
+        with timeit(msg=f"Writing {file}"):
+            ET.indent(self._document)
+            ET.ElementTree(self._document).write(file, encoding='utf-8', xml_declaration=True)
 
+    def geojson_to_osm(self, output: Path, squadrats: geojson.feature.FeatureCollection):
+        """Convert Squadrats' geojson to OSM"""
+        if isinstance(squadrats, geojson.feature.FeatureCollection):
+            for feature in squadrats.features:
+                if isinstance(feature, geojson.feature.Feature):
+                    feature_name = feature.properties['name']
+                    if feature_name in self.__GEOJSON_FEATURES:
+                        with timeit(msg=f"Processing {feature_name}"):
+                            self.geojson_feature_to_osm(feature=feature, tags=[('name', feature_name)])
 
-def kml_to_osm(path: Path, kml):
-    """Convert Squadrats' KML to OSM"""
-    visited_squadrats = VisitedSquadrats()
+        self.write_document(file=output)
 
-    for name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
-        with timeit(msg=f"Processing {name}"):
-            placemark: Placemark = find(kml, name=name)
-            visited_squadrats.kml_placemark_to_osm(placemark=placemark, tags=[('name', name)])
+    def kml_to_osm(self, output: Path, squadrats: KML):
+        for placemark_name in self.__KML_PLACEMARKS:
+            with timeit(msg=f"Processing {placemark_name}"):
+                placemark: Placemark = find(squadrats, name=placemark_name)
+                self.kml_placemark_to_osm(placemark=placemark, tags=[('name', placemark_name)])
 
-    with timeit(msg=f"Writing {path}"):
-        visited_squadrats.write_document(path=path)
-
-
-def geojson_to_osm(path: Path, feature_collection: geojson.feature.FeatureCollection):
-    """Convert Squadrats' geojson to OSM"""
-    visited_squadrats = VisitedSquadrats()
-
-    if isinstance(feature_collection, geojson.feature.FeatureCollection):
-        for feature in feature_collection.features:
-            if isinstance(feature, geojson.feature.Feature):
-                feature_name = feature.properties['name']
-                if feature_name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
-                    with timeit(msg=f"Processing {feature_name}"):
-                        visited_squadrats.geojson_feature_to_osm(feature=feature, tags=[('name', feature_name)])
-
-    with timeit(msg=f"Writing {path}"):
-        visited_squadrats.write_document(path=path)
-
-
-def parse_kml(path: pathlib.Path) -> KML:
-    return KML.parse(path)
+        self.write_document(file=output)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Convert Squadrat's 'visited squadrats' KML to Garmin IMG map")
+    parser = argparse.ArgumentParser(description="Convert Squadrat's 'visited squadrats' to Garmin IMG map")
     parser.add_argument('-v', '--verbose', action='store_true',
                         help="verbose output")
     parser.add_argument('-k', '--keep', action='store_true',
@@ -159,6 +149,21 @@ def parse_args():
 
     return parser.parse_args()
 
+
+def generate_osm(output: Path, args):
+    visited_squadrats = VisitedSquadrats()
+
+    if args.user_id:
+        logger.info("Fetching squadrats data")
+        squadrats_client = SquadratsClient()
+        squadrats_trophies = squadrats_client.get_trophies(user_id=args.user_id)
+        visited_squadrats.geojson_to_osm(output=output, squadrats=squadrats_trophies)
+    elif args.kml_file:
+        logger.info("Processing KML file")
+        squadrats_kml: KML = KML.parse(Path(args.kml_file))
+        visited_squadrats.kml_to_osm(output=output, squadrats=squadrats_kml)
+
+
 def visited_squadrats():
     args = parse_args()
 
@@ -168,19 +173,15 @@ def visited_squadrats():
         tmp_dir = Path(tmp_dir_name)
         osm_path = tmp_dir / 'squadrats-visited.osm'
 
-        if args.user_id:
-            logger.info("Fetching squadrats data")
-            squadrats_client = SquadratsClient()
-            trophies = squadrats_client.get_trophies(user_id=args.user_id)
-            geojson_to_osm(path=osm_path, feature_collection=trophies)
-        elif args.kml_file:
-            k: KML = parse_kml(Path(args.kml_file))
-            kml_to_osm(path=osm_path, kml=k)
+        generate_osm(output=osm_path, args=args)
 
-        config = VisitedSquadratsConfig(config={
-            'output': Path(args.output),
-            'output_dir': tmp_dir
-        }, osm_path=osm_path)
+        config = VisitedSquadratsConfig(
+            output=Path(args.output),
+            config={
+                'output_dir': tmp_dir
+            },
+            osm_path=osm_path
+        )
 
         logger.info("Building Garmin IMG file %s", config.output)
         config.build_garmin_img()
