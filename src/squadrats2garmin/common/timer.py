@@ -13,4 +13,4 @@ def timeit(msg: str, level=logging.DEBUG):
     try:
         yield
     finally:
-        logger.log(level=level, msg=f'{msg} : {time.perf_counter() - now}s')
+        logger.log(level=level, msg=f"{msg}: {time.perf_counter() - now}s")

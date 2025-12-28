@@ -45,11 +45,12 @@ class SquadratsClient:
         return response.json()
 
     def get_trophies(self, user_id: str) -> geojson.feature.FeatureCollection:
-        geojson_info = self._get_geojson(user_id)
+        with timeit(msg=f"Fetching trophies for user {user_id}"):
+            geojson_info = self._get_geojson(user_id)
 
-        response = self._session.get(geojson_info['url'], timeout=self._timeout)
-        response.raise_for_status()
-        return geojson.loads(response.text)
+            response = self._session.get(geojson_info['url'], timeout=self._timeout)
+            response.raise_for_status()
+            return geojson.loads(response.text)
 
 
 class UnexpectedBoundaryException(Exception):

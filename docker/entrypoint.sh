@@ -7,4 +7,4 @@ source ~/.local/bin/env
 
 # shellcheck disable=SC2090
 # shellcheck disable=SC2086
-uv run --with "${SQUADRATS2GARMIN_WHL}" visited ${SQUADRATS2GARMIN_VERBOSE:+--verbose} -u "${SQUADRATS_USERID}" -o "${OUTPUT}"
+uv run --with "${SQUADRATS2GARMIN_WHL}" visited ${SQUADRATS2GARMIN_VERBOSE:+--verbose} --user-id "${SQUADRATS_USERID}" --output "${OUTPUT}"

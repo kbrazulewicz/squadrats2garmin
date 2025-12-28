@@ -2,18 +2,19 @@ import argparse
 import itertools
 import logging
 import pathlib
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterator
 
-import fastkml.geometry
+# import fastkml.geometry
 import geojson
-from fastkml import KML
-from fastkml import Placemark
-from fastkml.utils import find
+# from fastkml import KML
+# from fastkml import Placemark
+# from fastkml.utils import find
 
-from squadrats2garmin.common.mkgmap import IMG_FAMILY_ID_VISITED_SQUADRATS, VisitedSquadratsConfig, run_mkgmap
+from squadrats2garmin.common.mkgmap import VisitedSquadratsConfig
 from squadrats2garmin.common.osm import Node, Tag, MultiPolygon, Way
 from squadrats2garmin.common.squadrats import SquadratsClient
 from squadrats2garmin.common.timer import timeit
@@ -45,7 +46,7 @@ class VisitedSquadrats:
         self._document.append(Way.way_to_xml(element_id=way_id, refs=node_ids))
         return way_id
 
-    def parse_kml_multipolygon(self, polygons: Iterator[fastkml.geometry.Polygon], tags: list[Tag]=None) -> None:
+    def parse_kml_multipolygon(self, polygons: list[fastkml.geometry.Polygon], tags: list[Tag]=None) -> None:
         """Parse fastkml.geometry.Polygon"""
         outer: list[int] = []
         inner: list[int] = []
@@ -115,11 +116,11 @@ def kml_to_osm(path: Path, kml):
     visited_squadrats = VisitedSquadrats()
 
     for name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
-        with timeit(msg=f'Processing {name}'):
+        with timeit(msg=f"Processing {name}"):
             placemark: Placemark = find(kml, name=name)
             visited_squadrats.kml_placemark_to_osm(placemark=placemark, tags=[('name', name)])
 
-    with timeit(msg=f'Writing {path}'):
+    with timeit(msg=f"Writing {path}"):
         visited_squadrats.write_document(path=path)
 
 
@@ -132,10 +133,10 @@ def geojson_to_osm(path: Path, feature_collection: geojson.feature.FeatureCollec
             if isinstance(feature, geojson.feature.Feature):
                 feature_name = feature.properties['name']
                 if feature_name in ['squadrats', 'squadratinhos', 'ubersquadrat', 'ubersquadratinho']:
-                    with timeit(msg=f'Processing {feature_name}'):
+                    with timeit(msg=f"Processing {feature_name}"):
                         visited_squadrats.geojson_feature_to_osm(feature=feature, tags=[('name', feature_name)])
 
-    with timeit(msg=f'Writing {path}'):
+    with timeit(msg=f"Writing {path}"):
         visited_squadrats.write_document(path=path)
 
 
@@ -143,44 +144,53 @@ def parse_kml(path: pathlib.Path) -> KML:
     return KML.parse(path)
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(description="Convert Squadrat's 'visited squadrats' KML to Garmin IMG map")
     parser.add_argument('-v', '--verbose', action='store_true',
-                        help='verbose output')
-    parser.add_argument('-k', '--kml-file', required=False,
-                        help="Squadrat's 'visited squadrats' KML")
+                        help="verbose output")
+    parser.add_argument('-k', '--keep', action='store_true',
+                        help="keep output files after processing")
     parser.add_argument('-u', '--user-id', required=False,
                         help="Squadrat's user id")
-    parser.add_argument('-o', '--output-file', required=True,
-                        help='Output file')
-    args = parser.parse_args()
+    parser.add_argument('--kml', required=False,
+                        help="Squadrat's 'visited squadrats' KML")
+    parser.add_argument('-o', '--output', required=True,
+                        help="Output file")
+
+    return parser.parse_args()
+
+def visited_squadrats():
+    args = parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
-    with tempfile.TemporaryDirectory(prefix="mkgmap-", delete=True) as tmp_dir_name:
+    with tempfile.TemporaryDirectory(prefix="mkgmap-", delete=(not args.keep)) as tmp_dir_name:
         tmp_dir = Path(tmp_dir_name)
         osm_path = tmp_dir / 'squadrats-visited.osm'
 
-        if args.kml_file is not None:
-            k: KML = parse_kml(Path(args.kml_file))
-            kml_to_osm(path=osm_path, kml=k)
-        elif args.user_id is not None:
+        if args.user_id:
+            logger.info("Fetching squadrats data")
             squadrats_client = SquadratsClient()
             trophies = squadrats_client.get_trophies(user_id=args.user_id)
             geojson_to_osm(path=osm_path, feature_collection=trophies)
+        elif args.kml_file:
+            k: KML = parse_kml(Path(args.kml_file))
+            kml_to_osm(path=osm_path, kml=k)
 
-        img_path = Path(args.output_file)
         config = VisitedSquadratsConfig(config={
-            'img_family_id': IMG_FAMILY_ID_VISITED_SQUADRATS,
-            'description': 'Visited Squadrats',
-            'output_dir': tmp_dir,
-            'output': img_path
+            'output': Path(args.output),
+            'output_dir': tmp_dir
         }, osm_path=osm_path)
-        config_path = tmp_dir / 'mkgmap.cfg'
 
-        config.write_mkgmap_config(config_path=config_path)
-        run_mkgmap(config_path=config_path)
-        config.move_output_file_to_final_location()
+        logger.info("Building Garmin IMG file %s", config.output)
+        config.build_garmin_img()
+
+        if args.keep:
+            logger.info(f"Keeping output files in {tmp_dir_name}")
+
+def main():
+    with timeit(msg=f"{sys.argv}"):
+        visited_squadrats()
 
 if __name__ == "__main__":
     main()

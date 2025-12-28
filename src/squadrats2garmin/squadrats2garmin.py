@@ -3,7 +3,7 @@ import logging
 import pathlib
 
 from squadrats2garmin.common.job import Job
-from squadrats2garmin.common.mkgmap import RegionConfig, OUTPUT_DIR, generate_garmin_img
+from squadrats2garmin.common.mkgmap import RegionConfig, OUTPUT_DIR
 from squadrats2garmin.common.region import RegionIndex
 from squadrats2garmin.common.squadrats import generate_osm
 from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
@@ -23,8 +23,7 @@ def process_input_job(config_file: str, poly_index: RegionIndex) -> None:
             generate_osm(job)
             jobs.append(job)
 
-    generate_garmin_img(config=config, jobs=jobs)
-
+    config.build_garmin_img(jobs=jobs)
 
 def remove_all_files(directory: pathlib.Path):
     """Remove all files from a directory"""
