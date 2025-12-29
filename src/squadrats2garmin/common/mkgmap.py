@@ -16,8 +16,6 @@ from squadrats2garmin.common.timer import timeit
 
 logger = logging.getLogger(__name__)
 
-OUTPUT_DIR = Path("output")
-
 # different family_id's to ensure no styles overlap
 IMG_FAMILY_ID_SQUADRATS_GRID = '9724'
 IMG_FAMILY_ID_VISITED_SQUADRATS = '9725'
@@ -38,7 +36,7 @@ class Config(ABC):
         self.__img_product_id = _IMG_PRODUCT_ID
         self.__img_series_name = config['series_name']
         self.__description = config['description']
-        self.__output_dir = config['output_dir'] if 'output_dir' in config else OUTPUT_DIR
+        self.__output_dir = config['output_dir']
         self.__output = output
         self.__style_file = config['style_file']
         self.__typ_file = config['typ_file']
@@ -157,14 +155,15 @@ class RegionConfig(Config):
         }
 
     @staticmethod
-    def parse(filename: str, poly_index: RegionIndex) -> RegionConfig:
+    def parse(filename: str, poly_index: RegionIndex, output_dir: Path) -> RegionConfig:
         """Parse input file and return a Config object
         """
         logger.debug("Processing input job from %s", filename)
         with open(filename, encoding='UTF-8') as config_file:
             config = json.load(config_file) | {
                 'img_family_id': IMG_FAMILY_ID_SQUADRATS_GRID,
-                'series_name': "Squadrats grid"
+                'series_name': "Squadrats grid",
+                'output_dir': output_dir
             }
 
             regions_14: list[Region] = poly_index.select_regions(regions=config['zoom_14'])

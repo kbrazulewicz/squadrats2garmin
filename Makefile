@@ -35,12 +35,12 @@ run:
 	python3 squadrats2osm.py ../config/squadrats2osm.json
 
 grid-pl:
-	uv run squadrats2garmin.py --verbose --config-files config/PL-Polska.json
+	uv run grid --verbose --config-files config/PL-Polska.json
 	ls -l dist/europe/*-PL-*.img
 	cp dist/europe/*-PL-*.img $(GARMIN)
 
 grid-es: clean
-	uv run squadrats2garmin.py --verbose --config-files config/ES-España.json
+	uv run grid --verbose --config-files config/ES-España.json
 	ls -l dist/europe/*-ES-*.img
 #	cp dist/europe/*-PL-*.img $(GARMIN)
 

@@ -47,6 +47,9 @@ $ sudo apt install mkgmap
 $ git clone git@github.com:kbrazulewicz/squadrats2garmin.git
 $ cd squadrats2garmin
 
+# install uv package and project manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # setup Python environment
 $ uv sync
 ```
@@ -54,7 +57,7 @@ $ uv sync
 Garmin-compatible grids are created by running `squadrats2garmin` script, passing a configuration file as an argument, ie.
 ```shell
 # run the script
-$ uv run squadrats2garmin.py -c config/PL-Polska.json
+$ uv run grid -c config/PL-Polska.json
 ```
 Read more about [configuration file format](config/README.md)  
 

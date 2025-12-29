@@ -47,6 +47,9 @@ $ sudo apt install mkgmap
 $ git clone git@github.com:kbrazulewicz/squadrats2garmin.git
 $ cd squadrats2garmin
 
+# zainstaluj uv - manager pakietów i projektów
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # ustaw środowisko Python
 $ uv sync
 ```
@@ -54,7 +57,7 @@ $ uv sync
 Aby wygenerować siatkę uruchom skrypt `squadrats2garmin` jako argument podając ścieżkę do pliku konfiguracyjnego, np.
 ```shell
 # uruchom skrypt
-$ uv run squadrats2garmin.py -c config/PL-Polska.json
+$ uv run grid -c config/PL-Polska.json
 ```
 Dowiedz się więcej o [formacie pliku konfiguracyjnego](config/README.md)
 
