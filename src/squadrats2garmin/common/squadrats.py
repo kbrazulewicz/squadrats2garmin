@@ -110,7 +110,7 @@ def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
 
     lat_delta = b.y - a.y
-    (tile_a, tile_b) = [zoom.point_to_tile(point) for point in (a, b)]
+    (tile_a, tile_b) = [zoom.to_tile(point) for point in (a, b)]
     min_y = min(tile_a.y, tile_b.y)
     max_y = max(tile_a.y, tile_b.y)
 
@@ -236,8 +236,8 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
         )
 
     lat = zoom.lat(west.y)
-    (west_x, west_y) = zoom.point_to_tile(Point(west.lon, lat))
-    (east_x, east_y) = zoom.point_to_tile(Point(east.lon, lat))
+    (west_x, west_y) = zoom.to_tile(Point(west.lon, lat))
+    (east_x, east_y) = zoom.to_tile(Point(east.lon, lat))
 
     return range(west_x, east_x + 1)
 
@@ -246,8 +246,8 @@ def _generate_tiles_by_bounding_box(poly: MultiPolygon, zoom: Zoom):
     """Generate tiles for the rectangular area defined by the polygon bounding box
     """
     bounds = poly.bounds
-    tile_nw = zoom.point_to_tile(Point(x=bounds[0], y=bounds[3]))
-    tile_se = zoom.point_to_tile(Point(x=bounds[2], y=bounds[1]))
+    tile_nw = zoom.to_tile(Point(x=bounds[0], y=bounds[3]))
+    tile_se = zoom.to_tile(Point(x=bounds[2], y=bounds[1]))
     tiles = []
 
     for y in range(tile_nw.y, tile_se.y + 1):
@@ -356,7 +356,7 @@ def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job:
 
 
 def _osm_node(tile: Tile, job: Job) -> Node:
-    point = job.zoom.tile_to_point(tile)
+    point = job.zoom.to_geo(tile)
     return Node(node_id=job.next_id(), geom=point.coords[0])
 
 

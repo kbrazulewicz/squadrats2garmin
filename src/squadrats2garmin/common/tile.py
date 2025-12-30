@@ -4,13 +4,13 @@ import math
 from typing import NamedTuple
 
 from pygeoif.geometry import Point
-from pygeoif.types import Point2D
 
 
 class Tile(NamedTuple):
-    """Representation of a tile
+    """
+    Representation of a tile
 
-    see https://wiki.openstreetmap.org/wiki/Zoom_levels
+    See https://wiki.openstreetmap.org/wiki/Zoom_levels.
     """
 
     x: int
@@ -66,15 +66,15 @@ class Zoom:
         """
         return x / self._n * 360.0 - 180.0
 
-    def tile_to_point(self, tile: Tile) -> Point:
+    def to_geo(self, tile: Tile) -> Point:
         """Return the coordinates of the NW corner of the tile
         """
         return Point(
-            x=tile.x / self._n * 360.0 - 180.0,
-            y=math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * tile.y / self._n))))
+            x=self.lon(tile.x),
+            y=self.lat(tile.y)
         )
 
-    def point_to_tile(self, point: Point) -> Tile:
+    def to_tile(self, point: Point) -> Tile:
         """Return tile coordinates (x, y) for given latitude and longitude
         """
         tile_x = int((point.x + 180.0) / 360.0 * self._n)

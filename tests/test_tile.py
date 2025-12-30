@@ -20,8 +20,8 @@ class TestZoom(unittest.TestCase):
             with self.subTest(y = y, lat = lat):
                 self.assertAlmostEqual(ZOOM_SQUADRATINHOS.lat(y), lat, places = 6)
 
-    def test_point_to_tile(self):
-        """Test Zoom.point_to_tile method"""
+    def test_to_tile(self):
+        """Test Zoom.to_tile method"""
         for (lon, lat, x, y) in [
             (  0,   0, 8192, 8192),
             ( 10, -10, 8647, 8649),
@@ -34,7 +34,7 @@ class TestZoom(unittest.TestCase):
             (  0, -10, 8192, 8649),
         ]:
             with self.subTest(lon=lon, lat=lat, x=x, y=y):
-                tile = ZOOM_SQUADRATS.point_to_tile(Point(x=lon, y=lat))
+                tile = ZOOM_SQUADRATS.to_tile(Point(x=lon, y=lat))
                 self.assertEqual(tile.x, x)
                 self.assertEqual(tile.y, y)
         pass
