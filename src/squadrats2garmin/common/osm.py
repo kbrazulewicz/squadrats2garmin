@@ -1,15 +1,42 @@
 """Classes and methods to work with OSM data
 """
+import itertools
 import xml.etree.ElementTree as ET
 from abc import ABC
+from pathlib import Path
+from typing import Iterator, Protocol
 
 from pygeoif.types import Point2D
+
+from squadrats2garmin.common.timer import timeit
 
 # all squadratinhos
 # 4^17 = 17 179 869 184
 WAY_BASE_ID  = 100000000000
 
 type Tag = tuple[str, str]
+
+
+class OSMProducer(Protocol):
+    def to_file(self, file: Path) -> None:
+        ...
+
+
+class AbstractOSMProducer(ABC, OSMProducer):
+    """Abstract OSM producer class"""
+
+    def __init__(self):
+        self._document: ET.Element = ET.Element("osm", {"version": '0.6'})
+        self.__id_generator: Iterator[int] = itertools.count(start=1)
+
+    def _next_id(self) -> int:
+        return next(self.__id_generator)
+
+    def _write_document(self, file: Path):
+        with timeit(msg=f"Writing {file}"):
+            ET.indent(self._document)
+            ET.ElementTree(self._document).write(file, encoding='utf-8', xml_declaration=True)
+
 
 class OSMElement(ABC):
     """Abstract class representing an OSM element"""
@@ -58,27 +85,26 @@ class OSMElement(ABC):
         )
         return node
 
-    @staticmethod
-    def element_to_xml(name: str, attrs: dict, tags: list[Tag]) -> ET.Element:
-        element = ET.Element(name, attrs)
-        element.extend(
-            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
-            for tag in tags
-        )
-        return element
-
 
 class Node(OSMElement):
-    """Representation of an OSM Node entity
-       See https://wiki.openstreetmap.org/wiki/Node
+    """
+    Representation of an OSM Node entity
+
+    See https://wiki.openstreetmap.org/wiki/Node
+
+    Attributes
+    ----------
+    TAG : str
+        XML element tag
+    _geom : Point2D
+        [0] is longitude, [1] is latitude
     """
 
-    _geom: Point2D
-    """[0] is longitude, [1] is latitude"""
+    TAG: str = 'node'
 
-    def __init__(self, node_id: int, geom: Point2D, tags: list[Tag] = None) -> None:
-        super().__init__(name='node', element_id=node_id, tags=tags)
-        self._geom = geom
+    def __init__(self, node_id: int, geom: Point2D, tags: list[Tag] | None = None) -> None:
+        super().__init__(name=self.TAG, element_id=node_id, tags=tags)
+        self._geom: Point2D = geom
 
     def __repr__(self) -> str:
         """String representation of the Node object
@@ -101,24 +127,30 @@ class Node(OSMElement):
 
 
 class Way(OSMElement):
-    """Representation of an OSM Way entity
-       See https://wiki.openstreetmap.org/wiki/Way
+    """
+    Representation of an OSM Way entity.
+
+    See https://wiki.openstreetmap.org/wiki/Way
+
+    Attributes
+    ----------
+    TAG : str
+        XML element tag
+    _refs : list[int]
+        node references
     """
 
-    nodes: list[Node] = None
-    """Ways' nodes"""
+    TAG: str = 'way'
 
-    _refs: list[int] = None
-
-    def __init__(self, way_id: int, refs: list[int] = None, nodes: list[Node] = None, tags: list[Tag] = None) -> None:
-        super().__init__(name='way', element_id=way_id, tags=tags)
+    def __init__(self, way_id: int, refs: list[int] | None = None, nodes: list[Node] | None = None, tags: list[Tag] | None = None) -> None:
+        super().__init__(name=self.TAG, element_id=way_id, tags=tags)
         if refs:
             self._refs = refs
         elif nodes:
             self.nodes = nodes
             self._refs = [node.element_id for node in nodes]
         else:
-            raise
+            raise ValueError
 
     def to_xml(self) -> ET.Element:
         """Generate XML representation of Way object
@@ -126,18 +158,8 @@ class Way(OSMElement):
         way = super().to_xml()
         for ref in self._refs:
             way.append(
-                ET.Element('nd', {
-                    'ref': str(ref)
-                })
+                ET.Element('nd', {'ref': str(ref)})
             )
-
-        return way
-
-    @staticmethod
-    def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
-        way = ET.Element('way', {'id': str(element_id)})
-        for ref in refs:
-            way.append(ET.Element('nd', {'ref': str(ref)}))
 
         return way
 
@@ -200,7 +222,7 @@ class MultiPolygon(OSMElement):
             tags = []
         tags = [('type', 'multipolygon')] + tags
 
-        relation = OSMElement.element_to_xml('relation', {'id': str(element_id)}, tags=tags)
+        relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
         for way_id in outer_rings:
             relation.append(
                 ET.Element('member', {
@@ -221,3 +243,31 @@ class MultiPolygon(OSMElement):
 
         return relation
 
+
+def element_to_xml(name: str, attrs: dict, tags: list[Tag] | None = None) -> ET.Element:
+    element = ET.Element(name, attrs)
+    if tags:
+        element.extend(
+            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
+            for tag in tags
+        )
+    return element
+
+
+def node_to_xml(element_id: int, geom: Point2D) -> ET.Element:
+    return element_to_xml(
+        name=Node.TAG,
+        attrs={
+            'id': str(element_id),
+            'lon': str(geom[0]),
+            'lat': str(geom[1]),
+        }
+    )
+
+
+def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
+    way: ET.Element = element_to_xml(Way.TAG, {'id': str(element_id)})
+    for ref in refs:
+        way.append(ET.Element('nd', {'ref': str(ref)}))
+
+    return way

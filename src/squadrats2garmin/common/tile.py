@@ -4,6 +4,7 @@ import math
 from typing import NamedTuple
 
 from pygeoif.geometry import Point
+from pygeoif.types import Point2D
 
 
 class Tile(NamedTuple):

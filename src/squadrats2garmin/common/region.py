@@ -22,6 +22,7 @@ def get_subdivision_code(code: str) -> str:
     """
     return code if re.match(r'^[A-Z0-9]{1,3}$', code) else None
 
+
 class Region(ABC):
     """Abstract base class for regions
     """
