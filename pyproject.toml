@@ -14,11 +14,13 @@ dependencies = [
     "geojson>=3.2.0",
     "pycountry>=24.6.1",
     "requests>=2.32.5",
+    "shapely>=2.1.2",
 ]
 
 [project.scripts]
 visited = "squadrats2garmin:visited_squadrats"
 grid = "squadrats2garmin:squadrats_grid"
+poly = "squadrats2garmin:poly_download"
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
@@ -26,5 +28,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "parameterized>=0.9.0",
     "pytest>=9.0.2",
+    "pytest-benchmark>=5.2.3",
+]
+poly = [
+    "overpy>=0.7",
 ]

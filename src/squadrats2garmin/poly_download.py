@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import logging
 import re
 import sys
 import time
@@ -10,6 +10,8 @@ import pycountry
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
+
+logger = logging.getLogger(__name__)
 
 
 class PolyDownloader:
@@ -28,7 +30,6 @@ class PolyDownloader:
         adapter = HTTPAdapter(max_retries=retry)
         self._session.mount('http://', adapter)
         self._session.mount('https://', adapter)
-
 
     def download(self, relation_id: int, output_path: str):
         """Download POLY file with retries"""
@@ -82,16 +83,16 @@ class OsmIdResolver:
                 result: overpy.Result = self.api.query(query)
 
                 if len(result.relations) == 0:
-                    print(f'Unable to find relation for {iso_code}')
+                    logger.error("Unable to find relation for %s", iso_code)
                     return False
                 elif len(result.relations) > 1:
-                    print(f'Multiple relations found for {iso_code}')
+                    logger.error("Multiple relations found for %s", iso_code)
                     return False
                 else:
                     return result.relations[0].id
 
             except Exception as e:
-                print(f'Attempt {attempt + 1} failed: {e}')
+                logger.warning("Attempt %d failed: %s", attempt + 1, e)
                 if attempt < retry_count - 1:
                     time.sleep(2 ** attempt)  # Exponential backoff
 
@@ -102,42 +103,51 @@ def get_output_path(code: str):
     if "-" in code:
         subdivision = pycountry.subdivisions.get(code=code)
         if subdivision:
-            return f'{code}-{subdivision.name.replace(" ", "-")}.poly'
+            return f"{code}-{subdivision.name.replace(" ", "-")}.poly"
         else:
-            return f'{code}.poly'
+            return f"{code}.poly"
     else:
         country = pycountry.countries.get(alpha_2=code)
         if country:
-            return f'{code}-{country.name.replace(" ", "-")}.poly'
+            return f"{code}-{country.name.replace(" ", "-")}.poly"
         else:
-            return f'{code}.poly'
+            return f"{code}.poly"
 
 
 def download_poly(code: str, osm_id: int):
     output_path = get_output_path(code=code)
+
+    poly_downloader = PolyDownloader()
     if poly_downloader.download(relation_id=osm_id, output_path=output_path):
-        print(f'{code}: {output_path}')
+        logger.info("Successfully downloaded %s to %s", code, output_path)
 
-osm_id_resolver = OsmIdResolver()
-poly_downloader = PolyDownloader()
 
-for arg in sys.argv[1:]:
-    # relation id
-    if arg.isdigit():
-        download_poly(code=arg, osm_id=int(arg))
-        continue
+def main():
 
-    # country wildcard (all subdivisions)
-    match = re.match(r'^([A-Z]{2})-\*$', arg)
-    if match:
-        country_code = match.group(1)
-        subdivisions = pycountry.subdivisions.get(country_code=country_code)
-        if not subdivisions:
-            raise ValueError(f'No subdivisions defined for country {match.group(1)}')
-        for subdivision in sorted(subdivisions, key=lambda subdivision: subdivision.code):
-            code = subdivision.code
-            osm_id = osm_id_resolver.get_id(code)
-            download_poly(code=code, osm_id=osm_id)
-    else:
-        osm_id = osm_id_resolver.get_id(arg)
-        download_poly(code=arg, osm_id=osm_id)
+    logging.basicConfig(level=logging.DEBUG)
+
+    osm_id_resolver = OsmIdResolver()
+
+    for arg in sys.argv[1:]:
+        # relation id
+        if arg.isdigit():
+            download_poly(code=arg, osm_id=int(arg))
+            continue
+
+        # country wildcard (all subdivisions)
+        match = re.match(r'^([A-Z]{2})-\*$', arg)
+        if match:
+            country_code = match.group(1)
+            subdivisions = pycountry.subdivisions.get(country_code=country_code)
+            if not subdivisions:
+                raise ValueError(f'No subdivisions defined for country {match.group(1)}')
+            for subdivision in sorted(subdivisions, key=lambda subdivision: subdivision.code):
+                code = subdivision.code
+                osm_id = osm_id_resolver.get_id(code)
+                download_poly(code=code, osm_id=osm_id)
+        else:
+            osm_id = osm_id_resolver.get_id(arg)
+            download_poly(code=arg, osm_id=osm_id)
+
+if __name__ == "__main__":
+    main()

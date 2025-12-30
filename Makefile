@@ -28,8 +28,11 @@ docker-run:
 test:
 	uv run pytest -v
 
-test1:
-	uv run pytest -v tests/test_poly.py
+test-poly:
+	uv run --all-groups pytest -v tests/test_poly.py
+
+test-tile:
+	uv run pytest -v tests/test_tile.py
 
 run:
 	python3 squadrats2osm.py ../config/squadrats2osm.json

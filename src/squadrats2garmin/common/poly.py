@@ -7,6 +7,8 @@ https://wiki.openstreetmap.org/wiki/Osmosis/Polygon_Filter_File_Format
 """
 from pathlib import Path
 from typing import cast
+
+import shapely
 from pygeoif import LinearRing, MultiPolygon
 from pygeoif.geometry import LineString, Polygon
 from pygeoif.types import Point2D
@@ -54,7 +56,11 @@ def parse_poly_file(path: Path) -> MultiPolygon:
         if shell:
             polygons.append(Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
 
-        return MultiPolygon(polygons=[p.coords for p in polygons])
+        return MultiPolygon.from_polygons(*polygons)
+
+def parse_geojson_file(path: Path):
+    b = path.read_bytes()
+    return shapely.from_geojson(b)
 
 
 def _read_points(file):

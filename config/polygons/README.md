@@ -3,7 +3,7 @@ This folder contains polygon (boundaries) files for different countries and thei
 
 ## How to add a new region
 ### Using built-in tool
-1. Run `python3 bin/poly_download.py` and pass ISO codes for the regions to download (ie. `python3 bin/poly_download.py PL ES-CA`). 
+1. Run `uv run poly` and pass ISO codes for the regions to download (ie. `uv run poly PL ES-CA`). 
 2. Polygon files will be saved as `{iso code}-{name}.poly` in the current working directory (ie. `PL-22-Pomorskie.poly`).
 3. Finally move them to the appropriate folder (ie. `europe/PL-Polska/PL-22-Pomorskie.poly`).
 

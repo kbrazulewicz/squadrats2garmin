@@ -1,5 +1,6 @@
 import unittest
 
+from parameterized import parameterized
 from pygeoif.geometry import Point
 
 from squadrats2garmin.common.tile import ZOOM_SQUADRATS
@@ -9,16 +10,13 @@ from squadrats2garmin.common.tile import ZOOM_SQUADRATINHOS
 class TestZoom(unittest.TestCase):
     """Test functionality provided by the Zoom module"""
 
-    def test_lat(self):
-        # squadrats
-        for (y, lat) in [(4096, 66.513260), (8192, 0.0), (12288, -66.513260)]:
-            with self.subTest(y = y, lat = lat):
-                self.assertAlmostEqual(ZOOM_SQUADRATS.lat(y), lat, places = 6)
+    @parameterized.expand([(4096, 66.513260), (8192, 0.0), (12288, -66.513260)])
+    def test_lat_zoom_squadrats(self, y: int, lat: float):
+        self.assertAlmostEqual(ZOOM_SQUADRATS.lat(y), lat, places=6)
 
-        # squadratinhos
-        for (y, lat) in [(32768, 66.513260), (65536, 0.0), (98304, -66.513260)]:
-            with self.subTest(y = y, lat = lat):
-                self.assertAlmostEqual(ZOOM_SQUADRATINHOS.lat(y), lat, places = 6)
+    @parameterized.expand([(32768, 66.513260), (65536, 0.0), (98304, -66.513260)])
+    def test_lat_zoom_squadratinhos(self, y: int, lat: float):
+        self.assertAlmostEqual(ZOOM_SQUADRATINHOS.lat(y), lat, places=6)
 
     def test_to_tile(self):
         """Test Zoom.to_tile method"""
