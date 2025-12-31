@@ -1,11 +1,11 @@
 import unittest
 from pathlib import Path
 
-from pygeoif.geometry import Point
+from shapely import Point
 
 import squadrats2garmin.common.squadrats
 from squadrats2garmin.common.job import Job
-from squadrats2garmin.common.poly import parse_poly_file
+from squadrats2garmin.common.poly import parse_poly_file, ExtensionAwarePolyLoader, PolyLoader
 from squadrats2garmin.common.region import Subdivision, Country
 from squadrats2garmin.common.tile import Tile, ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS
 
@@ -22,8 +22,8 @@ class TestSquadrats(unittest.TestCase):
     """Test functionality provided by the Squadrats module"""
 
     def test_line_intersection(self):
-        point_a: Point = Point(y=0, x=0)
-        point_b: Point = Point(y=5, x=7)
+        point_a: Point = Point(0, 0)
+        point_b: Point = Point(7, 5)
 
         # intersections with the ends of the line
         self.assertEqual(squadrats2garmin.common.squadrats.line_intersection(a=point_a, b=point_b, lat=point_a.y), point_a.x)
@@ -51,11 +51,11 @@ class TestSquadrats(unittest.TestCase):
     def test_tiles_by_bounding_box(self):
         """Test that tiles are properly generated for the bounding box method
         """
-        poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
+        poly = parse_poly_file(Path('tests/test_poly/PL-22-Pomorskie.json'))
         squadrats = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
-        self.assertEqual(len(squadrats), 14933)
+        self.assertEqual(len(squadrats), 14688)
         squadratinhos = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
-        self.assertEqual(len(squadratinhos), 939807)
+        self.assertEqual(len(squadratinhos), 932015)
 
     def test_generate_tiles_for_a_row(self):
         for (input, expected) in [
@@ -199,8 +199,9 @@ class TestSquadrats(unittest.TestCase):
         """
         Test that tiles are properly generated
         """
-        poly = parse_poly_file(Path('tests/test_poly/pomorskie.poly'))
-        region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', coordinates=poly)
+        poly_loader: PolyLoader = ExtensionAwarePolyLoader(Path('tests/test_poly/pomorskie.poly'))
+        poly = poly_loader.load()
+        region = Subdivision(country=Country(iso_code='PL'), iso_code='PL-22', poly_loader=poly_loader)
         squadrats = squadrats2garmin.common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None))
         self.assertEqual(sum(map(len, squadrats.values())), 10561)
         squadratinhos = squadrats2garmin.common.squadrats.generate_tiles(poly=poly, job=Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None))

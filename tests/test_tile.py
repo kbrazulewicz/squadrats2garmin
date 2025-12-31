@@ -1,7 +1,6 @@
 import unittest
 
 from parameterized import parameterized
-from pygeoif.geometry import Point
 
 from squadrats2garmin.common.tile import ZOOM_SQUADRATS
 from squadrats2garmin.common.tile import ZOOM_SQUADRATINHOS
@@ -32,7 +31,7 @@ class TestZoom(unittest.TestCase):
             (  0, -10, 8192, 8649),
         ]:
             with self.subTest(lon=lon, lat=lat, x=x, y=y):
-                tile = ZOOM_SQUADRATS.to_tile(Point(x=lon, y=lat))
+                tile = ZOOM_SQUADRATS.to_tile((lon, lat))
                 self.assertEqual(tile.x, x)
                 self.assertEqual(tile.y, y)
         pass

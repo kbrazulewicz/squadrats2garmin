@@ -3,19 +3,20 @@ import itertools
 import logging
 import sys
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol
 
 import fastkml.geometry
-import geojson
 from fastkml import KML
 from fastkml import Placemark
 from fastkml.utils import find
-from geojson import FeatureCollection
+from shapely import LinearRing, MultiPolygon, Polygon
+from shapely.geometry import shape
 
 from squadrats2garmin.common.mkgmap import VisitedSquadratsConfig
-from squadrats2garmin.common.osm import Tag, MultiPolygon, OSMProducer, AbstractOSMProducer, node_to_xml, \
-    way_to_xml
+from squadrats2garmin.common.osm import Tag, OSMProducer, AbstractOSMProducer, node_to_xml, \
+    way_to_xml, multipolygon_to_xml
 from squadrats2garmin.common.squadrats import SquadratsClient
 from squadrats2garmin.common.timer import timeit
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class GeoJSONProvider(Protocol):
-    def load(self) -> FeatureCollection:
+    def load(self):
         ...
 
 
@@ -72,7 +73,7 @@ class KMLOSMProducer(AbstractOSMProducer, OSMProducer):
             inner.extend(
                 [self.__parse_kml_linear_ring(ring=boundary.kml_geometry) for boundary in poly.inner_boundaries])
 
-        self._document.append(MultiPolygon.element_to_xml(
+        self._document.append(multipolygon_to_xml(
             element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
     def __kml_placemark_to_osm(self, placemark: Placemark, tags: list[Tag]):
@@ -97,23 +98,22 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
 
     def to_file(self, file: Path) -> None:
         """OSMProducer protocol"""
-        squadrats: geojson.feature.FeatureCollection = self.__provider.load()
-        for feature in squadrats.features:
-            if isinstance(feature, geojson.feature.Feature):
-                feature_name = feature.properties['name']
-                if feature_name in self.__GEOJSON_FEATURES:
-                    with timeit(msg=f"Processing {feature_name}"):
-                        self.__feature_to_osm(feature=feature, tags=[('name', feature_name)])
+        geo_json = self.__provider.load()
+        for feature in geo_json['features']:
+            feature_name = feature['properties']['name']
+            if feature_name in self.__GEOJSON_FEATURES:
+                with timeit(msg=f"Processing {feature_name}"):
+                    self.__shape_to_osm(geom=shape(feature), tags=[('name', feature_name)])
 
         self._write_document(file=file)
 
-    def __parse_linear_ring(self, ring: list[tuple[float, float]]) -> int:
-        """Parse geojson's LineString"""
+    def __parse_linear_ring(self, ring: LinearRing) -> int:
+        """Parse LinearRing"""
 
         # first and last node are the same and this needs to be the same object in OSM file
-        node_ids = [self._next_id() for _ in itertools.islice(ring, 0, len(ring) - 1)]
+        node_ids = [self._next_id() for _ in itertools.islice(ring.coords, 0, len(ring.coords) - 1)]
 
-        for node_id, point in zip(node_ids, ring):
+        for node_id, point in zip(node_ids, ring.coords):
             self._document.append(node_to_xml(element_id=node_id, geom=point))
 
         node_ids.append(node_ids[0])
@@ -122,28 +122,28 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(way_to_xml(element_id=way_id, refs=node_ids))
         return way_id
 
-    def __parse_multipolygon(self, polygons: list[list[list[tuple[float, float]]]], tags: list[Tag] = None):
+    def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: list[Tag] = None):
         outer: list[int] = []
         inner: list[int] = []
 
         for poly in polygons:
-            outer.append(self.__parse_linear_ring(ring=poly[0]))
+            outer.append(self.__parse_linear_ring(ring=poly.exterior))
             inner.extend([
                 self.__parse_linear_ring(ring=inner_ring)
-                for inner_ring in itertools.islice(poly, 1, len(poly))
+                for inner_ring in poly.interiors
             ])
 
-        self._document.append(MultiPolygon.element_to_xml(
+        self._document.append(multipolygon_to_xml(
             element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
-    def __feature_to_osm(self, feature: geojson.feature.Feature, tags: list[Tag]):
-        """Write geojson Feature to OSM XML"""
-        match feature.geometry.type:
+    def __shape_to_osm(self, geom: Polygon | MultiPolygon, tags: list[Tag]):
+        """Write shape to OSM XML"""
+        match geom.geom_type:
             case 'MultiPolygon':
-                self.__parse_multipolygon(polygons=feature.geometry.coordinates, tags=tags)
+                self.__parse_multipolygon(polygons=geom.geoms, tags=tags)
                 pass
             case 'Polygon':
-                self.__parse_multipolygon(polygons=[feature.geometry.coordinates], tags=tags)
+                self.__parse_multipolygon(polygons=[geom], tags=tags)
 
 
 class SquadratsTrophiesProvider(GeoJSONProvider):
@@ -151,7 +151,7 @@ class SquadratsTrophiesProvider(GeoJSONProvider):
         self.__user_id: str = user_id
         self.__client = SquadratsClient()
 
-    def load(self) -> FeatureCollection:
+    def load(self):
         """GeoJSONProvider protocol"""
         logger.info("Fetching Squadrats data")
         return self.__client.get_trophies(user_id=self.__user_id)

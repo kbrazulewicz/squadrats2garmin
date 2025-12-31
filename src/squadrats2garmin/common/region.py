@@ -6,9 +6,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import pycountry
-from pygeoif import MultiPolygon
+import shapely
 
-from squadrats2garmin.common.poly import parse_poly_file
+from squadrats2garmin.common.poly import PolyLoader, ExtensionAwarePolyLoader
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +26,11 @@ def get_subdivision_code(code: str) -> str:
 class Region(ABC):
     """Abstract base class for regions
     """
-    _iso_code: str
-    _name: str
-    _geoms: MultiPolygon
-
-    def __init__(self, iso_code: str, name: str, coordinates: MultiPolygon):
-        self._iso_code = iso_code
-        self._name = name
-        self._geoms = coordinates
+    def __init__(self, iso_code: str, name: str, poly_loader: PolyLoader):
+        self._iso_code: str = iso_code
+        self._name: str = name
+        self._geoms: shapely.MultiPolygon | None = None
+        self._poly_loader = poly_loader
 
     @property
     def code(self) -> str:
@@ -48,9 +45,12 @@ class Region(ABC):
         return self._name
 
     @property
-    def coords(self) -> MultiPolygon:
+    def coords(self) -> shapely.MultiPolygon:
         """Get region coordinates
         """
+        if self._geoms is None:
+            self._geoms = self._poly_loader.load()
+
         return self._geoms
 
     @abstractmethod
@@ -69,12 +69,12 @@ class Subdivision(Region):
     """
     country: Region
 
-    def __init__(self, country: Region, iso_code: str, coordinates: MultiPolygon):
+    def __init__(self, country: Region, iso_code: str, poly_loader: PolyLoader):
         subdivision = pycountry.subdivisions.get(code=iso_code)
         if not subdivision:
             raise ValueError(f'Illegal subdivision ISO code {iso_code}')
 
-        super().__init__(iso_code=iso_code, name=subdivision.name, coordinates=coordinates)
+        super().__init__(iso_code=iso_code, name=subdivision.name, poly_loader=poly_loader)
         self.country = country
 
     def __repr__(self):
@@ -105,12 +105,12 @@ class Country(Region):
     __subdivisions: dict[str, list[Subdivision]]
     """subdivisions multimap (should be a regular dictionary but Norway was special)"""
 
-    def __init__(self, iso_code: str, coordinates: MultiPolygon = None) -> None:
+    def __init__(self, iso_code: str, poly_loader: PolyLoader = None) -> None:
         country = pycountry.countries.get(alpha_2=iso_code)
         if not country:
             raise ValueError(f'Illegal country ISO code {iso_code}')
 
-        super().__init__(iso_code=iso_code, name=country.name, coordinates=coordinates)
+        super().__init__(iso_code=iso_code, name=country.name, poly_loader=poly_loader)
         self.__country = country
         self.__subdivisions = {}
 
@@ -123,13 +123,13 @@ class Country(Region):
     def get_country_name(self) -> str:
         return self.__country.name
 
-    def add_subdivision(self, iso_code: str, coordinates: MultiPolygon):
+    def add_subdivision(self, iso_code: str, poly_loader: PolyLoader):
         """Register a subdivision poly file
         """
         if iso_code not in self.__subdivisions:
             self.__subdivisions[iso_code] = []
         self.__subdivisions[iso_code].append(
-            Subdivision(country=self, iso_code=iso_code, coordinates=coordinates)
+            Subdivision(country=self, iso_code=iso_code, poly_loader=poly_loader)
         )
 
     def get_all_subdivisions(self) -> list[Subdivision]:
@@ -177,7 +177,7 @@ class RegionIndex:
             self._add_subdivision(country_code, subdivision_code, path)
 
     def _add_country(self, country_code: str, poly_path: Path):
-        self.country[country_code] = Country(iso_code=country_code, coordinates=parse_poly_file(poly_path))
+        self.country[country_code] = Country(iso_code=country_code, poly_loader=ExtensionAwarePolyLoader(poly_path))
 
     def _add_subdivision(self, country_code: str, subdivision_code: str, poly_path: Path):
         iso_code = "-".join([country_code, subdivision_code])
@@ -185,7 +185,7 @@ class RegionIndex:
         if not country_code in self.country:
             self.country[country_code] = Country(iso_code=country_code)
 
-        self.country[country_code].add_subdivision(iso_code=iso_code, coordinates=parse_poly_file(poly_path))
+        self.country[country_code].add_subdivision(iso_code=iso_code, poly_loader=ExtensionAwarePolyLoader(poly_path))
 
     def select_regions(self, regions: list[str]) -> list[Region]:
         """Select regions from index according to the given list of regions.

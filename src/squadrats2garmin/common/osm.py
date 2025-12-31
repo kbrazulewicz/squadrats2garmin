@@ -6,16 +6,14 @@ from abc import ABC
 from pathlib import Path
 from typing import Iterator, Protocol
 
-from pygeoif.types import Point2D
-
 from squadrats2garmin.common.timer import timeit
 
 # all squadratinhos
 # 4^17 = 17 179 869 184
-WAY_BASE_ID  = 100000000000
+WAY_BASE_ID = 100000000000
 
 type Tag = tuple[str, str]
-
+type Point = tuple[float, ...]
 
 class OSMProducer(Protocol):
     def to_file(self, file: Path) -> None:
@@ -53,7 +51,6 @@ class OSMElement(ABC):
         if isinstance(__o, OSMElement):
             return self.name == __o.name and self.element_id == __o.element_id
         return NotImplemented
-
 
     @property
     def name(self) -> str:
@@ -102,9 +99,9 @@ class Node(OSMElement):
 
     TAG: str = 'node'
 
-    def __init__(self, node_id: int, geom: Point2D, tags: list[Tag] | None = None) -> None:
+    def __init__(self, node_id: int, geom: Point, tags: list[Tag] | None = None) -> None:
         super().__init__(name=self.TAG, element_id=node_id, tags=tags)
-        self._geom: Point2D = geom
+        self._geom: Point = geom
 
     def __repr__(self) -> str:
         """String representation of the Node object
@@ -142,7 +139,8 @@ class Way(OSMElement):
 
     TAG: str = 'way'
 
-    def __init__(self, way_id: int, refs: list[int] | None = None, nodes: list[Node] | None = None, tags: list[Tag] | None = None) -> None:
+    def __init__(self, way_id: int, refs: list[int] | None = None, nodes: list[Node] | None = None,
+                 tags: list[Tag] | None = None) -> None:
         super().__init__(name=self.TAG, element_id=way_id, tags=tags)
         if refs:
             self._refs = refs
@@ -175,7 +173,8 @@ class MultiPolygon(OSMElement):
     inner_rings: list[Way]
     """List of inner rings"""
 
-    def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] = None, tags: list[Tag] = None) -> None:
+    def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] = None,
+                 tags: list[Tag] = None) -> None:
         if not tags:
             tags = []
         tags = [('type', 'multipolygon')] + tags
@@ -216,34 +215,6 @@ class MultiPolygon(OSMElement):
         return relation
 
 
-    @staticmethod
-    def element_to_xml(element_id: int, outer_rings: list[int], inner_rings: list[int] = None, tags: list[Tag] = None) -> ET.Element:
-        if not tags:
-            tags = []
-        tags = [('type', 'multipolygon')] + tags
-
-        relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
-        for way_id in outer_rings:
-            relation.append(
-                ET.Element('member', {
-                    'type': 'way',
-                    'ref': str(way_id),
-                    'role': 'outer'
-                })
-            )
-
-        for way_id in inner_rings:
-            relation.append(
-                ET.Element('member', {
-                    'type': 'way',
-                    'ref': str(way_id),
-                    'role': 'inner'
-                })
-            )
-
-        return relation
-
-
 def element_to_xml(name: str, attrs: dict, tags: list[Tag] | None = None) -> ET.Element:
     element = ET.Element(name, attrs)
     if tags:
@@ -254,7 +225,7 @@ def element_to_xml(name: str, attrs: dict, tags: list[Tag] | None = None) -> ET.
     return element
 
 
-def node_to_xml(element_id: int, geom: Point2D) -> ET.Element:
+def node_to_xml(element_id: int, geom: Point) -> ET.Element:
     return element_to_xml(
         name=Node.TAG,
         attrs={
@@ -271,3 +242,34 @@ def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
         way.append(ET.Element('nd', {'ref': str(ref)}))
 
     return way
+
+
+def multipolygon_to_xml(
+        element_id: int,
+        outer_rings: list[int],
+        inner_rings: list[int] = None,
+        tags: list[Tag] = None) -> ET.Element:
+    if not tags:
+        tags = []
+    tags = [('type', 'multipolygon')] + tags
+
+    relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
+    for way_id in outer_rings:
+        relation.append(
+            ET.Element('member', {
+                'type': 'way',
+                'ref': str(way_id),
+                'role': 'outer'
+            })
+        )
+
+    for way_id in inner_rings:
+        relation.append(
+            ET.Element('member', {
+                'type': 'way',
+                'ref': str(way_id),
+                'role': 'inner'
+            })
+        )
+
+    return relation

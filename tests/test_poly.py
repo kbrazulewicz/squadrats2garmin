@@ -2,93 +2,83 @@ import logging
 import unittest
 from pathlib import Path
 
-import geojson
-import pytest
 import shapely
-from pygeoif.geometry import Point, Polygon
 from pytest_benchmark.plugin import benchmark
 
-from squadrats2garmin.common.poly import parse_poly_file, parse_geojson_file
-from squadrats2garmin.common.poly import PolyFileIncorrectFiletypeException
+from squadrats2garmin.common.poly import parse_poly_file
 
 
 class TestPoly(unittest.TestCase):
-
     RESOURCES = Path('tests/test_poly')
 
     @classmethod
     def setUpClass(cls):
         logging.basicConfig(level=logging.DEBUG)
 
-    def test_wrong_format(self):
-        """
-        Test that it can recognize a proper filetype
-        """
-        with self.assertRaises(PolyFileIncorrectFiletypeException) as cm:
-            poly = parse_poly_file(self.RESOURCES / 'wrong_format.poly')
-
-        self.assertEqual(str(cm.exception), "Expecting polygon filetype, got \"not-polygon\" instead")
-
     def test_pomorskie(self):
         """
         Test that it can load properly formatted POLY file
         """
-        poly = parse_poly_file(self.RESOURCES / 'pomorskie.poly')
-        self.assertEqual(1, len(list(poly.geoms)))
+        pomorskie: shapely.MultiPolygon = parse_poly_file(self.RESOURCES / 'PL-22-Pomorskie.json')
+        self.assertEqual(1, len(list(pomorskie.geoms)))
+        self.assertEqual(0, len(list(pomorskie.geoms[0].interiors)))
 
-        pomorskie: Polygon = next(poly.geoms)
+        exterior: shapely.geometry.Polygon = pomorskie.geoms[0].exterior
+        self.assertEqual(70, len(exterior.coords))
+        self.assertEqual((16.70, 54.60), exterior.coords[0])
+        self.assertEqual((19.60, 53.96), exterior.coords[20])
+        self.assertEqual((17.86, 53.66), exterior.coords[40])
+        self.assertTrue(exterior.is_closed)
 
-        self.assertEqual(213, len(pomorskie.exterior.geoms))
-        self.assertEqual(Point(16.68, 54.58), pomorskie.exterior.geoms[0])
-        self.assertEqual(Point(18.355, 53.665), pomorskie.exterior.geoms[100])
-        self.assertEqual(Point(16.8, 54.39), pomorskie.exterior.geoms[200])
-        self.assertEqual(Point(16.68, 54.58), pomorskie.exterior.geoms[212])
-        
+    def test_es_cn_canarias(self):
+        """
+        Test that it can load properly formatted POLY file
+        """
+        poly: shapely.MultiPolygon = parse_poly_file(self.RESOURCES / 'ES-CN-Canarias.json')
+        self.assertEqual(9, len(list(poly.geoms)))
+        self.assertEqual([5, 22, 6, 22, 21, 28, 10, 15, 11], [len(geom.exterior.coords) for geom in poly.geoms])
+
     def test_bounding_box(self):
         """
         Test that bounding box is properly calculated
         """
-        poly = parse_poly_file(self.RESOURCES / 'pomorskie.poly')
-        self.assertEqual((16.68, 53.47, 19.67, 54.855), poly.bounds)
+        poly = parse_poly_file(self.RESOURCES / 'PL-22-Pomorskie.json')
+        self.assertEqual((16.68, 53.48, 19.66, 54.86), poly.bounds)
 
-    # @pytest.mark.usefixtures
-    # def test_parse_poly(self):
-    #     def parse():
-    #         parse_poly_file(self.TEST_POLY / 'PL-Poland-67097-points.poly')
-    #     benchmark(parse)
-    #
-    # def test_parse_json(self, benchmark):
-    #     def parse():
-    #         parse_geojson_file(self.TEST_POLY / 'PL-Poland-67097-points.json')
-    #     benchmark(parse)
+    def test_squadrats_rings_are_closed(self):
+        json_file = TestPoly.RESOURCES / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
+        squadrats_trophies: shapely.GeometryCollection = shapely.from_geojson(json_file.read_bytes())
+        shapely.get_parts(squadrats_trophies)
+        for geom in squadrats_trophies.geoms:
+            if geom.geom_type == 'MultiPolygon':
+                multipolygon: shapely.MultiPolygon = geom
+                for polygon in multipolygon.geoms:
+                    for ring in [polygon.exterior, *polygon.interiors]:
+                        self.assertTrue(ring.is_closed)
+
+            elif geom.geom_type == 'Polygon':
+                polygon: shapely.Polygon = geom
+                for ring in [polygon.exterior, *polygon.interiors]:
+                    self.assertTrue(ring.is_closed)
+
 
 def test_parse_poly(benchmark):
     def parse():
         poly = parse_poly_file(TestPoly.RESOURCES / 'PL-Poland-67097-points.poly')
-        return len(next(poly.geoms).exterior.coords)
+        return len(poly.geoms[0].exterior.coords)
+
     result = benchmark(parse)
     assert result == 67097
+
 
 def test_parse_json(benchmark):
     def parse():
-        poly = parse_geojson_file(TestPoly.RESOURCES / 'PL-Poland-67097-points.json')
+        poly = parse_poly_file(TestPoly.RESOURCES / 'PL-Poland-67097-points.json')
         return len(poly.geoms[0].exterior.coords)
+
     result = benchmark(parse)
     assert result == 67097
 
-
-def test_parse_trophies_geojson(benchmark):
-    def parse():
-        json_file = TestPoly.RESOURCES / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
-        with json_file.open() as f:
-            return geojson.load(f)
-
-    result = benchmark(parse)
-    for feature in result.features:
-        if isinstance(feature, geojson.feature.Feature):
-            feature_name = feature.properties['name']
-            if feature_name == 'squadratinhos':
-                assert len(feature.geometry.coordinates[0][0]) == 13403
 
 def test_parse_trophies_shapely(benchmark):
     def parse():
@@ -97,7 +87,8 @@ def test_parse_trophies_shapely(benchmark):
 
     result = benchmark(parse)
 
-    assert len(result.geoms[4].geoms[0].exterior.coords) == 1291
+    assert len(result.geoms[4].geoms[0].exterior.coords) == 13403
+
 
 if __name__ == '__main__':
     unittest.main()

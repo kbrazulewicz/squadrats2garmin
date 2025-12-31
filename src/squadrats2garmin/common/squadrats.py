@@ -3,10 +3,9 @@ import xml.etree.ElementTree as ET
 
 from collections import defaultdict
 
-import geojson
 import requests
-from pygeoif import MultiPolygon
-from pygeoif.geometry import Point, Polygon
+import shapely
+from shapely.geometry import MultiPolygon, Point
 from typing import NamedTuple
 
 from requests.adapters import HTTPAdapter
@@ -44,13 +43,13 @@ class SquadratsClient:
         response.raise_for_status()
         return response.json()
 
-    def get_trophies(self, user_id: str) -> geojson.feature.FeatureCollection:
+    def get_trophies(self, user_id: str):
         with timeit(msg=f"Fetching trophies for user {user_id}"):
             geojson_info = self._get_geojson(user_id)
 
             response = self._session.get(geojson_info['url'], timeout=self._timeout)
             response.raise_for_status()
-            return geojson.loads(response.text)
+            return response.json()
 
 
 class UnexpectedBoundaryException(Exception):
@@ -88,20 +87,20 @@ def generate_tiles(poly: MultiPolygon, job: Job) -> dict[int, list[Tile]]:
         return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)),
                         contour_tiles.items()))
 
-def line_intersection(a: Point, b: Point, lat: float) -> float:
+def line_intersection(a: shapely.Point, b: shapely.Point, lat: float) -> float:
     """Intersection of a line with a horizontal gridline
     """
     return (a.x * (b.y - lat) - b.x * (a.y - lat)) / (b.y - a.y)
 
 
-def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
+def line_grid_intersections(a: shapely.Point, b: shapely.Point, zoom: Zoom) -> list[Boundary]:
     """Calculate intersections of a line with the grid
 
     Parameters
     ----------
-    a : Point
+    a : shapely.Point
         line beginning
-    b : Point
+    b : shapely.Point
         line end
     zoom : Zoom
         zoom
@@ -174,10 +173,10 @@ def line_grid_intersections(a: Point, b: Point, zoom: Zoom) -> list[Boundary]:
 
     return boundaries
 
-def generate_contour_for_polygon(polygon: Polygon, zoom: Zoom) -> list[Boundary]:
+def generate_contour_for_polygon(polygon: shapely.Polygon, zoom: Zoom) -> list[Boundary]:
     boundaries: list[Boundary] = []
-    point_a: Point = None
-    for point_b in polygon.exterior.geoms:
+    point_a: shapely.Point | None = None
+    for point_b in shapely.points(polygon.exterior.coords):
         if point_a is not None:
             boundaries.extend(line_grid_intersections(a=point_a, b=point_b, zoom=zoom))
         point_a = point_b
@@ -194,7 +193,7 @@ def generate_contour_for_multipolygon(multipolygon: MultiPolygon, job: Job) -> l
 
 def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
     # sort the list by longitude and LR
-    # (important in case of the same longitude the L boundary needs to preceed the R boundary)
+    # (important in case of the same longitude the L boundary needs to precede the R boundary)
     row.sort(key=lambda b: (b.lon, 0 if b.lr == 'R' else 1))
     return _generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
 
@@ -236,18 +235,18 @@ def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int
         )
 
     lat = zoom.lat(west.y)
-    (west_x, west_y) = zoom.to_tile(Point(west.lon, lat))
-    (east_x, east_y) = zoom.to_tile(Point(east.lon, lat))
+    (west_x, west_y) = zoom.to_tile((west.lon, lat))
+    (east_x, east_y) = zoom.to_tile((east.lon, lat))
 
     return range(west_x, east_x + 1)
 
 
-def _generate_tiles_by_bounding_box(poly: MultiPolygon, zoom: Zoom):
+def _generate_tiles_by_bounding_box(poly: shapely.MultiPolygon | shapely.Polygon, zoom: Zoom):
     """Generate tiles for the rectangular area defined by the polygon bounding box
     """
     bounds = poly.bounds
-    tile_nw = zoom.to_tile(Point(x=bounds[0], y=bounds[3]))
-    tile_se = zoom.to_tile(Point(x=bounds[2], y=bounds[1]))
+    tile_nw = zoom.to_tile((bounds[0], bounds[3]))
+    tile_se = zoom.to_tile((bounds[2], bounds[1]))
     tiles = []
 
     for y in range(tile_nw.y, tile_se.y + 1):

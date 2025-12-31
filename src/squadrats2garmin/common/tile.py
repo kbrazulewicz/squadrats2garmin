@@ -3,7 +3,9 @@
 import math
 from typing import NamedTuple
 
-from pygeoif.geometry import Point
+import shapely
+
+import squadrats2garmin.common.osm
 
 
 class Tile(NamedTuple):
@@ -66,20 +68,27 @@ class Zoom:
         """
         return x / self._n * 360.0 - 180.0
 
-    def to_geo(self, tile: Tile) -> Point:
+    def to_geo(self, tile: Tile) -> shapely.Point:
         """Return the coordinates of the NW corner of the tile
         """
-        return Point(
-            x=self.lon(tile.x),
-            y=self.lat(tile.y)
+        return shapely.Point(
+            self.lon(tile.x),
+            self.lat(tile.y)
         )
 
-    def to_tile(self, point: Point) -> Tile:
+    def to_tile(self, point: shapely.Point | squadrats2garmin.common.osm.Point) -> Tile:
         """Return tile coordinates (x, y) for given latitude and longitude
         """
-        tile_x = int((point.x + 180.0) / 360.0 * self._n)
-        tile_y = int((1.0 - math.asinh(math.tan(math.radians(point.y))) / math.pi) / 2.0 * self._n)
-        return Tile(tile_x, tile_y)
+        if isinstance(point, tuple):
+            tile_x = int((point[0] + 180.0) / 360.0 * self._n)
+            tile_y = int((1.0 - math.asinh(math.tan(math.radians(point[1]))) / math.pi) / 2.0 * self._n)
+            return Tile(tile_x, tile_y)
+        elif isinstance(point, shapely.Point):
+            tile_x = int((point.x + 180.0) / 360.0 * self._n)
+            tile_y = int((1.0 - math.asinh(math.tan(math.radians(point.y))) / math.pi) / 2.0 * self._n)
+            return Tile(tile_x, tile_y)
+        else:
+            raise TypeError(f"type {type(point)} not supported")
 
 
 # number of tiles: 4^14 = 268 435 456
