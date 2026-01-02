@@ -19,7 +19,7 @@ class TestPoly(unittest.TestCase):
         """
         Test that it can load properly formatted POLY file
         """
-        pomorskie: shapely.MultiPolygon = parse_poly_file(self.RESOURCES / 'PL-22-Pomorskie.geojson')
+        pomorskie: shapely.MultiPolygon = parse_poly_file(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson')
         self.assertEqual(1, len(list(pomorskie.geoms)))
         self.assertEqual(0, len(list(pomorskie.geoms[0].interiors)))
 
@@ -34,7 +34,7 @@ class TestPoly(unittest.TestCase):
         """
         Test that it can load properly formatted POLY file
         """
-        poly: shapely.MultiPolygon = parse_poly_file(self.RESOURCES / 'ES-CN-Canarias.geojson')
+        poly: shapely.MultiPolygon = parse_poly_file(self.RESOURCE_DIR / 'ES-CN-Canarias.geojson')
         self.assertEqual(9, len(list(poly.geoms)))
         self.assertEqual([5, 22, 6, 22, 21, 28, 10, 15, 11], [len(geom.exterior.coords) for geom in poly.geoms])
 
@@ -42,11 +42,11 @@ class TestPoly(unittest.TestCase):
         """
         Test that bounding box is properly calculated
         """
-        poly = parse_poly_file(self.RESOURCES / 'PL-22-Pomorskie.geojson')
+        poly = parse_poly_file(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson')
         self.assertEqual((16.68, 53.48, 19.66, 54.86), poly.bounds)
 
     def test_squadrats_rings_are_closed(self):
-        json_file = TestPoly.RESOURCES / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
+        json_file = TestPoly.RESOURCE_DIR / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
         squadrats_trophies: shapely.GeometryCollection = shapely.from_geojson(json_file.read_bytes())
         shapely.get_parts(squadrats_trophies)
         for geom in squadrats_trophies.geoms:
@@ -64,7 +64,7 @@ class TestPoly(unittest.TestCase):
 
 def test_parse_poly(benchmark):
     def parse():
-        poly = parse_poly_file(TestPoly.RESOURCES / 'PL-Poland-67097-points.poly')
+        poly = parse_poly_file(TestPoly.RESOURCE_DIR / 'PL-Poland-67097-points.poly')
         return len(poly.geoms[0].exterior.coords)
 
     result = benchmark(parse)
@@ -73,7 +73,7 @@ def test_parse_poly(benchmark):
 
 def test_parse_json(benchmark):
     def parse():
-        poly = parse_poly_file(TestPoly.RESOURCES / 'PL-Poland-67097-points.geojson')
+        poly = parse_poly_file(TestPoly.RESOURCE_DIR / 'PL-Poland-67097-points.geojson')
         return len(poly.geoms[0].exterior.coords)
 
     result = benchmark(parse)
@@ -82,7 +82,7 @@ def test_parse_json(benchmark):
 
 def test_parse_trophies_shapely(benchmark):
     def parse():
-        json_file = TestPoly.RESOURCES / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
+        json_file = TestPoly.RESOURCE_DIR / "P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1.json"
         return shapely.from_geojson(json_file.read_bytes())
 
     result = benchmark(parse)
