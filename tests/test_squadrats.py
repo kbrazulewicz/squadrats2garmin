@@ -51,7 +51,7 @@ class TestSquadrats(unittest.TestCase):
     def test_tiles_by_bounding_box(self):
         """Test that tiles are properly generated for the bounding box method
         """
-        poly = parse_poly_file(Path('tests/test_poly/PL-22-Pomorskie.json'))
+        poly = parse_poly_file(Path('tests/test_poly/PL-22-Pomorskie.geojson'))
         squadrats = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATS)
         self.assertEqual(len(squadrats), 14688)
         squadratinhos = squadrats2garmin.common.squadrats._generate_tiles_by_bounding_box(poly=poly, zoom=ZOOM_SQUADRATINHOS)
