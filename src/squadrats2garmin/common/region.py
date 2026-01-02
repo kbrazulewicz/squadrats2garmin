@@ -46,12 +46,22 @@ class Region(ABC):
 
     @property
     def coords(self) -> shapely.MultiPolygon:
-        """Get region coordinates
         """
-        if self._geoms is None:
+        Get region coordinates
+
+        Coordinates are loaded on demand and memorised
+        """
+        if self._geoms is None and self._poly_loader is not None:
             self._geoms = self._poly_loader.load()
 
         return self._geoms
+
+    @property
+    def has_coords(self) -> bool:
+        """
+        Does the region have coordinates
+        """
+        return self._poly_loader is not None
 
     @abstractmethod
     def get_country_code(self) -> str:
@@ -149,13 +159,14 @@ class RegionIndex:
     country: dict[str, Country]
     subdivision: dict[str, Subdivision]
 
-    def __init__(self, root_path: str):
+    def __init__(self, root_path: Path):
         self.country = {}
         self.subdivision = {}
 
-        root = Path(root_path)
-        logging.debug('Building polygon index from "%s"', root)
-        for path in root.rglob('*.poly'):
+        logging.debug('Building polygon index from "%s"', root_path)
+        input_files = filter(lambda path: path.is_file() and path.suffix in ['.geojson', '.poly'],
+                             root_path.rglob('*'))
+        for path in input_files:
             codes = path.stem.split("-", maxsplit=2)
 
             country_code = get_country_code(codes[0])
@@ -209,7 +220,7 @@ class RegionIndex:
             country = self.country[country_code]
             if not subdivision_code:
                 # selected country
-                if country.coords:
+                if country.has_coords:
                     result.append(country)
                 else:
                     raise ValueError(f'Missing border definitions for country {country_code}')
@@ -218,7 +229,7 @@ class RegionIndex:
                 result.extend(country.get_all_subdivisions())
             else:
                 # selected subdivision (which can have multiple polygons)
-                subdivisions = country.get_subdivisions(subdivision_code)
+                subdivisions = country.get_subdivisions(region)
                 if subdivisions:
                     result.extend(subdivisions)
                 else:

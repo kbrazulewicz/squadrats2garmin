@@ -47,6 +47,11 @@ grid-es: clean
 	ls -l dist/europe/*-ES-*.img
 #	cp dist/europe/*-PL-*.img $(GARMIN)
 
+grid-mt: clean
+	uv run grid --verbose --config-files config/MT-Malta.json
+	ls -l dist/europe/*-MT-*.img
+
+
 visited-kml: clean
 	uv run visited --verbose --kml squadrats.kml --output output/squadrats-visited.img
 

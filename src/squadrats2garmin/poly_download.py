@@ -106,8 +106,13 @@ class OsmIdResolver:
 
 
 class PolyNameResolver:
+    __FORMAT_TO_FILE_EXTENSION = {
+        'geojson': 'geojson',
+        'json': 'geojson',
+        'poly': 'poly',
+    }
     def __init__(self, poly_format: str):
-        self._poly_format: str = poly_format
+        self._file_ext: str = self.__FORMAT_TO_FILE_EXTENSION[poly_format]
 
     def resolve(self, code: str) -> Path:
         def resolve_name(code: str, file_ext: str) -> str:
@@ -124,7 +129,7 @@ class PolyNameResolver:
                 else:
                     return f"{code}.{file_ext}"
 
-        return Path(resolve_name(code=code, file_ext=self._poly_format))
+        return Path(resolve_name(code=code, file_ext=self._file_ext))
 
 def download_poly(downloader: PolyDownloader, name_resolver: PolyNameResolver, code: str, osm_id: int):
     output_path = name_resolver.resolve(code=code)

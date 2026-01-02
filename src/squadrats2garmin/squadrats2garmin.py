@@ -47,7 +47,7 @@ def main():
 
     # create poly index
     logger.info("Generate poly index")
-    poly_index = RegionIndex("config/polygons")
+    poly_index = RegionIndex(Path("config/polygons"))
 
     # process input jobs
     for config_file in args.config_files:
