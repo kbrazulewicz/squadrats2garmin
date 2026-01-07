@@ -38,6 +38,11 @@ run:
 	python3 squadrats2osm.py ../config/squadrats2osm.json
 
 grid-pl:
+	uv run grid --verbose --config-files config/PL-Polska.json
+	ls -l dist/europe/*-PL-*.img
+	#cp dist/europe/*-PL-*.img $(GARMIN)
+
+grid-pl-single:
 	uv run grid --verbose --config-files tests/config/PL-Polska-single.json
 	ls -l dist/europe/*-PL-*.img
 	#cp dist/europe/*-PL-*.img $(GARMIN)

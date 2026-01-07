@@ -1,3 +1,6 @@
+from collections.abc import Iterable
+
+
 def find_ranges(nums: list[int]) -> list[tuple[int, int]]:
     if not nums: return []
 
@@ -15,26 +18,26 @@ def find_ranges(nums: list[int]) -> list[tuple[int, int]]:
 
     return result
 
-def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
-    if not ranges: return []
-
-    result: list[tuple[int, int]] = []
-    currentRange: tuple[int, int] = None
-
-    for range in sorted(ranges, key = lambda r: r[0]):
-        if not currentRange: 
-            currentRange = range
-        elif currentRange[1] >= range[0]:
-            # overlap
-            currentRange = (currentRange[0], max(currentRange[1], range[1]))
+def merge_ranges(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+    merged = []
+    for r in sorted(ranges, key=lambda x: x[0]):
+        if not merged or merged[-1][1] < r[0]:
+            merged.append(r)
         else:
-            # no overlap
-            result.append(currentRange)
-            currentRange = range
+            merged[-1] = (merged[-1][0], max(merged[-1][1], r[1]))
 
-    result.append(currentRange)
-    return result
+    return merged
 
-def make_ranges_end_inclusive(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+def merge_ranges_end_inclusive(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+    merged = []
+    for r in sorted(ranges, key=lambda x: x[0]):
+        if not merged or merged[-1][1] + 1 < r[0]:
+            merged.append(r)
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], r[1]))
+
+    return merged
+
+def make_ranges_end_inclusive(ranges: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
     """Convert ranges representing tile's top-left corner to reach next tile's top-left corner"""
     return [(l, r + 1) for (l, r) in ranges]

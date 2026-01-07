@@ -1,12 +1,19 @@
+import logging
 import unittest
 from pathlib import Path
+from typing import cast
+
+import shapely
 
 from squadrats2garmin.common.region import RegionIndex
 
 
 class MyTestCase(unittest.TestCase):
-
     RESOURCE_DIR = Path(__file__).parent / "test_region"
+
+    @classmethod
+    def setUpClass(cls):
+        logging.basicConfig(level=logging.DEBUG)
 
     def test_region_index_poly_handling(self):
         region_index = RegionIndex(root_path=self.RESOURCE_DIR / "index-1")
@@ -37,7 +44,6 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("Ireland - Leinster", ie_l.name)
         self.assertEqual((-8.1, 52.08, -5.98, 54.14), ie_l.coords.bounds)
 
-
     def test_region_index_geojson_handling(self):
         region_index = RegionIndex(root_path=self.RESOURCE_DIR / "index-1")
 
@@ -49,6 +55,21 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual("MT", malta.code)
         self.assertEqual("Malta", malta.name)
         self.assertEqual((13.92, 35.56, 14.84, 36.3), malta.coords.bounds)
+
+    def test_all_polygons_are_properly_oriented(self):
+        region_index = RegionIndex(root_path=Path("config/polygons"))
+
+        for country in region_index.country.values():
+            for region in [country, *country.get_all_subdivisions()]:
+                if region.has_coords:
+                    poly = region.coords
+                    for geom in poly.geoms:
+                        self.assertIsInstance(geom, shapely.Polygon, msg=f"{region.code}: all geometries should be Polygons")
+                        geom = cast('shapely.Polygon', geom)
+                        self.assertTrue(geom.exterior.is_ccw, msg=f"{region.code}: exterior of all Polygons should be counterclockwise")
+                        for interior in geom.interiors:
+                            self.assertFalse(interior.is_ccw, msg=f"{region.code}: interior of all Polygons should be clockwise")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -26,8 +26,8 @@ class TestPoly(unittest.TestCase):
         exterior: shapely.geometry.Polygon = pomorskie.geoms[0].exterior
         self.assertEqual(70, len(exterior.coords))
         self.assertEqual((16.70, 54.60), exterior.coords[0])
-        self.assertEqual((19.60, 53.96), exterior.coords[20])
-        self.assertEqual((17.86, 53.66), exterior.coords[40])
+        self.assertEqual((16.88, 53.60), exterior.coords[20])
+        self.assertEqual((18.76, 53.58), exterior.coords[40])
         self.assertTrue(exterior.is_closed)
 
     def test_es_cn_canarias(self):

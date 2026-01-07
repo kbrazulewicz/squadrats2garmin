@@ -35,7 +35,7 @@ class GeoJSONPolyLoader(PolyLoader):
         self._path = path
 
     def load(self) -> shapely.MultiPolygon:
-        geometry = shapely.from_geojson(self._path.read_bytes())
+        geometry = shapely.orient_polygons(shapely.from_geojson(self._path.read_bytes()))
         if geometry.geom_type == 'MultiPolygon':
             return cast('shapely.MultiPolygon', geometry)
         elif geometry.geom_type == 'Polygon':
@@ -71,7 +71,6 @@ class POLYPolyLoader(PolyLoader):
                 if line == 'END':
                     break
                 if line.startswith('!'):
-                    # ignore holes in the polygon
                     holes.append(shapely.LinearRing([p for p in _read_points(f)]))
                 else:
                     if shell:
@@ -82,7 +81,7 @@ class POLYPolyLoader(PolyLoader):
             if shell:
                 polygons.append(shapely.Polygon(shell=shell.coords, holes=tuple(h.coords for h in holes)))
 
-            return shapely.MultiPolygon(polygons)
+            return shapely.orient_polygons(shapely.MultiPolygon(polygons))
 
 class ExtensionAwarePolyLoader(PolyLoader):
     def __init__(self, path: Path):

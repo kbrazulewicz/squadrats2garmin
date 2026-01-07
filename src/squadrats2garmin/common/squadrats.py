@@ -5,8 +5,8 @@ from collections import defaultdict
 
 import requests
 import shapely
-from shapely.geometry import MultiPolygon, Point
-from typing import NamedTuple
+from shapely.geometry import MultiPolygon
+from typing import NamedTuple, Protocol
 
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
@@ -20,6 +20,7 @@ from squadrats2garmin.common.timer import timeit
 TAGS_WAY = [('name', 'grid')]
 
 logger = logging.getLogger(__name__)
+
 
 class SquadratsClient:
     def __init__(self):
@@ -39,7 +40,8 @@ class SquadratsClient:
         self._timeout = 10
 
     def _get_geojson(self, user_id: str) -> dict:
-        response = self._session.get(f'https://mainframe-api.squadrats.com/anonymous/squadrants/{user_id}/geojson', timeout=self._timeout)
+        response = self._session.get(f'https://mainframe-api.squadrats.com/anonymous/squadrants/{user_id}/geojson',
+                                     timeout=self._timeout)
         response.raise_for_status()
         return response.json()
 
@@ -52,208 +54,105 @@ class SquadratsClient:
             return response.json()
 
 
-class UnexpectedBoundaryException(Exception):
-    """Raised when an unexpected Boundary is found
+class TileGenerator(Protocol):
+    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
+        """
+
+        :param poly:
+        :param zoom:
+        :return:
+        {
+            y_1 -> [(x_1_1_start, x_1_1_end)],
+            y_2 -> [(x_2_1_start, x_2_1_end), (x_2_2_start, x_2_2_end)],
+            ...
+        }
+        """
+        ...
+
+
+class BoundingBoxTileGenerator(TileGenerator):
+    """
+    Generate tiles for the rectangular area defined by the polygon bounding box
     """
 
-class Boundary(NamedTuple):
-    """Representation of the geographical coordinates
-    
-    Attributes
-    ----------
-    lr : str
-        'L' or 'R' boundary
-    y : int
-        y coordinate of a tile
-    lon : float
-        westmost (for 'L') or eastmost (for 'R') longitude
+    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
+        bounds = poly.bounds
+        (x_min, y_min) = zoom.to_tile((bounds[0], bounds[3]))
+        (x_max, y_max) = zoom.to_tile((bounds[2], bounds[1]))
+        tiles = {}
+
+        for y in range(y_min, y_max + 1):
+            tiles[y] = [(x_min, x_max)]
+
+        return tiles
+
+class ShapelyTileGenerator(TileGenerator):
     """
-    lr: str
-    y: int
-    lon: float
+    Generate tiles for the rectangular area defined by the polygon bounding box
+    """
+    def __init__(self):
+        self.__logger = logging.getLogger(__name__ + "." + type(self).__name__)
+
+    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
+        tiles = {}
+
+        (bounds_w, bounds_s, bounds_e, bounds_n) = poly.bounds
+        (y_min, y_max) = [zoom.y(y) for y in [bounds_n, bounds_s]]
+
+        for y in range(y_min, y_max + 1):
+            ranges = []
+            result = shapely.clip_by_rect(poly, xmin=bounds_w, ymin=zoom.lat(y+1), xmax=bounds_e, ymax=zoom.lat(y))
+            if result.is_empty: continue
+
+            if isinstance(result, shapely.Polygon):
+                ranges.append(self._clipped_polygon_to_range(poly=result, zoom=zoom))
+            elif isinstance(result, shapely.MultiPolygon):
+                for part in result.geoms:
+                    ranges.append(self._clipped_polygon_to_range(poly=part, zoom=zoom))
+            else:
+                self.__logger.warning("type %s not supported", type(result))
+
+            tiles[y] = util.merge_ranges_end_inclusive(ranges)
+
+        return tiles
+
+    def _clipped_polygon_to_range(self, poly: shapely.Polygon, zoom: Zoom) -> tuple[int, int]:
+        (clip_w, clip_s, clip_e, clip_n) = poly.bounds
+        (x_min, x_max) = [zoom.x(x) for x in [clip_w, clip_e]]
+        return x_min, x_max
 
 
-def generate_tiles(poly: MultiPolygon, job: Job) -> dict[int, list[Tile]]:
+def generate_tile_ranges(poly: MultiPolygon, job: Job, generator: TileGenerator = ShapelyTileGenerator()) -> dict[int, list[tuple[Tile, Tile]]]:
     """Generate a list of tiles of a given zoom covering the entire polygon
     """
-    contour_tiles = defaultdict(list)
+    with timeit(f"{job}: generate tile ranges"):
+        tile_ranges: dict[int, list[tuple[int, int]]] = generator.generate(poly=poly, zoom=job.zoom)
+        result: dict[int, list[tuple[Tile, Tile]]] = {}
+        for y, ranges in tile_ranges.items():
+            result[y] = [
+                (Tile(x1, y), Tile(x2, y))
+                for x1, x2 in ranges
+            ]
 
-    with timeit(f'{job}: generate contours'):
-        contours: list[Boundary] = generate_contour_for_multipolygon(multipolygon=poly, job=job)
-        for boundary in contours:
-            contour_tiles[boundary.y].append(boundary)
+        return result
 
-    with timeit(f'{job}: fill contours'):
-        return dict(map(lambda k_v:(k_v[0], _generate_tiles_for_a_row(row=k_v[1], job=job)),
-                        contour_tiles.items()))
 
-def line_intersection(a: shapely.Point, b: shapely.Point, lat: float) -> float:
-    """Intersection of a line with a horizontal gridline
+def generate_tiles(poly: MultiPolygon, job: Job, generator: TileGenerator = ShapelyTileGenerator()) -> dict[int, list[Tile]]:
+    """Generate a list of tiles of a given zoom covering the entire polygon
     """
-    return (a.x * (b.y - lat) - b.x * (a.y - lat)) / (b.y - a.y)
+    with timeit(f"generate_tiles({job})"):
+        tile_ranges = generator.generate(poly=poly, zoom=job.zoom)
 
+        # TODO eliminate this step
+        tiles: dict[int, list[Tile]] = {}
+        for y, ranges in tile_ranges.items():
+            tiles[y] = [
+                Tile(x, y)
+                for x1, x2 in ranges
+                for x in range(x1, x2 + 1)
+            ]
 
-def line_grid_intersections(a: shapely.Point, b: shapely.Point, zoom: Zoom) -> list[Boundary]:
-    """Calculate intersections of a line with the grid
-
-    Parameters
-    ----------
-    a : shapely.Point
-        line beginning
-    b : shapely.Point
-        line end
-    zoom : Zoom
-        zoom
-    """
-
-    boundaries: list[Boundary] = []
-
-    lat_delta = b.y - a.y
-    (tile_a, tile_b) = [zoom.to_tile(point) for point in (a, b)]
-    min_y = min(tile_a.y, tile_b.y)
-    max_y = max(tile_a.y, tile_b.y)
-
-    if lat_delta < 0:
-        # southward
-        for y in range(min_y, max_y + 1):
-            lon1: float = None
-            lon2: float = None
-
-            if y == min_y:
-                lon1 = a.x
-            else:
-                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
-
-            if y == max_y:
-                lon2 = b.x
-            else:
-                lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
-
-            boundaries.append(Boundary('R', y, max(lon1, lon2)))
-
-    elif lat_delta > 0:
-        # northward
-        for y in range(min_y, max_y + 1):
-            lon1: float = None
-            lon2: float = None
-
-            if y == min_y:
-                lon1 = b.x
-            else:
-                lon1 = line_intersection(a = a, b = b, lat = zoom.lat(y)) if lon2 is None else lon2
-
-            if y == max_y:
-                lon2 = a.x
-            else:
-                lon2 = line_intersection(a = a, b = b, lat = zoom.lat(y + 1))
-
-            boundaries.append(Boundary('L', y, min(lon1, lon2)))
-
-    elif lat_delta == 0:
-        y = min_y
-        min_x = min(tile_a[1], tile_b[1])
-        max_x = max(tile_a[1], tile_b[1])
-
-        lon1: float = None
-        lon2: float = None
-
-        for x in range(min_x, max_x + 1):
-            if x == min_x:
-                lon1 = min(a.x, b.x)
-            else:
-                lon1 = zoom.lon(x) if lon2 is None else lon2
-
-            if x == max_x:
-                lon2 = max(a.x, b.x)
-            else:
-                lon2 = zoom.lon(x + 1)
-
-            boundaries.append(Boundary('L', y, lon1))
-            boundaries.append(Boundary('R', y, lon2))
-
-    return boundaries
-
-def generate_contour_for_polygon(polygon: shapely.Polygon, zoom: Zoom) -> list[Boundary]:
-    boundaries: list[Boundary] = []
-    point_a: shapely.Point | None = None
-    for point_b in shapely.points(polygon.exterior.coords):
-        if point_a is not None:
-            boundaries.extend(line_grid_intersections(a=point_a, b=point_b, zoom=zoom))
-        point_a = point_b
-
-    return boundaries
-
-
-def generate_contour_for_multipolygon(multipolygon: MultiPolygon, job: Job) -> list[Boundary]:
-    return [
-        b
-        for area in multipolygon.geoms
-        for b in generate_contour_for_polygon(polygon=area, zoom=job.zoom)
-    ]
-
-def _generate_tiles_for_a_row(row: list[Boundary], job: Job) -> list[Tile]:
-    # sort the list by longitude and LR
-    # (important in case of the same longitude the L boundary needs to precede the R boundary)
-    row.sort(key=lambda b: (b.lon, 0 if b.lr == 'R' else 1))
-    return _generate_tiles_for_a_sorted_row(row=row, zoom=job.zoom)
-
-def _generate_tiles_for_a_sorted_row(row: list[Boundary], zoom: Zoom) -> list[Tile]:
-    if len(row) == 0:
-        return []
-
-    tiles_x: set[int] = set()
-    west: Boundary = None
-    east: Boundary = None
-
-    for b in row:
-        if b.lr == 'L':
-            if west is None:
-                west = b
-            elif east is not None:
-                tiles_x.update(_generate_tile_range(west=west, east=east, zoom=zoom))
-                west = b
-                east = None
-        elif b.lr == 'R':
-            east = b
-
-    if east is not None:
-        tiles_x.update(_generate_tile_range(west=west, east=east, zoom=zoom))
-
-    return [Tile(x, row[0].y) for x in list(tiles_x)]
-
-
-def _generate_tile_range(west: Boundary, east: Boundary, zoom: Zoom) -> list[int]:
-    if west is None:
-        raise UnexpectedBoundaryException('West boundary not set')
-
-    if east is None:
-        raise UnexpectedBoundaryException('East boundary not set')
-
-    if west.y != east.y:
-        raise UnexpectedBoundaryException(
-            f'Boundaries on a different row. west={west}, east={east}'
-        )
-
-    lat = zoom.lat(west.y)
-    (west_x, west_y) = zoom.to_tile((west.lon, lat))
-    (east_x, east_y) = zoom.to_tile((east.lon, lat))
-
-    return range(west_x, east_x + 1)
-
-
-def _generate_tiles_by_bounding_box(poly: shapely.MultiPolygon | shapely.Polygon, zoom: Zoom):
-    """Generate tiles for the rectangular area defined by the polygon bounding box
-    """
-    bounds = poly.bounds
-    tile_nw = zoom.to_tile((bounds[0], bounds[3]))
-    tile_se = zoom.to_tile((bounds[2], bounds[1]))
-    tiles = []
-
-    for y in range(tile_nw.y, tile_se.y + 1):
-        for x in range(tile_nw.x, tile_se.x + 1):
-            tiles.append(Tile(x, y))
-
-    return tiles
+        return tiles
 
 def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
     if not tiles:
@@ -325,6 +224,7 @@ def generate_grid(tiles: dict[int, list[Tile]], job: Job) -> list[Way]:
 
     return ways
 
+
 def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:
         return []
@@ -338,6 +238,7 @@ def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], jo
         )
 
     return ways
+
 
 def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
     if not ranges:

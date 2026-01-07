@@ -76,17 +76,19 @@ class Zoom:
             self.lat(tile.y)
         )
 
+    def x(self, lon: float) -> int:
+        return int((lon + 180.0) / 360.0 * self._n)
+
+    def y(self, lat: float) -> int:
+        return int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self._n)
+
     def to_tile(self, point: shapely.Point | squadrats2garmin.common.osm.Point) -> Tile:
         """Return tile coordinates (x, y) for given latitude and longitude
         """
         if isinstance(point, tuple):
-            tile_x = int((point[0] + 180.0) / 360.0 * self._n)
-            tile_y = int((1.0 - math.asinh(math.tan(math.radians(point[1]))) / math.pi) / 2.0 * self._n)
-            return Tile(tile_x, tile_y)
+            return Tile(self.x(point[0]), self.y(point[1]))
         elif isinstance(point, shapely.Point):
-            tile_x = int((point.x + 180.0) / 360.0 * self._n)
-            tile_y = int((1.0 - math.asinh(math.tan(math.radians(point.y))) / math.pi) / 2.0 * self._n)
-            return Tile(tile_x, tile_y)
+            return Tile(self.x(point.x), self.y(point.y))
         else:
             raise TypeError(f"type {type(point)} not supported")
 

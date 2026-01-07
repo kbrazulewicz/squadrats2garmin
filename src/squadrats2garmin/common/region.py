@@ -109,23 +109,22 @@ class Subdivision(Region):
 
 
 class Country(Region):
-    """Representation of the ISO 3166-1 country
     """
-    __country: pycountry.db.Country
-    __subdivisions: dict[str, list[Subdivision]]
-    """subdivisions multimap (should be a regular dictionary but Norway was special)"""
+    Representation of the ISO 3166-1 country
+    """
 
     def __init__(self, iso_code: str, poly_loader: PolyLoader = None) -> None:
         country = pycountry.countries.get(alpha_2=iso_code)
         if not country:
-            raise ValueError(f'Illegal country ISO code {iso_code}')
+            raise ValueError(f"Illegal country ISO code {iso_code}")
 
         super().__init__(iso_code=iso_code, name=country.name, poly_loader=poly_loader)
-        self.__country = country
-        self.__subdivisions = {}
+        self.__country: pycountry.db.Country = country
+        # subdivisions multimap (should be a regular dictionary but Norway was special)
+        self.__subdivisions: dict[str, list[Subdivision]] = {}
 
     def __repr__(self):
-        return f'Country({self._iso_code}, {self.get_all_subdivisions()})'
+        return f"Country({self._iso_code}, {self.get_all_subdivisions()})"
 
     def get_country_code(self) -> str:
         return self.code
@@ -134,13 +133,14 @@ class Country(Region):
         return self.__country.name
 
     def add_subdivision(self, iso_code: str, poly_loader: PolyLoader):
-        """Register a subdivision poly file
         """
+        Register a subdivision polygon
+        """
+        subdivision = Subdivision(country=self, iso_code=iso_code, poly_loader=poly_loader)
         if iso_code not in self.__subdivisions:
-            self.__subdivisions[iso_code] = []
-        self.__subdivisions[iso_code].append(
-            Subdivision(country=self, iso_code=iso_code, poly_loader=poly_loader)
-        )
+            self.__subdivisions[iso_code] = [subdivision]
+        else:
+            self.__subdivisions[iso_code].append(subdivision)
 
     def get_all_subdivisions(self) -> list[Subdivision]:
         """Get the list of all subdivisions"""
@@ -154,16 +154,14 @@ class Country(Region):
 
 
 class RegionIndex:
-    """Loads polygons for all regions found in the filesystem
     """
-    country: dict[str, Country]
-    subdivision: dict[str, Subdivision]
+    Loads polygons for all regions found in the filesystem
+    """
 
     def __init__(self, root_path: Path):
-        self.country = {}
-        self.subdivision = {}
+        self.country: dict[str, Country] = {}
 
-        logging.debug('Building polygon index from "%s"', root_path)
+        logger.debug('Building polygon index from "%s"', root_path)
         input_files = filter(lambda path: path.is_file() and path.suffix in ['.geojson', '.poly'],
                              root_path.rglob('*'))
         for path in input_files:
@@ -171,7 +169,7 @@ class RegionIndex:
 
             country_code = get_country_code(codes[0])
             if not country_code:
-                logging.debug('File "%s" does not contain country code in the name - skipping',
+                logger.debug('File "%s" does not contain country code in the name - skipping',
                               path)
                 continue
 
