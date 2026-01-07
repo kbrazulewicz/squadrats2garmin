@@ -114,23 +114,23 @@ class TestShapelyTileGenerator(unittest.TestCase):
         region = Subdivision(
             country=Country(iso_code='PL'),
             iso_code='PL-22',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'pomorskie.poly'))
+            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson'))
         job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
         job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
         with self.subTest(msg=f"{job_14}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
-            self.assertEqual(109, len(tiles.keys()))
-            self.assertEqual(10565, sum(map(len, tiles.values())))
+            self.assertEqual(108, len(tiles.keys()))
+            self.assertEqual(10578, sum(map(len, tiles.values())))
             self.assertEqual(5193, min(tiles.keys()))
-            self.assertEqual(5301, max(tiles.keys()))
+            self.assertEqual(5300, max(tiles.keys()))
 
         with self.subTest(msg=f"{job_17}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
-            self.assertEqual(863, len(tiles.keys()))
-            self.assertEqual(657750, sum(map(len, tiles.values())))
-            self.assertEqual(41549, min(tiles.keys()))
-            self.assertEqual(42411, max(tiles.keys()))
+            self.assertEqual(859, len(tiles.keys()))
+            self.assertEqual(659689, sum(map(len, tiles.values())))
+            self.assertEqual(41546, min(tiles.keys()))
+            self.assertEqual(42404, max(tiles.keys()))
 
     def test_generate_tiles_PL(self):
         """
@@ -145,14 +145,14 @@ class TestShapelyTileGenerator(unittest.TestCase):
         with self.subTest(msg=f"{job_14}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
             self.assertEqual(448, len(tiles.keys()))
-            self.assertEqual(145066, sum(map(len, tiles.values())))
+            self.assertEqual(144983, sum(map(len, tiles.values())))
             self.assertEqual(5179, min(tiles.keys()))
             self.assertEqual(5626, max(tiles.keys()))
 
         with self.subTest(msg=f"{job_17}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
             self.assertEqual(3578, len(tiles.keys()))
-            self.assertEqual(9204896, sum(map(len, tiles.values())))
+            self.assertEqual(9204691, sum(map(len, tiles.values())))
             self.assertEqual(41434, min(tiles.keys()))
             self.assertEqual(45011, max(tiles.keys()))
 
