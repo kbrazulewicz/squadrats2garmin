@@ -22,7 +22,8 @@ def process_input_job(config_file: str, poly_index: RegionIndex, output_dir: Pat
         for region in sorted(config.regions[zoom], key=lambda r: r.code):
             osm_file = output_dir / f"{region.code}-{zoom.zoom}.osm"
             job = Job(region=region, zoom=zoom, osm_file=osm_file)
-            generate_osm(job)
+            with timeit(f"{job}: generate_osm"):
+                generate_osm(job)
             jobs.append(job)
 
     config.build_garmin_img(jobs=jobs)

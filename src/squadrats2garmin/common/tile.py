@@ -3,9 +3,7 @@
 import math
 from typing import NamedTuple
 
-import shapely
-
-import squadrats2garmin.common.osm
+from squadrats2garmin.common import osm
 
 
 class Tile(NamedTuple):
@@ -68,12 +66,12 @@ class Zoom:
         """
         return x / self._n * 360.0 - 180.0
 
-    def to_geo(self, tile: Tile) -> shapely.Point:
+    def to_point(self, tile: tuple[int, int]) -> osm.Point:
         """Return the coordinates of the NW corner of the tile
         """
-        return shapely.Point(
-            self.lon(tile.x),
-            self.lat(tile.y)
+        return (
+            self.lon(tile[0]),
+            self.lat(tile[1])
         )
 
     def x(self, lon: float) -> int:
@@ -81,16 +79,6 @@ class Zoom:
 
     def y(self, lat: float) -> int:
         return int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self._n)
-
-    def to_tile(self, point: shapely.Point | squadrats2garmin.common.osm.Point) -> Tile:
-        """Return tile coordinates (x, y) for given latitude and longitude
-        """
-        if isinstance(point, tuple):
-            return Tile(self.x(point[0]), self.y(point[1]))
-        elif isinstance(point, shapely.Point):
-            return Tile(self.x(point.x), self.y(point.y))
-        else:
-            raise TypeError(f"type {type(point)} not supported")
 
 
 # number of tiles: 4^14 = 268 435 456

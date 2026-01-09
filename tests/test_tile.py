@@ -11,30 +11,28 @@ class TestZoom(unittest.TestCase):
 
     @parameterized.expand([(4096, 66.513260), (8192, 0.0), (12288, -66.513260)])
     def test_lat_zoom_squadrats(self, y: int, lat: float):
-        self.assertAlmostEqual(ZOOM_SQUADRATS.lat(y), lat, places=6)
+        self.assertAlmostEqual(lat, ZOOM_SQUADRATS.lat(y), places=6)
 
     @parameterized.expand([(32768, 66.513260), (65536, 0.0), (98304, -66.513260)])
     def test_lat_zoom_squadratinhos(self, y: int, lat: float):
-        self.assertAlmostEqual(ZOOM_SQUADRATINHOS.lat(y), lat, places=6)
+        self.assertAlmostEqual(lat, ZOOM_SQUADRATINHOS.lat(y), places=6)
 
-    def test_to_tile(self):
-        """Test Zoom.to_tile method"""
-        for (lon, lat, x, y) in [
-            (  0,   0, 8192, 8192),
-            ( 10, -10, 8647, 8649),
-            ( 10,   0, 8647, 8192),
-            ( 10,  10, 8647, 7734),
-            (  0,  10, 8192, 7734),
-            (-10,  10, 7736, 7734),
-            (-10,   0, 7736, 8192),
-            (-10, -10, 7736, 8649),
-            (  0, -10, 8192, 8649),
-        ]:
-            with self.subTest(lon=lon, lat=lat, x=x, y=y):
-                tile = ZOOM_SQUADRATS.to_tile((lon, lat))
-                self.assertEqual(tile.x, x)
-                self.assertEqual(tile.y, y)
-        pass
+    @parameterized.expand([
+        (7736, -10),
+        (8192, 0),
+        (8647, 10),
+    ])
+    def test_x(self, expected: int, lon: float):
+        self.assertEqual(expected, ZOOM_SQUADRATS.x(lon))
+
+    @parameterized.expand([
+        (8649, -10),
+        (8192, 0),
+        (7734, 10),
+    ])
+    def test_y(self, expected: int, lat: float):
+        self.assertEqual(expected, ZOOM_SQUADRATS.y(lat))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,13 +1,9 @@
-import itertools
 import unittest
-from collections.abc import Iterable
 from pathlib import Path
 
 import shapely
-from shapely import Point
 
 import squadrats2garmin.common.squadrats as squadrats
-from squadrats2garmin.common import job
 from squadrats2garmin.common.job import Job
 from squadrats2garmin.common.poly import ExtensionAwarePolyLoader
 from squadrats2garmin.common.region import Subdivision, Country
@@ -171,12 +167,12 @@ class TestShapelyTileGenerator(unittest.TestCase):
         with self.subTest(msg=f"{job_14}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
             with Path(f"output/{name}-14.geojson").open(mode="w") as f:
-                f.write(tiles_to_geojson(tiles=itertools.chain.from_iterable(tiles.values()), zoom=job_14.zoom))
+                f.write(tiles_to_geojson(tiles=tiles, zoom=job_14.zoom))
 
         with self.subTest(msg=f"{job_17}"):
             tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
             with Path(f"output/{name}-17.geojson").open(mode="w") as f:
-                f.write(tiles_to_geojson(tiles=itertools.chain.from_iterable(tiles.values()), zoom=job_17.zoom))
+                f.write(tiles_to_geojson(tiles=tiles, zoom=job_17.zoom))
 
     def test_write_geojson_contour(self):
         """
@@ -191,21 +187,30 @@ class TestShapelyTileGenerator(unittest.TestCase):
         job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
         with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tile_ranges(poly=region.coords, job=job_14, generator=self._generator)
+            ranges = squadrats.generate_ranges(poly=region.coords, job=job_14, generator=self._generator)
             with Path(f"output/{name}-contour-14.geojson").open(mode="w") as f:
-                f.write(contour_to_geojson(contour=itertools.chain.from_iterable(tiles.values()), zoom=job_14.zoom))
+                f.write(contour_to_geojson(ranges=ranges, zoom=job_14.zoom))
 
         with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tile_ranges(poly=region.coords, job=job_17, generator=self._generator)
+            ranges = squadrats.generate_ranges(poly=region.coords, job=job_17, generator=self._generator)
             with Path(f"output/{name}-contour-17.geojson").open(mode="w") as f:
-                f.write(contour_to_geojson(contour=itertools.chain.from_iterable(tiles.values()), zoom=job_17.zoom))
+                f.write(contour_to_geojson(ranges=ranges, zoom=job_17.zoom))
 
 
-def tiles_to_geojson(tiles: Iterable[Tile], zoom: Zoom) -> str:
-    return shapely.to_geojson(shapely.multipolygons([tile_to_polygon(tile=tile, zoom=zoom) for tile in tiles]))
+def tiles_to_geojson(tiles: dict[int, list[Tile]], zoom: Zoom) -> str:
+    return shapely.to_geojson(shapely.multipolygons([
+        tile_to_polygon(tile=t, zoom=zoom)
+        for tt in tiles.values()
+        for t in tt
+    ]))
 
-def contour_to_geojson(contour: Iterable[tuple[Tile, Tile]], zoom: Zoom) -> str:
-    return shapely.to_geojson(shapely.multipolygons([tile_to_polygon(tile=t, zoom=zoom) for p in contour for t in p]))
+def contour_to_geojson(ranges: dict[int, list[tuple[int, int]]], zoom: Zoom) -> str:
+    return shapely.to_geojson(shapely.multipolygons([
+        tile_to_polygon(tile=Tile(x, y), zoom=zoom)
+        for y, rr in ranges.items()
+        for r in rr
+        for x in r
+    ]))
 
 def tile_to_polygon(tile: Tile, zoom: Zoom) -> shapely.Polygon:
     return shapely.box(
