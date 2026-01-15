@@ -19,62 +19,6 @@ class TestSquadratsClient(unittest.TestCase):
         self._client.get_trophies(user_id='P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1')
 
 
-class TestBoundingBoxTileGenerator(unittest.TestCase):
-    """
-    Test that tiles are properly generated for the bounding box method
-    """
-    RESOURCE_DIR = Path(__file__).parent / "test_poly"
-
-    def setUp(self):
-        self._generator = squadrats.BoundingBoxTileGenerator()
-
-    def test_generate_tiles_PL_22_bounding_box(self):
-        region = Subdivision(
-            country=Country(iso_code='PL'),
-            iso_code='PL-22',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'pomorskie.poly'))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
-
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
-            self.assertEqual(109, len(tiles.keys()))
-            self.assertEqual(14933, sum(map(len, tiles.values())))
-            self.assertEqual(5193, min(tiles.keys()))
-            self.assertEqual(5301, max(tiles.keys()))
-
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
-            self.assertEqual(863, len(tiles.keys()))
-            self.assertEqual(939807, sum(map(len, tiles.values())))
-            self.assertEqual(41549, min(tiles.keys()))
-            self.assertEqual(42411, max(tiles.keys()))
-
-    def test_generate_tiles_PL_bounding_box(self):
-        """
-        Test that tiles are properly generated
-        """
-        region = Country(
-            iso_code='PL',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-Poland-67097-points.geojson'))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
-
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
-            self.assertEqual(448, len(tiles.keys()))
-            self.assertEqual(205632, sum(map(len, tiles.values())))
-            self.assertEqual(5179, min(tiles.keys()))
-            self.assertEqual(5626, max(tiles.keys()))
-
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
-            self.assertEqual(3578, len(tiles.keys()))
-            self.assertEqual(13131260, sum(map(len, tiles.values())))
-            self.assertEqual(41434, min(tiles.keys()))
-            self.assertEqual(45011, max(tiles.keys()))
-
-
 class TestShapelyTileGenerator(unittest.TestCase):
     """
     Test that tiles are properly generated using Shapely
@@ -82,7 +26,7 @@ class TestShapelyTileGenerator(unittest.TestCase):
     RESOURCE_DIR = Path(__file__).parent / "test_poly"
 
     def setUp(self):
-        self._generator = squadrats.ShapelyTileGenerator()
+        self._generator = squadrats.ShapelyTileMapGenerator()
 
     def test_generate_tiles_ES_CN(self):
         region = Subdivision(
@@ -187,12 +131,12 @@ class TestShapelyTileGenerator(unittest.TestCase):
         job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
         with self.subTest(msg=f"{job_14}"):
-            ranges = squadrats.generate_ranges(poly=region.coords, job=job_14, generator=self._generator)
+            ranges = squadrats.generate_tile_map(poly=region.coords, job=job_14, generator=self._generator)
             with Path(f"output/{name}-contour-14.geojson").open(mode="w") as f:
                 f.write(contour_to_geojson(ranges=ranges, zoom=job_14.zoom))
 
         with self.subTest(msg=f"{job_17}"):
-            ranges = squadrats.generate_ranges(poly=region.coords, job=job_17, generator=self._generator)
+            ranges = squadrats.generate_tile_map(poly=region.coords, job=job_17, generator=self._generator)
             with Path(f"output/{name}-contour-17.geojson").open(mode="w") as f:
                 f.write(contour_to_geojson(ranges=ranges, zoom=job_17.zoom))
 

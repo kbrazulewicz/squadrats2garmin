@@ -12,7 +12,7 @@ from squadrats2garmin.common.timer import timeit
 # 4^17 = 17 179 869 184
 WAY_BASE_ID = 100000000000
 
-type Tag = tuple[str, str]
+type Tags = dict[str, str]
 type Point = tuple[float, ...]
 
 class OSMProducer(Protocol):
@@ -39,10 +39,10 @@ class AbstractOSMProducer(ABC, OSMProducer):
 class OSMElement(ABC):
     """Abstract class representing an OSM element"""
 
-    def __init__(self, name: str, element_id: int, tags: list[Tag] = None):
+    def __init__(self, name: str, element_id: int, tags: Tags = None):
         self._name = name
         self._element_id = element_id
-        self._tags = tags if tags else []
+        self._tags = tags if tags else {}
 
     def __hash__(self) -> int:
         return hash((self.name, self.element_id))
@@ -63,7 +63,7 @@ class OSMElement(ABC):
         return self._element_id
 
     @property
-    def tags(self) -> list[Tag]:
+    def tags(self) -> Tags:
         """Element tags"""
         return self._tags
 
@@ -77,8 +77,8 @@ class OSMElement(ABC):
         """
         node = ET.Element(self.name, self.get_element_attributes())
         node.extend(
-            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
-            for tag in self.tags
+            ET.Element('tag', {'k': k, 'v': str(v)})
+            for k, v in self.tags.items()
         )
         return node
 
@@ -99,7 +99,7 @@ class Node(OSMElement):
 
     TAG: str = 'node'
 
-    def __init__(self, node_id: int, geom: Point, tags: list[Tag] | None = None) -> None:
+    def __init__(self, node_id: int, geom: Point, tags: Tags | None = None) -> None:
         super().__init__(name=self.TAG, element_id=node_id, tags=tags)
         self._geom: Point = geom
 
@@ -139,8 +139,8 @@ class Way(OSMElement):
 
     TAG: str = 'way'
 
-    def __init__(self, way_id: int, refs: list[int] | None = None, nodes: list[Node] | None = None,
-                 tags: list[Tag] | None = None) -> None:
+    def __init__(self, way_id: int, refs: list[int] = None, nodes: list[Node] = None,
+                 tags: Tags = None) -> None:
         super().__init__(name=self.TAG, element_id=way_id, tags=tags)
         if refs:
             self._refs = refs
@@ -174,10 +174,10 @@ class MultiPolygon(OSMElement):
     """List of inner rings"""
 
     def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] = None,
-                 tags: list[Tag] = None) -> None:
+                 tags: Tags = None) -> None:
         if not tags:
-            tags = []
-        tags = [('type', 'multipolygon')] + tags
+            tags = {}
+        tags = {'type': 'multipolygon'} | tags
         super().__init__(name='relation', element_id=relation_id, tags=tags)
         self.outer_rings = outer_rings
         self.inner_rings = inner_rings if inner_rings else []
@@ -215,12 +215,12 @@ class MultiPolygon(OSMElement):
         return relation
 
 
-def element_to_xml(name: str, attrs: dict, tags: list[Tag] | None = None) -> ET.Element:
+def element_to_xml(name: str, attrs: dict, tags: Tags = None) -> ET.Element:
     element = ET.Element(name, attrs)
     if tags:
         element.extend(
-            ET.Element('tag', {'k': tag[0], 'v': str(tag[1])})
-            for tag in tags
+            ET.Element('tag', {'k': k, 'v': str(v)})
+            for k, v in tags.items()
         )
     return element
 
@@ -248,10 +248,10 @@ def multipolygon_to_xml(
         element_id: int,
         outer_rings: list[int],
         inner_rings: list[int] = None,
-        tags: list[Tag] = None) -> ET.Element:
+        tags: Tags = None) -> ET.Element:
     if not tags:
-        tags = []
-    tags = [('type', 'multipolygon')] + tags
+        tags = {}
+    tags = {'type': 'multipolygon'} | tags
 
     relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
     for way_id in outer_rings:

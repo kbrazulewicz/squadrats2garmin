@@ -15,7 +15,7 @@ from shapely import LinearRing, MultiPolygon, Polygon
 from shapely.geometry import shape
 
 from squadrats2garmin.common.mkgmap import VisitedSquadratsConfig
-from squadrats2garmin.common.osm import Tag, OSMProducer, AbstractOSMProducer, node_to_xml, \
+from squadrats2garmin.common.osm import Tags, OSMProducer, AbstractOSMProducer, node_to_xml, \
     way_to_xml, multipolygon_to_xml
 from squadrats2garmin.common.squadrats import SquadratsClient
 from squadrats2garmin.common.timer import timeit
@@ -43,7 +43,7 @@ class KMLOSMProducer(AbstractOSMProducer, OSMProducer):
         for placemark_name in self.__KML_PLACEMARKS:
             with timeit(msg=f"Processing {placemark_name}"):
                 placemark: Placemark = find(self.__kml, name=placemark_name)
-                self.__kml_placemark_to_osm(placemark=placemark, tags=[('name', placemark_name)])
+                self.__kml_placemark_to_osm(placemark=placemark, tags={'name': placemark_name})
 
         self._write_document(file=file)
 
@@ -63,7 +63,7 @@ class KMLOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(way_to_xml(element_id=way_id, refs=node_ids))
         return way_id
 
-    def __parse_kml_multipolygon(self, polygons: list[fastkml.geometry.Polygon], tags: list[Tag] = None) -> None:
+    def __parse_kml_multipolygon(self, polygons: list[fastkml.geometry.Polygon], tags: Tags = None) -> None:
         """Parse fastkml.geometry.Polygon"""
         outer: list[int] = []
         inner: list[int] = []
@@ -76,7 +76,7 @@ class KMLOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(multipolygon_to_xml(
             element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
-    def __kml_placemark_to_osm(self, placemark: Placemark, tags: list[Tag]):
+    def __kml_placemark_to_osm(self, placemark: Placemark, tags: Tags):
         """Write fastkml.Placemark to OSM XML"""
         # use kml_geometry as it doesn't require recalculation
         if isinstance(placemark.kml_geometry, fastkml.geometry.MultiGeometry):
@@ -103,7 +103,7 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
             feature_name = feature['properties']['name']
             if feature_name in self.__GEOJSON_FEATURES:
                 with timeit(msg=f"Processing {feature_name}"):
-                    self.__shape_to_osm(geom=shape(feature), tags=[('name', feature_name)])
+                    self.__shape_to_osm(geom=shape(feature), tags={'name': feature_name})
 
         self._write_document(file=file)
 
@@ -122,7 +122,7 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(way_to_xml(element_id=way_id, refs=node_ids))
         return way_id
 
-    def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: list[Tag] = None):
+    def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: Tags = None):
         outer: list[int] = []
         inner: list[int] = []
 
@@ -136,7 +136,7 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(multipolygon_to_xml(
             element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
-    def __shape_to_osm(self, geom: Polygon | MultiPolygon, tags: list[Tag]):
+    def __shape_to_osm(self, geom: Polygon | MultiPolygon, tags: Tags):
         """Write shape to OSM XML"""
         match geom.geom_type:
             case 'MultiPolygon':

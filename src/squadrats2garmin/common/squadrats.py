@@ -18,10 +18,13 @@ from squadrats2garmin.common.osm import Node, Way
 from squadrats2garmin.common.tile import Tile, Zoom
 from squadrats2garmin.common.timer import timeit
 
-TAGS_WAY = [('name', 'grid')]
+TAGS_WAY = {'name': 'grid'}
 
 logger = logging.getLogger(__name__)
 
+type TileRange = tuple[int, int]
+type TileBars = list[TileRange]
+type TileMap = dict[int, TileBars]
 
 class SquadratsClient:
     def __init__(self):
@@ -55,8 +58,8 @@ class SquadratsClient:
             return response.json()
 
 
-class TileGenerator(Protocol):
-    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
+class TileMapGenerator(Protocol):
+    def generate_rows(self, poly: shapely.MultiPolygon, zoom: Zoom) -> TileMap:
         """
 
         :param poly:
@@ -70,24 +73,22 @@ class TileGenerator(Protocol):
         """
         ...
 
+    def generate_cols(self, poly: shapely.MultiPolygon, zoom: Zoom) -> TileMap:
+        """
 
-class BoundingBoxTileGenerator(TileGenerator):
-    """
-    Generate tiles for the rectangular area defined by the polygon bounding box
-    """
-
-    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
-        (bounds_w, bounds_s, bounds_e, bounds_n) = poly.bounds
-        (y_min, y_max) = [zoom.y(y) for y in [bounds_n, bounds_s]]
-        (x_min, x_max) = [zoom.x(x) for x in [bounds_w, bounds_e]]
-
-        return {
-            y: [(x_min, x_max)]
-            for y in range(y_min, y_max + 1)
+        :param poly:
+        :param zoom:
+        :return:
+        {
+            x_1 -> [(y_1_1_start, y_1_1_end)],
+            x_2 -> [(y_2_1_start, y_2_1_end), (y_2_2_start, y_2_2_end)],
+            ...
         }
+        """
+        ...
 
 
-class ShapelyTileGenerator(TileGenerator):
+class ShapelyTileMapGenerator(TileMapGenerator):
     """
     Generate tiles for the rectangular area defined by the polygon bounding box
     """
@@ -95,7 +96,7 @@ class ShapelyTileGenerator(TileGenerator):
     def __init__(self):
         self.__logger = logging.getLogger(__name__ + "." + type(self).__name__)
 
-    def generate(self, poly: shapely.MultiPolygon, zoom: Zoom) -> dict[int, list[tuple[int, int]]]:
+    def generate_rows(self, poly: shapely.MultiPolygon, zoom: Zoom) -> TileMap:
         tiles = {}
 
         (bounds_w, bounds_s, bounds_e, bounds_n) = poly.bounds
@@ -107,10 +108,10 @@ class ShapelyTileGenerator(TileGenerator):
             if result.is_empty: continue
 
             if isinstance(result, shapely.Polygon):
-                ranges.append(self._clipped_polygon_to_range(poly=result, zoom=zoom))
+                ranges.append(self._clipped_polygon_to_x_range(poly=result, zoom=zoom))
             elif isinstance(result, shapely.MultiPolygon):
                 for part in result.geoms:
-                    ranges.append(self._clipped_polygon_to_range(poly=part, zoom=zoom))
+                    ranges.append(self._clipped_polygon_to_x_range(poly=part, zoom=zoom))
             else:
                 self.__logger.warning("type %s not supported", type(result))
 
@@ -118,26 +119,53 @@ class ShapelyTileGenerator(TileGenerator):
 
         return tiles
 
-    def _clipped_polygon_to_range(self, poly: shapely.Polygon, zoom: Zoom) -> tuple[int, int]:
+    def generate_cols(self, poly: shapely.MultiPolygon, zoom: Zoom) -> TileMap:
+        tiles = {}
+
+        (bounds_w, bounds_s, bounds_e, bounds_n) = poly.bounds
+        (x_min, x_max) = [zoom.x(lon) for lon in [bounds_w, bounds_e]]
+
+        for x in range(x_min, x_max + 1):
+            ranges = []
+            result = shapely.clip_by_rect(poly, xmin=zoom.lon(x), ymin=bounds_n, xmax=zoom.lon(x + 1), ymax=bounds_s)
+            if result.is_empty: continue
+
+            if isinstance(result, shapely.Polygon):
+                ranges.append(self._clipped_polygon_to_y_range(poly=result, zoom=zoom))
+            elif isinstance(result, shapely.MultiPolygon):
+                for part in result.geoms:
+                    ranges.append(self._clipped_polygon_to_y_range(poly=part, zoom=zoom))
+            else:
+                self.__logger.warning("type %s not supported", type(result))
+
+            tiles[x] = util.merge_ranges_end_inclusive(ranges)
+
+        return tiles
+
+    def _clipped_polygon_to_x_range(self, poly: shapely.Polygon, zoom: Zoom) -> TileRange:
         (clip_w, clip_s, clip_e, clip_n) = poly.bounds
         (x_min, x_max) = [zoom.x(x) for x in [clip_w, clip_e]]
         return x_min, x_max
 
+    def _clipped_polygon_to_y_range(self, poly: shapely.Polygon, zoom: Zoom) -> TileRange:
+        (clip_w, clip_s, clip_e, clip_n) = poly.bounds
+        (y_min, y_max) = [zoom.y(lat) for lat in [clip_n, clip_s]]
+        return y_min, y_max
 
-def generate_ranges(poly: MultiPolygon, job: Job, generator: TileGenerator = ShapelyTileGenerator()) -> dict[
-    int, list[tuple[int, int]]]:
+
+def generate_tile_map(poly: MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> TileMap:
     """Generate horizontal ranges at a given zoom covering the entire polygon
     """
-    with timeit(f"{job}: generate ranges"):
-        return generator.generate(poly=poly, zoom=job.zoom)
+    with timeit(f"{job}: {type(generator)}.generate"):
+        return generator.generate_rows(poly=poly, zoom=job.zoom)
 
 
-def generate_tiles(poly: MultiPolygon, job: Job, generator: TileGenerator = ShapelyTileGenerator()) -> dict[
+def generate_tiles(poly: MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> dict[
     int, list[Tile]]:
     """Generate tiles at a given zoom covering the entire polygon
     """
     with timeit(f"generate_tiles({job})"):
-        tile_ranges = generator.generate(poly=poly, zoom=job.zoom)
+        tile_ranges = generator.generate_rows(poly=poly, zoom=job.zoom)
 
         # TODO eliminate this step
         tiles: dict[int, list[Tile]] = {}
@@ -151,84 +179,83 @@ def generate_tiles(poly: MultiPolygon, job: Job, generator: TileGenerator = Shap
         return tiles
 
 
-def generate_grid(ranges: dict[int, list[tuple[int, int]]], job: Job) -> list[Way]:
-    if not ranges:
+def generate_grid(tiles: TileMap, job: Job) -> list[Way]:
+    if not tiles:
         return []
 
     ways: list[Way] = []
 
     ranges_by_x = defaultdict(list)
-    ranges_by_y = {
-        y: util.make_ranges_end_inclusive(rr)
-        for y, rr in ranges.items()
-    }
 
+    # generate horizontal lines
     with timeit(f"{job}: horizontal lines"):
-        # generate horizontal lines
+        ranges_by_y = {
+            y: util.make_ranges_end_inclusive(rr)
+            for y, rr in tiles.items()
+        }
         for y in sorted(ranges_by_y.keys()):
             if y - 1 not in ranges_by_y:
                 # first row or a gap - generate top edge
-                ways.extend(_create_horizontal_ways_for_ranges(y=y, ranges=ranges_by_y[y], job=job))
+                ways.extend(_create_horizontal_ways_for_ranges(y=y, tiles=ranges_by_y[y], job=job))
 
             if y + 1 in ranges_by_y:
                 # generate bottom edge between current and next row
-                z = itertools.chain(ranges_by_y[y], ranges_by_y[y + 1])
-                type(z)
                 ways.extend(
                     _create_horizontal_ways_for_ranges(
                         y=y + 1,
-                        ranges=util.merge_ranges(itertools.chain(ranges_by_y[y], ranges_by_y[y + 1])),
+                        tiles=util.merge_ranges(itertools.chain(ranges_by_y[y], ranges_by_y[y + 1])),
                         job=job))
             else:
                 # generate bottom edge when next row is empty
-                ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, ranges=ranges_by_y[y], job=job))
+                ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, tiles=ranges_by_y[y], job=job))
 
             for r in ranges_by_y[y]:
                 for x in range(r[0], r[1] + 1):
                     ranges_by_x[x].append((y, y + 1))
 
     with timeit(f"{job}: vertical lines"):
-        ranges_by_x = {y: util.merge_ranges(rr) for y, rr in ranges_by_x.items()}
+        with timeit(f"{job}: merge_ranges"):
+            ranges_by_x = {y: util.merge_ranges(rr) for y, rr in ranges_by_x.items()}
 
         # generate vertical lines
         for x in sorted(ranges_by_x.keys()):
             if x - 1 not in ranges_by_x:
                 # first column or a gap - generate left edge
-                ways.extend(_create_vertical_ways_for_ranges(x=x, ranges=ranges_by_x[x], job=job))
+                ways.extend(_create_vertical_ways_for_ranges(x=x, tiles=ranges_by_x[x], job=job))
 
             if x + 1 in ranges_by_x:
                 # generate right edge between current and next column
                 ways.extend(
                     _create_vertical_ways_for_ranges(
                         x=x + 1,
-                        ranges=util.merge_ranges(itertools.chain(ranges_by_x[x], ranges_by_x[x + 1])),
+                        tiles=util.merge_ranges(itertools.chain(ranges_by_x[x], ranges_by_x[x + 1])),
                         job=job)
                 )
             else:
                 # generate right edge when next column is empty
-                ways.extend(_create_vertical_ways_for_ranges(x=x + 1, ranges=ranges_by_x[x], job=job))
+                ways.extend(_create_vertical_ways_for_ranges(x=x + 1, tiles=ranges_by_x[x], job=job))
 
     return ways
 
 
-def _create_horizontal_ways_for_ranges(y: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
+def _create_horizontal_ways_for_ranges(y: int, tiles: TileBars, job: Job) -> list[Way]:
     return [
         Way(
             way_id=job.next_id(),
-            nodes=[_osm_node((x, y), job) for x in r],
-            tags=TAGS_WAY + [('zoom', job.zoom.zoom)]
+            nodes=[_osm_node((x, y), job) for x in row],
+            tags=TAGS_WAY | {'zoom': job.zoom.zoom}
         )
-        for r in ranges
+        for row in tiles
     ]
 
-def _create_vertical_ways_for_ranges(x: int, ranges: list[tuple[int, int]], job: Job) -> list[Way]:
+def _create_vertical_ways_for_ranges(x: int, tiles: TileBars, job: Job) -> list[Way]:
     return [
         Way(
             way_id=job.next_id(),
-            nodes=[_osm_node((x, y), job) for y in r],
-            tags=TAGS_WAY + [('zoom', job.zoom.zoom)]
+            nodes=[_osm_node((x, y), job) for y in column],
+            tags=TAGS_WAY | {'zoom': job.zoom.zoom}
         )
-        for r in ranges
+        for column in tiles
     ]
 
 def _osm_node(tile: tuple[int, int], job: Job) -> Node:
@@ -239,24 +266,22 @@ def generate_osm(job: Job):
     """Generate a single OSM file for a job"""
     logger.info('Generating OSM: %s -> %s', job, job.osm_file)
 
-    with timeit(f'{job}: generate_tiles'):
-        ranges = generate_ranges(poly=job.region.coords, job=job)
+    with timeit(f"{job}: generate_tile_map"):
+        tiles = generate_tile_map(poly=job.region.coords, job=job)
 
     # logger.debug('%s: %d tiles', job, sum(map(len, tiles.values())))
 
-    with timeit(f'{job}: generate_grid_for_ranges'):
-        ways = generate_grid(ranges=ranges, job=job)
+    with timeit(f"{job}: generate_grid"):
+        ways = generate_grid(tiles=tiles, job=job)
 
     logger.debug('%s: %d ways', job, len(ways))
 
-    unique_nodes = set()
-    with timeit(f'{job}: collect unique nodes'):
-        for w in ways:
-            unique_nodes.update(w.nodes)
+    with timeit(f"{job}: collect unique nodes"):
+        unique_nodes = {n for w in ways for n in w.nodes}
 
-    logger.debug('%s: %d unique nodes', job, len(unique_nodes))
+    logger.debug("%s: %d unique nodes", job, len(unique_nodes))
 
-    with timeit(f'{job}: build OSM document'):
+    with timeit(f"{job}: build OSM document"):
         document = ET.Element("osm", {"version": '0.6'})
         document.extend(n.to_xml() for n in sorted(unique_nodes, key=lambda node: node.element_id))
         document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.element_id))
