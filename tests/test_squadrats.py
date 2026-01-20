@@ -5,8 +5,10 @@ import shapely
 
 import squadrats2garmin.common.squadrats as squadrats
 from squadrats2garmin.common.job import Job
+from squadrats2garmin.common.osm import Way
 from squadrats2garmin.common.poly import ExtensionAwarePolyLoader
 from squadrats2garmin.common.region import Subdivision, Country
+from squadrats2garmin.common.squadrats import TileMap
 from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS, Tile, Zoom
 
 
@@ -140,6 +142,26 @@ class TestShapelyTileGenerator(unittest.TestCase):
             with Path(f"output/{name}-contour-17.geojson").open(mode="w") as f:
                 f.write(contour_to_geojson(ranges=ranges, zoom=job_17.zoom))
 
+
+class TestSquadrats(unittest.TestCase):
+
+    RESOURCE_DIR = Path(__file__).parent / "test_poly"
+
+    def setUp(self):
+        self.region = {
+            'PL-22': Subdivision(
+                country=Country(iso_code='PL'),
+                iso_code='PL-22',
+                poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson'))
+        }
+
+    def test_generate_grid(self):
+        tile_map: TileMap = {
+            8192: [(8192, 8192)]
+        }
+        job = Job(region=self.region['PL-22'], zoom=ZOOM_SQUADRATS, osm_file=None)
+        ways: list[Way] = squadrats.generate_grid(tiles=tile_map, job=job)
+        self.assertEqual(len(ways), 4)
 
 def tiles_to_geojson(tiles: dict[int, list[Tile]], zoom: Zoom) -> str:
     return shapely.to_geojson(shapely.multipolygons([

@@ -210,7 +210,8 @@ def generate_grid(tiles: TileMap, job: Job) -> list[Way]:
                 ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, tiles=ranges_by_y[y], job=job))
 
             for r in ranges_by_y[y]:
-                for x in range(r[0], r[1] + 1):
+                # ranges are end-inclusive, no need to range(r[0], r[1] + 1)
+                for x in range(r[0], r[1]):
                     ranges_by_x[x].append((y, y + 1))
 
     with timeit(f"{job}: vertical lines"):
