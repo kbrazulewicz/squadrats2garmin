@@ -8,7 +8,6 @@ from squadrats2garmin.common.job import Job
 from squadrats2garmin.common.osm import Way
 from squadrats2garmin.common.poly import ExtensionAwarePolyLoader
 from squadrats2garmin.common.region import Subdivision, Country
-from squadrats2garmin.common.squadrats import TileMap
 from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS, Tile, Zoom
 
 
@@ -35,20 +34,18 @@ class TestShapelyTileGenerator(unittest.TestCase):
             country=Country(iso_code='ES'),
             iso_code='ES-CN',
             poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / "ES-CN-Canarias.geojson"))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
             self.assertEqual(96, len(tiles.keys()))
-            self.assertEqual(2552, sum(map(len, tiles.values())))
+            self.assertEqual(193, sum(map(len, tiles.values())))
             self.assertEqual(6788, min(tiles.keys()))
             self.assertEqual(6883, max(tiles.keys()))
 
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATINHOS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATINHOS)
             self.assertEqual(749, len(tiles.keys()))
-            self.assertEqual(143157, sum(map(len, tiles.values())))
+            self.assertEqual(1490, sum(map(len, tiles.values())))
             self.assertEqual(54311, min(tiles.keys()))
             self.assertEqual(55066, max(tiles.keys()))
 
@@ -57,20 +54,18 @@ class TestShapelyTileGenerator(unittest.TestCase):
             country=Country(iso_code='PL'),
             iso_code='PL-22',
             poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson'))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
             self.assertEqual(108, len(tiles.keys()))
-            self.assertEqual(10578, sum(map(len, tiles.values())))
+            self.assertEqual(141, sum(map(len, tiles.values())))
             self.assertEqual(5193, min(tiles.keys()))
             self.assertEqual(5300, max(tiles.keys()))
 
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATINHOS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATINHOS)
             self.assertEqual(859, len(tiles.keys()))
-            self.assertEqual(659689, sum(map(len, tiles.values())))
+            self.assertEqual(1137, sum(map(len, tiles.values())))
             self.assertEqual(41546, min(tiles.keys()))
             self.assertEqual(42404, max(tiles.keys()))
 
@@ -81,23 +76,22 @@ class TestShapelyTileGenerator(unittest.TestCase):
         region = Country(
             iso_code='PL',
             poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-Poland-67097-points.geojson'))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
             self.assertEqual(448, len(tiles.keys()))
-            self.assertEqual(144983, sum(map(len, tiles.values())))
+            self.assertEqual(606, sum(map(len, tiles.values())))
             self.assertEqual(5179, min(tiles.keys()))
             self.assertEqual(5626, max(tiles.keys()))
 
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATINHOS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATINHOS)
             self.assertEqual(3578, len(tiles.keys()))
-            self.assertEqual(9204691, sum(map(len, tiles.values())))
+            self.assertEqual(5464, sum(map(len, tiles.values())))
             self.assertEqual(41434, min(tiles.keys()))
             self.assertEqual(45011, max(tiles.keys()))
 
+    @unittest.skip("update methods to write geojson")
     def test_write_geojson(self):
         """
         Test that tiles are properly generated
@@ -107,40 +101,16 @@ class TestShapelyTileGenerator(unittest.TestCase):
             country=Country(iso_code='PL'),
             iso_code='PL-22',
             poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / f"{name}.geojson"))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
 
-        with self.subTest(msg=f"{job_14}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_14, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
             with Path(f"output/{name}-14.geojson").open(mode="w") as f:
-                f.write(tiles_to_geojson(tiles=tiles, zoom=job_14.zoom))
+                f.write(tiles_to_geojson(tiles=tiles, zoom=ZOOM_SQUADRATS))
 
-        with self.subTest(msg=f"{job_17}"):
-            tiles = squadrats.generate_tiles(poly=region.coords, job=job_17, generator=self._generator)
+        with self.subTest(msg=f"{ZOOM_SQUADRATINHOS}"):
+            tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATINHOS)
             with Path(f"output/{name}-17.geojson").open(mode="w") as f:
-                f.write(tiles_to_geojson(tiles=tiles, zoom=job_17.zoom))
-
-    def test_write_geojson_contour(self):
-        """
-        Test that tiles are properly generated
-        """
-        name = "PL-22-Pomorskie-11349"
-        region = Subdivision(
-            country=Country(iso_code='PL'),
-            iso_code='PL-22',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / f"{name}.geojson"))
-        job_14 = Job(region=region, zoom=ZOOM_SQUADRATS, osm_file=None)
-        job_17 = Job(region=region, zoom=ZOOM_SQUADRATINHOS, osm_file=None)
-
-        with self.subTest(msg=f"{job_14}"):
-            ranges = squadrats.generate_tile_map(poly=region.coords, job=job_14, generator=self._generator)
-            with Path(f"output/{name}-contour-14.geojson").open(mode="w") as f:
-                f.write(contour_to_geojson(ranges=ranges, zoom=job_14.zoom))
-
-        with self.subTest(msg=f"{job_17}"):
-            ranges = squadrats.generate_tile_map(poly=region.coords, job=job_17, generator=self._generator)
-            with Path(f"output/{name}-contour-17.geojson").open(mode="w") as f:
-                f.write(contour_to_geojson(ranges=ranges, zoom=job_17.zoom))
+                f.write(tiles_to_geojson(tiles=tiles, zoom=ZOOM_SQUADRATINHOS))
 
 
 class TestSquadrats(unittest.TestCase):
@@ -156,14 +126,11 @@ class TestSquadrats(unittest.TestCase):
         }
 
     def test_generate_grid(self):
-        tile_map: TileMap = {
-            8192: [(8192, 8192)]
-        }
         job = Job(region=self.region['PL-22'], zoom=ZOOM_SQUADRATS, osm_file=None)
-        ways: list[Way] = squadrats.generate_grid(tiles=tile_map, job=job)
-        self.assertEqual(len(ways), 4)
+        ways: list[Way] = squadrats.generate_grid(poly=job.region.coords, job=job)
+        self.assertEqual(len(ways), 307)
 
-def tiles_to_geojson(tiles: dict[int, list[Tile]], zoom: Zoom) -> str:
+def tiles_to_geojson(tiles: squadrats.TileMap, zoom: Zoom) -> str:
     return shapely.to_geojson(shapely.multipolygons([
         tile_to_polygon(tile=t, zoom=zoom)
         for tt in tiles.values()

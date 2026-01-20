@@ -2,11 +2,8 @@ import itertools
 import logging
 import xml.etree.ElementTree as ET
 
-from collections import defaultdict
-
 import requests
 import shapely
-from shapely.geometry import MultiPolygon
 from typing import Protocol
 
 from requests.adapters import HTTPAdapter
@@ -25,6 +22,7 @@ logger = logging.getLogger(__name__)
 type TileRange = tuple[int, int]
 type TileBars = list[TileRange]
 type TileMap = dict[int, TileBars]
+
 
 class SquadratsClient:
     def __init__(self):
@@ -104,7 +102,8 @@ class ShapelyTileMapGenerator(TileMapGenerator):
 
         for y in range(y_min, y_max + 1):
             ranges = []
-            result = shapely.clip_by_rect(poly, xmin=bounds_w, ymin=zoom.lat(y + 1), xmax=bounds_e, ymax=zoom.lat(y))
+            result = shapely.clip_by_rect(geometry=poly, xmin=bounds_w, ymin=zoom.lat(y + 1), xmax=bounds_e,
+                                          ymax=zoom.lat(y))
             if result.is_empty: continue
 
             if isinstance(result, shapely.Polygon):
@@ -127,7 +126,8 @@ class ShapelyTileMapGenerator(TileMapGenerator):
 
         for x in range(x_min, x_max + 1):
             ranges = []
-            result = shapely.clip_by_rect(poly, xmin=zoom.lon(x), ymin=bounds_n, xmax=zoom.lon(x + 1), ymax=bounds_s)
+            result = shapely.clip_by_rect(geometry=poly, xmin=zoom.lon(x), ymin=bounds_s, xmax=zoom.lon(x + 1),
+                                          ymax=bounds_n)
             if result.is_empty: continue
 
             if isinstance(result, shapely.Polygon):
@@ -153,88 +153,53 @@ class ShapelyTileMapGenerator(TileMapGenerator):
         return y_min, y_max
 
 
-def generate_tile_map(poly: MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> TileMap:
-    """Generate horizontal ranges at a given zoom covering the entire polygon
-    """
-    with timeit(f"{job}: {type(generator)}.generate"):
-        return generator.generate_rows(poly=poly, zoom=job.zoom)
-
-
-def generate_tiles(poly: MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> dict[
-    int, list[Tile]]:
-    """Generate tiles at a given zoom covering the entire polygon
-    """
-    with timeit(f"generate_tiles({job})"):
-        tile_ranges = generator.generate_rows(poly=poly, zoom=job.zoom)
-
-        # TODO eliminate this step
-        tiles: dict[int, list[Tile]] = {}
-        for y, ranges in tile_ranges.items():
-            tiles[y] = [
-                Tile(x, y)
-                for x1, x2 in ranges
-                for x in range(x1, x2 + 1)
-            ]
-
-        return tiles
-
-
-def generate_grid(tiles: TileMap, job: Job) -> list[Way]:
-    if not tiles:
-        return []
-
+def generate_grid(poly: shapely.MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> \
+list[Way]:
     ways: list[Way] = []
+    # generate horizontal ranges
+    row_map = generator.generate_rows(poly=poly, zoom=job.zoom)
+    ranges_by_y = {
+        y: util.make_ranges_end_inclusive(rr)
+        for y, rr in row_map.items()
+    }
+    for y in sorted(ranges_by_y.keys()):
+        if y - 1 not in ranges_by_y:
+            # first row or a gap - generate top edge
+            ways.extend(_create_horizontal_ways_for_ranges(y=y, tiles=ranges_by_y[y], job=job))
 
-    ranges_by_x = defaultdict(list)
+        if y + 1 in ranges_by_y:
+            # generate bottom edge between current and next row
+            ways.extend(
+                _create_horizontal_ways_for_ranges(
+                    y=y + 1,
+                    tiles=util.merge_ranges(itertools.chain(ranges_by_y[y], ranges_by_y[y + 1])),
+                    job=job))
+        else:
+            # generate bottom edge when next row is empty
+            ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, tiles=ranges_by_y[y], job=job))
 
-    # generate horizontal lines
-    with timeit(f"{job}: horizontal lines"):
-        ranges_by_y = {
-            y: util.make_ranges_end_inclusive(rr)
-            for y, rr in tiles.items()
-        }
-        for y in sorted(ranges_by_y.keys()):
-            if y - 1 not in ranges_by_y:
-                # first row or a gap - generate top edge
-                ways.extend(_create_horizontal_ways_for_ranges(y=y, tiles=ranges_by_y[y], job=job))
+    # generate vertical ranges
+    col_map = generator.generate_cols(poly=poly, zoom=job.zoom)
+    ranges_by_x = {
+        x: util.make_ranges_end_inclusive(rr)
+        for x, rr in col_map.items()
+    }
+    for x in sorted(ranges_by_x.keys()):
+        if x - 1 not in ranges_by_x:
+            # first column or a gap - generate left edge
+            ways.extend(_create_vertical_ways_for_ranges(x=x, tiles=ranges_by_x[x], job=job))
 
-            if y + 1 in ranges_by_y:
-                # generate bottom edge between current and next row
-                ways.extend(
-                    _create_horizontal_ways_for_ranges(
-                        y=y + 1,
-                        tiles=util.merge_ranges(itertools.chain(ranges_by_y[y], ranges_by_y[y + 1])),
-                        job=job))
-            else:
-                # generate bottom edge when next row is empty
-                ways.extend(_create_horizontal_ways_for_ranges(y=y + 1, tiles=ranges_by_y[y], job=job))
-
-            for r in ranges_by_y[y]:
-                # ranges are end-inclusive, no need to range(r[0], r[1] + 1)
-                for x in range(r[0], r[1]):
-                    ranges_by_x[x].append((y, y + 1))
-
-    with timeit(f"{job}: vertical lines"):
-        with timeit(f"{job}: merge_ranges"):
-            ranges_by_x = {y: util.merge_ranges(rr) for y, rr in ranges_by_x.items()}
-
-        # generate vertical lines
-        for x in sorted(ranges_by_x.keys()):
-            if x - 1 not in ranges_by_x:
-                # first column or a gap - generate left edge
-                ways.extend(_create_vertical_ways_for_ranges(x=x, tiles=ranges_by_x[x], job=job))
-
-            if x + 1 in ranges_by_x:
-                # generate right edge between current and next column
-                ways.extend(
-                    _create_vertical_ways_for_ranges(
-                        x=x + 1,
-                        tiles=util.merge_ranges(itertools.chain(ranges_by_x[x], ranges_by_x[x + 1])),
-                        job=job)
-                )
-            else:
-                # generate right edge when next column is empty
-                ways.extend(_create_vertical_ways_for_ranges(x=x + 1, tiles=ranges_by_x[x], job=job))
+        if x + 1 in ranges_by_x:
+            # generate right edge between current and next column
+            ways.extend(
+                _create_vertical_ways_for_ranges(
+                    x=x + 1,
+                    tiles=util.merge_ranges(itertools.chain(ranges_by_x[x], ranges_by_x[x + 1])),
+                    job=job)
+            )
+        else:
+            # generate right edge when next column is empty
+            ways.extend(_create_vertical_ways_for_ranges(x=x + 1, tiles=ranges_by_x[x], job=job))
 
     return ways
 
@@ -249,6 +214,7 @@ def _create_horizontal_ways_for_ranges(y: int, tiles: TileBars, job: Job) -> lis
         for row in tiles
     ]
 
+
 def _create_vertical_ways_for_ranges(x: int, tiles: TileBars, job: Job) -> list[Way]:
     return [
         Way(
@@ -259,6 +225,7 @@ def _create_vertical_ways_for_ranges(x: int, tiles: TileBars, job: Job) -> list[
         for column in tiles
     ]
 
+
 def _osm_node(tile: tuple[int, int], job: Job) -> Node:
     return Node(node_id=job.next_id(), geom=job.zoom.to_point(tile))
 
@@ -267,13 +234,8 @@ def generate_osm(job: Job):
     """Generate a single OSM file for a job"""
     logger.info('Generating OSM: %s -> %s', job, job.osm_file)
 
-    with timeit(f"{job}: generate_tile_map"):
-        tiles = generate_tile_map(poly=job.region.coords, job=job)
-
-    # logger.debug('%s: %d tiles', job, sum(map(len, tiles.values())))
-
     with timeit(f"{job}: generate_grid"):
-        ways = generate_grid(tiles=tiles, job=job)
+        ways = generate_grid(poly=job.region.coords, job=job)
 
     logger.debug('%s: %d ways', job, len(ways))
 

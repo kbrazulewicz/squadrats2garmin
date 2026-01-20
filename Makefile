@@ -50,7 +50,7 @@ grid-pl-single:
 grid-es: clean
 	uv run grid --verbose --config-files config/ES-España.json
 	ls -l dist/europe/*-ES-*.img
-#	cp dist/europe/*-PL-*.img $(GARMIN)
+#	cp dist/europe/*-ES-*.img $(GARMIN)
 
 grid-mt: clean
 	uv run grid --verbose --config-files config/MT-Malta.json
