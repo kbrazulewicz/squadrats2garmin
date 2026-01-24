@@ -1,27 +1,8 @@
 """Classes and methods to handle map tiles
 """
 import math
-from typing import NamedTuple
 
 from squadrats2garmin.common import osm
-
-
-class Tile(NamedTuple):
-    """
-    Representation of a tile
-
-    See https://wiki.openstreetmap.org/wiki/Zoom_levels.
-    """
-
-    x: int
-    """tile's x coordinate"""
-    y: int
-    """tile's y coordinate"""
-
-    def __repr__(self) -> str:
-        """Overrides the default implementation
-        """
-        return f'Tile(x={self.x}, y={self.y})'
 
 
 class Zoom:

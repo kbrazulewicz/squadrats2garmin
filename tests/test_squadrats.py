@@ -8,7 +8,7 @@ from squadrats2garmin.common.job import Job
 from squadrats2garmin.common.osm import Way
 from squadrats2garmin.common.poly import ExtensionAwarePolyLoader
 from squadrats2garmin.common.region import Subdivision, Country
-from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS, Tile, Zoom
+from squadrats2garmin.common.tile import ZOOM_SQUADRATS, ZOOM_SQUADRATINHOS, Zoom
 
 
 class TestSquadratsClient(unittest.TestCase):
@@ -28,12 +28,19 @@ class TestShapelyTileGenerator(unittest.TestCase):
 
     def setUp(self):
         self._generator = squadrats.ShapelyTileMapGenerator()
+        self.region = {
+            'ES-CN': Subdivision(
+                country=Country(iso_code='ES'),
+                iso_code='ES-CN',
+                poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / "ES-CN-Canarias.geojson")),
+            'PL-22': Subdivision(
+                country=Country(iso_code='PL'),
+                iso_code='PL-22',
+                poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson'))
+        }
 
     def test_generate_tiles_ES_CN(self):
-        region = Subdivision(
-            country=Country(iso_code='ES'),
-            iso_code='ES-CN',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / "ES-CN-Canarias.geojson"))
+        region = self.region['ES-CN']
 
         with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
             tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
@@ -50,10 +57,7 @@ class TestShapelyTileGenerator(unittest.TestCase):
             self.assertEqual(55066, max(tiles.keys()))
 
     def test_generate_tiles_PL_22(self):
-        region = Subdivision(
-            country=Country(iso_code='PL'),
-            iso_code='PL-22',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / 'PL-22-Pomorskie.geojson'))
+        region = self.region['PL-22']
 
         with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
             tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
@@ -91,25 +95,20 @@ class TestShapelyTileGenerator(unittest.TestCase):
             self.assertEqual(41434, min(tiles.keys()))
             self.assertEqual(45011, max(tiles.keys()))
 
-    @unittest.skip("update methods to write geojson")
     def test_write_geojson(self):
         """
         Test that tiles are properly generated
         """
-        name = "ES-CN-Canarias"
-        region = Subdivision(
-            country=Country(iso_code='PL'),
-            iso_code='PL-22',
-            poly_loader=ExtensionAwarePolyLoader(self.RESOURCE_DIR / f"{name}.geojson"))
+        region = self.region['ES-CN']
 
         with self.subTest(msg=f"{ZOOM_SQUADRATS}"):
             tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATS)
-            with Path(f"output/{name}-14.geojson").open(mode="w") as f:
+            with Path(f"output/{region.name}-14.geojson").open(mode="w") as f:
                 f.write(tiles_to_geojson(tiles=tiles, zoom=ZOOM_SQUADRATS))
 
         with self.subTest(msg=f"{ZOOM_SQUADRATINHOS}"):
             tiles = self._generator.generate_rows(poly=region.coords, zoom=ZOOM_SQUADRATINHOS)
-            with Path(f"output/{name}-17.geojson").open(mode="w") as f:
+            with Path(f"output/{region.name}-17.geojson").open(mode="w") as f:
                 f.write(tiles_to_geojson(tiles=tiles, zoom=ZOOM_SQUADRATINHOS))
 
 
@@ -132,25 +131,26 @@ class TestSquadrats(unittest.TestCase):
 
 def tiles_to_geojson(tiles: squadrats.TileMap, zoom: Zoom) -> str:
     return shapely.to_geojson(shapely.multipolygons([
-        tile_to_polygon(tile=t, zoom=zoom)
-        for tt in tiles.values()
-        for t in tt
+        tile_to_polygon(x=x, y=y, zoom=zoom)
+        for y, tile_bars in tiles.items()
+        for tile_range in tile_bars
+        for x in range(tile_range[0], tile_range[1] + 1)
     ]))
 
-def contour_to_geojson(ranges: dict[int, list[tuple[int, int]]], zoom: Zoom) -> str:
+def contour_to_geojson(tiles: squadrats.TileMap, zoom: Zoom) -> str:
     return shapely.to_geojson(shapely.multipolygons([
-        tile_to_polygon(tile=Tile(x, y), zoom=zoom)
-        for y, rr in ranges.items()
-        for r in rr
-        for x in r
+        tile_to_polygon(x=x, y=y, zoom=zoom)
+        for y, tile_bars in tiles.items()
+        for tile_range in tile_bars
+        for x in tile_range
     ]))
 
-def tile_to_polygon(tile: Tile, zoom: Zoom) -> shapely.Polygon:
+def tile_to_polygon(y: int, x: int, zoom: Zoom) -> shapely.Polygon:
     return shapely.box(
-        xmin=zoom.lon(tile.x),
-        ymin=zoom.lat(tile.y + 1),
-        xmax=zoom.lon(tile.x + 1),
-        ymax=zoom.lat(tile.y),
+        xmin=zoom.lon(x),
+        ymin=zoom.lat(y + 1),
+        xmax=zoom.lon(x + 1),
+        ymax=zoom.lat(y),
     )
 
 if __name__ == '__main__':

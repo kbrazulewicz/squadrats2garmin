@@ -12,7 +12,7 @@ from urllib3.util import Retry
 from squadrats2garmin.common import util
 from squadrats2garmin.common.job import Job
 from squadrats2garmin.common.osm import Node, Way
-from squadrats2garmin.common.tile import Tile, Zoom
+from squadrats2garmin.common.tile import Zoom
 from squadrats2garmin.common.timer import timeit
 
 TAGS_WAY = {'name': 'grid'}
