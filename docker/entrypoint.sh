@@ -1,6 +1,6 @@
 #! /bin/bash
 
-OUTPUT="/output/visited-squadrats.img"
+OUTPUT="/output/visited-squadrats-${SQUADRATS_USERID}.img"
 
 # import uv's setup
 source ~/.local/bin/env

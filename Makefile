@@ -15,15 +15,18 @@ docker: package
 	docker build \
 		--build-arg MKGMAP_VERSION=r4923 \
 		--build-arg SQUADRATS2GARMIN_VERSION=$(VERSION) \
-		--tag kbrazulewicz/squadrats2garmin \
+		--tag kbrazulewicz/visitedsquadrats2garmin \
 		docker
 
+docker-push: docker
+	docker push kbrazulewicz/visitedsquadrats2garmin:latest
+
 docker-run:
-	docker run -it \
+	docker run \
 		--env SQUADRATS_USERID=P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 \
 		--env SQUADRATS2GARMIN_VERBOSE=true \
 		--mount type=bind,source=.,target=/output \
-		kbrazulewicz/squadrats2garmin
+		kbrazulewicz/visitedsquadrats2garmin
 
 test:
 	uv run pytest -v
@@ -66,6 +69,9 @@ visited-user-id: clean
 visited: visited-user-id
 	#scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img $(GARMIN)
+
+visited-beata:
+	uv run visited --verbose --user-id P4LbNAcB13QftwtTyLDLRBIb5cu1 --output output/squadrats-visited-P4LbNAcB13QftwtTyLDLRBIb5cu1.img
 
 mkgmap:
 	mkgmap --read-config=output/mkgmap.cfg
