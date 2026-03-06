@@ -32,7 +32,6 @@ class AbstractOSMProducer(ABC, OSMProducer):
 
     def _write_document(self, file: Path):
         with timeit(msg=f"Writing {file}"):
-            ET.indent(self._document)
             ET.ElementTree(self._document).write(file, encoding='utf-8', xml_declaration=True)
 
 
@@ -76,10 +75,8 @@ class OSMElement(ABC):
         """Generate XML representation of Element
         """
         node = ET.Element(self.name, self.get_element_attributes())
-        node.extend(
-            ET.Element('tag', {'k': k, 'v': str(v)})
-            for k, v in self.tags.items()
-        )
+        for k, v in self.tags.items():
+            ET.SubElement(node, 'tag', {'k': k, 'v': str(v)})
         return node
 
 
@@ -155,9 +152,7 @@ class Way(OSMElement):
         """
         way = super().to_xml()
         for ref in self._refs:
-            way.append(
-                ET.Element('nd', {'ref': str(ref)})
-            )
+            ET.SubElement(way, 'nd', {'ref': str(ref)})
 
         return way
 
@@ -192,25 +187,21 @@ class MultiPolygon(OSMElement):
         """Generate XML representation of MultiPolygon object
         """
         relation = super().to_xml()
-        # add members
 
+        # add members
         for way in self.outer_rings:
-            relation.append(
-                ET.Element('member', {
-                    'type': 'way',
-                    'ref': str(way.element_id),
-                    'role': 'outer'
-                })
-            )
+            ET.SubElement(relation, 'member', {
+                'type': 'way',
+                'ref': str(way.element_id),
+                'role': 'outer'
+            })
 
         for way in self.inner_rings:
-            relation.append(
-                ET.Element('member', {
-                    'type': 'way',
-                    'ref': str(way.element_id),
-                    'role': 'inner'
-                })
-            )
+            ET.SubElement(relation, 'member', {
+                'type': 'way',
+                'ref': str(way.element_id),
+                'role': 'inner'
+            })
 
         return relation
 
@@ -218,10 +209,9 @@ class MultiPolygon(OSMElement):
 def element_to_xml(name: str, attrs: dict, tags: Tags = None) -> ET.Element:
     element = ET.Element(name, attrs)
     if tags:
-        element.extend(
-            ET.Element('tag', {'k': k, 'v': str(v)})
-            for k, v in tags.items()
-        )
+        for k, v in tags.items():
+            ET.SubElement(element, 'tag', {'k': k, 'v': str(v)})
+
     return element
 
 
@@ -239,7 +229,7 @@ def node_to_xml(element_id: int, geom: Point) -> ET.Element:
 def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
     way: ET.Element = element_to_xml(Way.TAG, {'id': str(element_id)})
     for ref in refs:
-        way.append(ET.Element('nd', {'ref': str(ref)}))
+        ET.SubElement(way, 'nd', {'ref': str(ref)})
 
     return way
 
@@ -255,21 +245,17 @@ def multipolygon_to_xml(
 
     relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
     for way_id in outer_rings:
-        relation.append(
-            ET.Element('member', {
-                'type': 'way',
-                'ref': str(way_id),
-                'role': 'outer'
-            })
-        )
+        ET.SubElement(relation, 'member', {
+            'type': 'way',
+            'ref': str(way_id),
+            'role': 'outer'
+        })
 
     for way_id in inner_rings:
-        relation.append(
-            ET.Element('member', {
-                'type': 'way',
-                'ref': str(way_id),
-                'role': 'inner'
-            })
-        )
+        ET.SubElement(relation, 'member', {
+            'type': 'way',
+            'ref': str(way_id),
+            'role': 'inner'
+        })
 
     return relation
