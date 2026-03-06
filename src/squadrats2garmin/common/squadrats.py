@@ -1,6 +1,7 @@
 import itertools
 import logging
 import xml.etree.ElementTree as ET
+from operator import attrgetter
 
 import requests
 import shapely
@@ -231,6 +232,7 @@ def _osm_node(tile: tuple[int, int], job: Job) -> Node:
 
 
 def generate_osm(job: Job):
+    pretty_print = False
     """Generate a single OSM file for a job"""
     logger.info('Generating OSM: %s -> %s', job, job.osm_file)
 
@@ -246,9 +248,13 @@ def generate_osm(job: Job):
 
     with timeit(f"{job}: build OSM document"):
         document = ET.Element("osm", {"version": '0.6'})
-        document.extend(n.to_xml() for n in sorted(unique_nodes, key=lambda node: node.element_id))
-        document.extend(w.to_xml() for w in sorted(ways, key=lambda way: way.element_id))
-        ET.indent(document)
+        if pretty_print:
+            document.extend(n.to_xml() for n in sorted(unique_nodes, key=attrgetter('element_id')))
+            document.extend(w.to_xml() for w in sorted(ways, key=attrgetter('element_id')))
+            ET.indent(document)
+        else:
+            document.extend(n.to_xml() for n in unique_nodes)
+            document.extend(w.to_xml() for w in ways)
 
     with timeit(f'{job}: write OSM document {job.osm_file}'):
         job.osm_file.parent.mkdir(parents=True, exist_ok=True)
