@@ -1,6 +1,6 @@
 [project]
 name = "Squadrats2Garmin"
-version = "0.2.0"
+version = "0.2.1"
 description = "Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches."
 readme = "README.md"
 authors = [
@@ -8,11 +8,11 @@ authors = [
 ]
 license = "GPL-3.0-only"
 keywords = ["squadrats"]
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "fastkml>=1.4.0",
     "overpy>=0.7",
-    "pycountry>=24.6.1",
+    "pycountry>=26.2.16",
     "requests>=2.32.5",
     "shapely>=2.1.2",
 ]
