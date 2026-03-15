@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import shutil
 import subprocess
 from abc import ABC
 from importlib import resources
@@ -87,11 +88,15 @@ class Config(ABC):
         mkgmap_resources = resources.files("squadrats2garmin.config.mkgmap")
         if not self.__style_file:
             with resources.as_file(mkgmap_resources.joinpath("squadrats-default.style")) as style_file:
-                self.__style_file = style_file.copy_into(self.output_dir)
+                self.__style_file = Path(shutil.copy(src=style_file, dst=self.output_dir))
+                # requires Python 3.14
+                # self.__style_file = style_file.copy_into(self.output_dir)
 
         if not self.__typ_file:
             with resources.as_file(mkgmap_resources.joinpath("squadrats.typ.txt")) as typ_file:
-                self.__typ_file = typ_file.copy_into(self.output_dir)
+                self.__typ_file = Path(shutil.copy(src=typ_file, dst=self.output_dir))
+                # requires Python 3.14
+                # self.__typ_file = typ_file.copy_into(self.output_dir)
 
     def write_mkgmap_config_headers(self, config_file) -> None:
         # images with 'unicode' encoding are not displayed on Garmin
@@ -116,7 +121,9 @@ class Config(ABC):
             raise RuntimeError(f'{gmapsupp_img} not found')
 
         self.output.parent.mkdir(parents=True, exist_ok=True)
-        gmapsupp_img.move(self.output)
+        shutil.move(src=gmapsupp_img, dst=self.output)
+        # requires Python 3.14
+        # gmapsupp_img.move(self.output)
 
         return self.output
 
