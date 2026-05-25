@@ -1,4 +1,4 @@
-#### [🇵🇱 po polsku](README.pl-PL.MD)
+#### [🇵🇱 po polsku](README.pl-PL.md)
 # Squadrats2Garmin tools
 Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches.
 
