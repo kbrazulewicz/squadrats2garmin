@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class GeoJSONProvider(Protocol):
-    def load(self):
+    def load(self) -> dict:
         ...
 
 

@@ -1,4 +1,5 @@
 import unittest
+from importlib import metadata
 from pathlib import Path
 
 import shapely
@@ -15,6 +16,12 @@ class TestSquadratsClient(unittest.TestCase):
 
     def setUp(self):
         self._client = squadrats.SquadratsClient()
+
+    def test_get_geojson_metadata(self):
+        user_id = 'P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1'
+        geojson_metadata = self._client.get_geojson_metadata(user_id)
+        self.assertGreaterEqual(geojson_metadata.timestamp, 1774713661997)
+        self.assertEqual(geojson_metadata.url, f"https://squadrats.org/trophies/{user_id}/{geojson_metadata.timestamp}.geojson")
 
     def test_get_trophies(self):
         self._client.get_trophies(user_id='P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1')

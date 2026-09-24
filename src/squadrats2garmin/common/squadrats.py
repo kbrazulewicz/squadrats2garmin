@@ -1,6 +1,7 @@
 import itertools
 import logging
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from operator import attrgetter
 
 import requests
@@ -25,6 +26,12 @@ type TileBars = list[TileRange]
 type TileMap = dict[int, TileBars]
 
 
+@dataclass(frozen=True)
+class GeoJsonMetadata:
+    timestamp: int
+    url: str
+
+
 class SquadratsClient:
     def __init__(self):
         self._session = requests.Session()
@@ -42,17 +49,18 @@ class SquadratsClient:
 
         self._timeout = 10
 
-    def _get_geojson(self, user_id: str) -> dict:
-        response = self._session.get(f'https://mainframe-api.squadrats.com/anonymous/squadrants/{user_id}/geojson',
+    def get_geojson_metadata(self, user_id: str) -> GeoJsonMetadata:
+        response = self._session.get(url=f"https://mainframe-api.squadrats.com/anonymous/squadrants/{user_id}/geojson",
                                      timeout=self._timeout)
         response.raise_for_status()
-        return response.json()
+        return GeoJsonMetadata(**response.json())
 
-    def get_trophies(self, user_id: str):
+    def get_trophies(self, user_id: str, geojson_metadata: GeoJsonMetadata = None) -> dict:
         with timeit(msg=f"Fetching trophies for user {user_id}"):
-            geojson_info = self._get_geojson(user_id)
+            if geojson_metadata is None:
+                geojson_metadata = self.get_geojson_metadata(user_id)
 
-            response = self._session.get(geojson_info['url'], timeout=self._timeout)
+            response = self._session.get(geojson_metadata.url, timeout=self._timeout)
             response.raise_for_status()
             return response.json()
 
@@ -155,7 +163,7 @@ class ShapelyTileMapGenerator(TileMapGenerator):
 
 
 def generate_grid(poly: shapely.MultiPolygon, job: Job, generator: TileMapGenerator = ShapelyTileMapGenerator()) -> \
-list[Way]:
+        list[Way]:
     ways: list[Way] = []
     # generate horizontal ranges
     row_map = generator.generate_rows(poly=poly, zoom=job.zoom)

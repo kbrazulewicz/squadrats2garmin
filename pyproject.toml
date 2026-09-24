@@ -1,6 +1,6 @@
 [project]
 name = "Squadrats2Garmin"
-version = "0.2.1"
+version = "0.2.4"
 description = "Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches."
 readme = "README.md"
 authors = [
@@ -8,13 +8,12 @@ authors = [
 ]
 license = "GPL-3.0-only"
 keywords = ["squadrats"]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "fastkml>=1.4.0",
-    "numpy>=2.5.3",
     "overpy>=0.7",
     "pycountry>=26.2.16",
-    "requests>=2.32.5",
+    "requests>=2.34.2",
     "shapely>=2.1.2",
 ]
 
@@ -24,14 +23,14 @@ grid = "squadrats2garmin:squadrats_grid"
 poly = "squadrats2garmin:poly_download"
 
 [build-system]
-requires = ["uv_build>=0.9.18,<0.10.0"]
+requires = ["uv_build>=0.12.5,<0.13"]
 build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
     "parameterized>=0.9.0",
-    "pytest>=9.0.2",
-    "pytest-benchmark>=5.2.3",
+    "pytest>=9.1.1",
+    "pytest-benchmark>=5.3.0",
 ]
 
 [tool.uv]
