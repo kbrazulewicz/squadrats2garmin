@@ -63,7 +63,7 @@ class KMLOSMProducer(AbstractOSMProducer, OSMProducer):
         self._document.append(way_to_xml(element_id=way_id, refs=node_ids))
         return way_id
 
-    def __parse_kml_multipolygon(self, polygons: list[fastkml.geometry.Polygon], tags: Tags = None) -> None:
+    def __parse_kml_multipolygon(self, polygons: list[fastkml.geometry.Polygon], tags: Tags | None = None) -> None:
         """Parse fastkml.geometry.Polygon"""
         outer: list[int] = []
         inner: list[int] = []

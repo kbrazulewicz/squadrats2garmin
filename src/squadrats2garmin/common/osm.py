@@ -38,7 +38,7 @@ class AbstractOSMProducer(ABC, OSMProducer):
 class OSMElement(ABC):
     """Abstract class representing an OSM element"""
 
-    def __init__(self, name: str, element_id: int, tags: Tags = None):
+    def __init__(self, name: str, element_id: int, tags: Tags | None = None):
         self._name = name
         self._element_id = element_id
         self._tags = tags if tags else {}
@@ -75,8 +75,8 @@ class OSMElement(ABC):
         """Generate XML representation of Element
         """
         node = ET.Element(self.name, self.get_element_attributes())
-        for k, v in self.tags.items():
-            ET.SubElement(node, 'tag', {'k': k, 'v': str(v)})
+        node.extend(ET.Element('tag', {'k': k, 'v': str(v)}) for k, v in self.tags.items())
+
         return node
 
 
@@ -136,8 +136,8 @@ class Way(OSMElement):
 
     TAG: str = 'way'
 
-    def __init__(self, way_id: int, refs: list[int] = None, nodes: list[Node] = None,
-                 tags: Tags = None) -> None:
+    def __init__(self, way_id: int, refs: list[int] | None = None, nodes: list[Node] | None = None,
+                 tags: Tags | None = None) -> None:
         super().__init__(name=self.TAG, element_id=way_id, tags=tags)
         if refs:
             self._refs = refs
@@ -151,8 +151,7 @@ class Way(OSMElement):
         """Generate XML representation of Way object
         """
         way = super().to_xml()
-        for ref in self._refs:
-            ET.SubElement(way, 'nd', {'ref': str(ref)})
+        way.extend(ET.Element('nd', {'ref': str(ref)}) for ref in self._refs)
 
         return way
 
@@ -168,8 +167,8 @@ class MultiPolygon(OSMElement):
     inner_rings: list[Way]
     """List of inner rings"""
 
-    def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] = None,
-                 tags: Tags = None) -> None:
+    def __init__(self, relation_id: int, outer_rings: list[Way], inner_rings: list[Way] | None = None,
+                 tags: Tags | None = None) -> None:
         if not tags:
             tags = {}
         tags = {'type': 'multipolygon'} | tags
@@ -189,28 +188,27 @@ class MultiPolygon(OSMElement):
         relation = super().to_xml()
 
         # add members
-        for way in self.outer_rings:
-            ET.SubElement(relation, 'member', {
+        relation.extend(
+            ET.Element('member', {
                 'type': 'way',
                 'ref': str(way.element_id),
                 'role': 'outer'
-            })
-
-        for way in self.inner_rings:
-            ET.SubElement(relation, 'member', {
+            }) for way in self.outer_rings
+        )
+        relation.extend(
+            ET.Element('member', {
                 'type': 'way',
                 'ref': str(way.element_id),
                 'role': 'inner'
-            })
+            }) for way in self.inner_rings
+        )
 
         return relation
 
 
-def element_to_xml(name: str, attrs: dict, tags: Tags = None) -> ET.Element:
+def element_to_xml(name: str, attrs: dict, tags: Tags | None = None) -> ET.Element:
     element = ET.Element(name, attrs)
-    if tags:
-        for k, v in tags.items():
-            ET.SubElement(element, 'tag', {'k': k, 'v': str(v)})
+    element.extend(ET.Element('tag', {'k': k, 'v': str(v)}) for k, v in (tags.items() if tags else {}))
 
     return element
 
@@ -228,8 +226,7 @@ def node_to_xml(element_id: int, geom: Point) -> ET.Element:
 
 def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
     way: ET.Element = element_to_xml(Way.TAG, {'id': str(element_id)})
-    for ref in refs:
-        ET.SubElement(way, 'nd', {'ref': str(ref)})
+    way.extend(ET.Element('nd', {'ref': str(ref)}) for ref in refs)
 
     return way
 
@@ -237,25 +234,24 @@ def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
 def multipolygon_to_xml(
         element_id: int,
         outer_rings: list[int],
-        inner_rings: list[int] = None,
-        tags: Tags = None) -> ET.Element:
-    if not tags:
-        tags = {}
-    tags = {'type': 'multipolygon'} | tags
+        inner_rings: list[int] | None = None,
+        tags: Tags | None = None) -> ET.Element:
+    tags = {'type': 'multipolygon'} | (tags or {})
 
     relation = element_to_xml('relation', {'id': str(element_id)}, tags=tags)
-    for way_id in outer_rings:
-        ET.SubElement(relation, 'member', {
+    relation.extend(
+        ET.Element('member', {
             'type': 'way',
             'ref': str(way_id),
             'role': 'outer'
-        })
-
-    for way_id in inner_rings:
-        ET.SubElement(relation, 'member', {
+        }) for way_id in outer_rings
+    )
+    relation.extend(
+        ET.Element('member', {
             'type': 'way',
             'ref': str(way_id),
             'role': 'inner'
-        })
+        }) for way_id in (inner_rings or ())
+    )
 
     return relation
