@@ -25,7 +25,7 @@ class PolyDownloader:
         })
 
         retry = Retry(
-            total=5,
+            total=10,
             backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504],
         )
@@ -78,7 +78,7 @@ class OsmIdResolver:
             }
         ))
 
-    def get_id(self, iso_code: str, retry_count: int = 5) -> int:
+    def get_id(self, iso_code: str, retry_count: int = 10) -> int:
         query: str
         if "-" in iso_code:
             query = f'''
