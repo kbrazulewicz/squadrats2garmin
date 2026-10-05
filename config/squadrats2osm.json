@@ -3,11 +3,11 @@
   "description": "Squadrats, custom",
   "mapname_prefix": "97240",
   "zoom_14": [
-    "ES-VC",
+    "ES",
     "PL"
   ],
   "zoom_17": [
-    "ES-VC",
-    "PL-*"
+    "ES",
+    "PL"
   ]
 }
