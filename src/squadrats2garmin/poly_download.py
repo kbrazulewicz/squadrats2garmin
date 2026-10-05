@@ -4,6 +4,7 @@ import logging
 import re
 import time
 from pathlib import Path
+from urllib.request import Request
 
 import overpy
 import pycountry
@@ -69,7 +70,13 @@ class PolyDownloader:
 
 class OsmIdResolver:
     def __init__(self):
-        self.api = overpy.Overpass()
+        self.api = overpy.Overpass(url=Request(
+            url = overpy.Overpass.default_url,
+            headers = {
+                "User-Agent": "Squadrats2Garmin/1.0 (contact: krystian@brazulewicz.pl)",
+                "Referer": "https://github.com"
+            }
+        ))
 
     def get_id(self, iso_code: str, retry_count: int = 5) -> int:
         query: str
@@ -170,6 +177,7 @@ def main():
         match = re.match(r'^([A-Z]{2})-\*$', arg)
         if match:
             country_code = match.group(1)
+
             subdivisions = pycountry.subdivisions.get(country_code=country_code)
             if not subdivisions:
                 raise ValueError(f'No subdivisions defined for country {match.group(1)}')
