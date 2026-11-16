@@ -16,13 +16,13 @@ CodePage=65001
 
 ; ==========================================
 ; Squadrats (level 14) visited border - solid part
-; solid line, width 2, color #FF0000 red
+; solid line, width 2, color #0000FF royal blue
 ; ==========================================
 [_line]
 Type=0x10401
 LineWidth=2
 Xpm="0 0 1 0"
-"# c #FF0000"
+"# c #0000FF"
 String1=0x04,Squadrats visited border
 String2=0x15,Granica odwiedzonych squadrats
 [end]
@@ -30,7 +30,7 @@ String2=0x15,Granica odwiedzonych squadrats
 
 ; ==========================================
 ; Squadrats (level 14) visited border - shaded part
-; 32x16 bitmap, strictly 2 colors (#FF0000 red + transparent)
+; 32x16 bitmap, strictly 2 colors (#0000FF royal blue + transparent)
 ; rows 1-7   transparent
 ; rows 8-9   overlap with the solid part
 ; rows 10-16
@@ -38,7 +38,7 @@ String2=0x15,Granica odwiedzonych squadrats
 [_line]
 Type=0x10402
 Xpm="32 16 2 1"
-"# c #FF0000"
+"# c #0000FF"
 ". c none"
 "................................"
 "................................"
@@ -64,13 +64,13 @@ String2=0x15,Granica odwiedzonych squadrats
 
 ; ==========================================
 ; Squadratinhos (level 17) visited border - solid part
-; solid line, width 2, color #FFAA00 amber
+; solid line, width 2, color #FF0000 red
 ; ==========================================
 [_line]
 Type=0x10411
 LineWidth=2
 Xpm="0 0 1 0"
-"# c #FFAA00"
+"# c #FF0000"
 String1=0x04,Squadratinhos visited border
 String2=0x15,Granica odwiedzonych squadratinhos
 [end]
@@ -78,7 +78,7 @@ String2=0x15,Granica odwiedzonych squadratinhos
 
 ; ==========================================
 ; Squadratinhos (level 17) visited border - shaded part
-; 32x16 bitmap, strictly 2 colors (#FFAA00 amber + transparent)
+; 32x16 bitmap, strictly 2 colors (#FF0000 red + transparent)
 ; rows 1-7   transparent
 ; rows 8-9   overlap with the solid part
 ; rows 10-16
@@ -86,7 +86,7 @@ String2=0x15,Granica odwiedzonych squadratinhos
 [_line]
 Type=0x10412
 Xpm="32 16 2 1"
-"# c #FFAA00"
+"# c #FF0000"
 ". c none"
 "................................"
 "................................"
@@ -160,7 +160,7 @@ String1=0x04,Level 17 Center
 
 ; ==========================================
 ; Ubersquadrat (level 14)
-; solid line, width 3, color #0000FF Royal Blue
+; solid line, width 3, color #FFAA00 Amber
 ; ==========================================
 [_line]
 ; Ubersquadrat
@@ -168,7 +168,7 @@ String1=0x04,Level 17 Center
 Type=0x10E09
 LineWidth=3
 Xpm="0 0 1 0"
-"1 c #0000FF"
+"1 c #FFAA00"
 String1=0x04,Ubersquadrat
 String2=0x15,Ubersquadrat
 [end]
