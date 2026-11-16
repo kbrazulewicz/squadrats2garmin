@@ -26,6 +26,7 @@ The default style used for Squadrats.
 
 levels: 0:24, 1:23, 2:22, 3:20, 4:17, 5:15
 
+
 <<<lines>>>
 # squadrats grid
 name=grid & zoom=14 [0x11410 level 2-3 continue]
@@ -55,10 +56,6 @@ grid_center=17 { delete name; } [0x11501 resolution 23]
 <<<polygons>>>
 # Intentionally empty
 
+
 <<<relations>>>
-# propagate 'name' tag to all members of multipolygon relations
-type=multipolygon & (name=squadrats | name=squadratinhos | name=ubersquadrat | name=ubersquadratinho) {
-    apply {
-        set name='${name}';
-    }
-}
+# Intentionally empty

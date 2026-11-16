@@ -64,13 +64,13 @@ String2=0x15,Granica odwiedzonych squadrats
 
 ; ==========================================
 ; Squadratinhos (level 17) visited border - solid part
-; solid line, width 2, color #FFFF00 yellow
+; solid line, width 2, color #FFAA00 amber
 ; ==========================================
 [_line]
 Type=0x10411
 LineWidth=2
 Xpm="0 0 1 0"
-"# c #FFFF00"
+"# c #FFAA00"
 String1=0x04,Squadratinhos visited border
 String2=0x15,Granica odwiedzonych squadratinhos
 [end]
@@ -78,7 +78,7 @@ String2=0x15,Granica odwiedzonych squadratinhos
 
 ; ==========================================
 ; Squadratinhos (level 17) visited border - shaded part
-; 32x16 bitmap, strictly 2 colors (#FFFF00 yellow + transparent)
+; 32x16 bitmap, strictly 2 colors (#FFAA00 amber + transparent)
 ; rows 1-7   transparent
 ; rows 8-9   overlap with the solid part
 ; rows 10-16
@@ -86,7 +86,7 @@ String2=0x15,Granica odwiedzonych squadratinhos
 [_line]
 Type=0x10412
 Xpm="32 16 2 1"
-"# c #FFFF00"
+"# c #FFAA00"
 ". c none"
 "................................"
 "................................"
@@ -105,8 +105,8 @@ Xpm="32 16 2 1"
 ".#...#...#...#...#...#...#...#.."
 "...#...#...#...#...#...#...#...#"
 UseOrientation=Y
-String1=0x04,Squadrats visited border
-String2=0x15,Granica odwiedzonych squadrats
+String1=0x04,Squadratinhos visited border
+String2=0x15,Granica odwiedzonych squadratinhos
 [end]
 
 
@@ -158,22 +158,34 @@ String1=0x04,Level 17 Center
 [end]
 
 
+; ==========================================
+; Ubersquadrat (level 14)
+; solid line, width 3, color #0000FF Royal Blue
+; ==========================================
 [_line]
 ; Ubersquadrat
 ; CUSTOMIZABLE_LINE_10
 Type=0x10E09
 LineWidth=3
 Xpm="0 0 1 0"
-"1 c #FF0000"
+"1 c #0000FF"
+String1=0x04,Ubersquadrat
+String2=0x15,Ubersquadrat
 [end]
 
+; ==========================================
+; Ubersquadratinho (level 17)
+; solid line, width 3, color #5500AA Deep Violet
+; ==========================================
 [_line]
 ; Ubersquadratinho
 ; CUSTOMIZABLE_LINE_11
 Type=0x10E0A
 LineWidth=3
 Xpm="0 0 1 0"
-"1 c #FF7F00"
+"1 c #5500AA"
+String1=0x04,Ubersquadratinho
+String2=0x15,Ubersquadratinho
 [end]
 
 [_line]
