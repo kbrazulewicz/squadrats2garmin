@@ -1,0 +1,4 @@
+- Garmin custom types: https://gpspohod.ucoz.ru/j-typ.htm#06
+- Garmin color palettes: https://developer.garmin.com/connect-iq/connect-iq-faq/how-do-i-optimize-bitmaps/
+- Garmin colors: https://developer.garmin.com/connect-iq/api-docs/Toybox/Graphics.html
+- 6-bit RGB palette: https://lospec.com/palette-list/6-bit-rgb
