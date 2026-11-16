@@ -180,18 +180,10 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
         return way_id
 
     def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: Tags | None = None):
-        outer: list[int] = []
-        inner: list[int] = []
-
         for poly in polygons:
-            outer.append(self.__parse_linear_ring(ring=poly.exterior, tags=tags))
-            inner.extend([
+            self.__parse_linear_ring(ring=poly.exterior, tags=tags)
+            for inner_ring in poly.interiors:
                 self.__parse_linear_ring(ring=inner_ring, tags=tags)
-                for inner_ring in poly.interiors
-            ])
-
-        # self._document.append(multipolygon_to_xml(
-        #     element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
     def __shape_to_osm(self, geom: BaseGeometry, tags: Tags):
         """Write shape to OSM XML"""
