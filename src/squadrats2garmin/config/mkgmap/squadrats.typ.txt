@@ -136,25 +136,41 @@ String=0x04,Level 14 Visited Border
 [end]
 
 
-
-
-
-
 ; ==========================================
-; Level-17 Centroid Plus Marker (+)
-; 5x5 bitmap, 2 colors (#FF0055 crimson-pink + transparent)
+; Squadrats centroid marker
+; 6x6 bitmap, 2 colors (#0000FF royal blue + transparent)
 ; ==========================================
 [_point]
 Type=0x11501
-Xpm="5 5 2 1"
-"# c #FF0055"
+Xpm="6 6 2 1"
+"# c #0000FF"
 ". c none"
-"..#.."
-"..#.."
-"#####"
-"..#.."
-"..#.."
-String1=0x04,Level 17 Center
+"..##.."
+"..##.."
+"######"
+"######"
+"..##.."
+"..##.."
+String1=0x04,Squadrats Center
+[end]
+
+
+; ==========================================
+; Squadratinhos centroid marker
+; 6x6 bitmap, 2 colors (#FF0000 red + transparent)
+; ==========================================
+[_point]
+Type=0x11502
+Xpm="6 6 2 1"
+"# c #FF0000"
+". c none"
+"..##.."
+"..##.."
+"######"
+"######"
+"..##.."
+"..##.."
+String1=0x04,Squadratinhos Center
 [end]
 
 

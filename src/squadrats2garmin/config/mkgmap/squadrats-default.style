@@ -49,8 +49,11 @@ name=ubersquadratinho [0x10E0A level 1]
 
 
 <<<points>>>
-# Level-17 centroid '+' marker: visible only when zoomed in close so it never clutters wider views
-grid_center=17 { delete name; } [0x11501 resolution 23]
+# squadrats centroid marker
+grid_center=14 { delete name; } [0x11501 level 2-3]
+
+# squadratinhos centroid marker
+grid_center=17 { delete name; } [0x11502 level 1]
 
 
 <<<polygons>>>
