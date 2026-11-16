@@ -55,11 +55,37 @@ class Zoom:
             self.lat(tile[1])
         )
 
+    def to_center_point(self, tile: tuple[int, int]) -> osm.Point:
+        """Return the coordinates of the center of the tile
+        """
+        x, y = tile
+        center_lon = (x + 0.5) / self._n * 360.0 - 180.0
+        center_lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * (y + 0.5) / self._n))))
+        return (center_lon, center_lat)
+
     def x(self, lon: float) -> int:
         return int((lon + 180.0) / 360.0 * self._n)
 
     def y(self, lat: float) -> int:
         return int((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self._n)
+
+    def x_round(self, lon: float) -> int:
+        """Return tile x coordinate, rounding to nearest integer.
+
+        Use this instead of x() when coordinates are known to lie exactly
+        on tile boundaries (e.g. Squadrats GeoJSON outlines) to avoid
+        floating-point truncation errors.
+        """
+        return round((lon + 180.0) / 360.0 * self._n)
+
+    def y_round(self, lat: float) -> int:
+        """Return tile y coordinate, rounding to nearest integer.
+
+        Use this instead of y() when coordinates are known to lie exactly
+        on tile boundaries (e.g. Squadrats GeoJSON outlines) to avoid
+        floating-point truncation errors.
+        """
+        return round((1.0 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2.0 * self._n)
 
 
 # number of tiles: 4^14 = 268 435 456
