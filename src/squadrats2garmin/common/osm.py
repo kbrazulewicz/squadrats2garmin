@@ -213,14 +213,15 @@ def element_to_xml(name: str, attrs: dict, tags: Tags | None = None) -> ET.Eleme
     return element
 
 
-def node_to_xml(element_id: int, geom: Point) -> ET.Element:
+def node_to_xml(element_id: int, geom: Point, tags: Tags | None = None) -> ET.Element:
     return element_to_xml(
         name=Node.TAG,
         attrs={
             'id': str(element_id),
             'lon': str(geom[0]),
             'lat': str(geom[1]),
-        }
+        },
+        tags=tags
     )
 
 
