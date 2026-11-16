@@ -1,4 +1,5 @@
-GARMIN=/Volumes/GARMIN/Garmin
+GARMIN_VOL=/Volumes/GARMIN
+GARMIN=$(GARMIN_VOL)/Garmin
 
 VERSION := $(shell uv version --short)
 
@@ -27,6 +28,9 @@ docker-run:
 		--env SQUADRATS2GARMIN_VERBOSE=true \
 		--mount type=bind,source=.,target=/output \
 		kbrazulewicz/visitedsquadrats2garmin
+
+eject:
+	diskutil eject $(GARMIN_VOL)
 
 test:
 	uv run pytest -v
@@ -64,9 +68,12 @@ visited-kml: clean
 	uv run visited --verbose --kml squadrats.kml --output output/squadrats-visited.img
 
 visited-user-id: clean
-	uv run visited --verbose --user-id P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 --output output/squadrats-visited.img
+	uv run visited --verbose --keep --user-id P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1 --output output/squadrats-visited.img
 
-visited: visited-user-id
+visited-geojson: clean
+	uv run visited --verbose --keep --geojson P2NkzJ2UfnOGnq7DNaA1Y1JZYkl1-1794756750058.geojson --output output/squadrats-visited.img
+
+visited: visited-geojson
 	#scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img $(GARMIN)
 

@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import json
 import logging
 import sys
 import tempfile
@@ -8,11 +9,13 @@ from pathlib import Path
 from typing import Protocol
 
 import fastkml.geometry
+import shapely
 from fastkml import KML
 from fastkml import Placemark
 from fastkml.utils import find
 from shapely import LinearRing, MultiPolygon, Polygon
 from shapely.geometry import shape
+from shapely.geometry.base import BaseGeometry
 
 from squadrats2garmin.common.mkgmap import VisitedSquadratsConfig
 from squadrats2garmin.common.osm import Tags, OSMProducer, AbstractOSMProducer, node_to_xml, \
@@ -103,11 +106,11 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
             feature_name = feature['properties']['name']
             if feature_name in self.__GEOJSON_FEATURES:
                 with timeit(msg=f"Processing {feature_name}"):
-                    self.__shape_to_osm(geom=shape(feature), tags={'name': feature_name})
+                    self.__shape_to_osm(geom=shapely.orient_polygons(shape(feature)), tags={'name': feature_name})
 
         self._write_document(file=file)
 
-    def __parse_linear_ring(self, ring: LinearRing) -> int:
+    def __parse_linear_ring(self, ring: LinearRing, tags: Tags | None = None) -> int:
         """Parse LinearRing"""
 
         # first and last node are the same and this needs to be the same object in OSM file
@@ -119,24 +122,24 @@ class GeoJSONOSMProducer(AbstractOSMProducer, OSMProducer):
         node_ids.append(node_ids[0])
 
         way_id = self._next_id()
-        self._document.append(way_to_xml(element_id=way_id, refs=node_ids))
+        self._document.append(way_to_xml(element_id=way_id, refs=node_ids, tags=tags))
         return way_id
 
-    def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: Tags = None):
+    def __parse_multipolygon(self, polygons: Sequence[Polygon], tags: Tags | None = None):
         outer: list[int] = []
         inner: list[int] = []
 
         for poly in polygons:
-            outer.append(self.__parse_linear_ring(ring=poly.exterior))
+            outer.append(self.__parse_linear_ring(ring=poly.exterior, tags=tags))
             inner.extend([
-                self.__parse_linear_ring(ring=inner_ring)
+                self.__parse_linear_ring(ring=inner_ring, tags=tags)
                 for inner_ring in poly.interiors
             ])
 
-        self._document.append(multipolygon_to_xml(
-            element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
+        # self._document.append(multipolygon_to_xml(
+        #     element_id=self._next_id(), outer_rings=outer, inner_rings=inner, tags=tags))
 
-    def __shape_to_osm(self, geom: Polygon | MultiPolygon, tags: Tags):
+    def __shape_to_osm(self, geom: BaseGeometry, tags: Tags):
         """Write shape to OSM XML"""
         match geom.geom_type:
             case 'MultiPolygon':
@@ -157,12 +160,24 @@ class SquadratsTrophiesProvider(GeoJSONProvider):
         return self.__client.get_trophies(user_id=self.__user_id)
 
 
+class SquadratsGeoJsonProvider(GeoJSONProvider):
+    def __init__(self, geojson_file: Path | str) -> None:
+        self.__geojson_file: Path = Path(geojson_file)
+
+    def load(self):
+        """GeoJSONProvider protocol"""
+        logger.info("Reading GeoJSON data from %s", self.__geojson_file)
+        with self.__geojson_file.open("r", encoding="utf-8") as f:
+            return json.load(f)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Convert Squadrats' 'visited squadrats' to Garmin IMG map")
 
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('-u', '--user-id', help="Squadrats' user id")
-    action.add_argument('-k', '--kml', help="Squadrats' 'visited squadrats' KML")
+    action.add_argument('-k', '--kml', type=Path, help="Squadrats' 'visited squadrats' KML")
+    action.add_argument('-g', '--geojson', type=Path, help="Squadrats' 'visited squadrats' GeoJSON")
 
     parser.add_argument('-v', '--verbose', action='store_true', help="verbose output")
     parser.add_argument('--keep', action='store_true', help="keep output files after processing")
@@ -176,8 +191,10 @@ def generate_osm(output: Path, args):
 
     if args.user_id:
         osm_producer = GeoJSONOSMProducer(provider=SquadratsTrophiesProvider(user_id=args.user_id))
-    elif args.kml_file:
-        osm_producer = KMLOSMProducer(kml=KML.parse(Path(args.kml_file)))
+    elif args.geojson:
+        osm_producer = GeoJSONOSMProducer(provider=SquadratsGeoJsonProvider(geojson_file=args.geojson))
+    elif args.kml:
+        osm_producer = KMLOSMProducer(kml=KML.parse(args.kml))
     else:
         raise ValueError
 

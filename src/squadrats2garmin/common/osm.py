@@ -224,8 +224,11 @@ def node_to_xml(element_id: int, geom: Point) -> ET.Element:
     )
 
 
-def way_to_xml(element_id: int, refs: list[int]) -> ET.Element:
-    way: ET.Element = element_to_xml(Way.TAG, {'id': str(element_id)})
+def way_to_xml(
+        element_id: int,
+        refs: list[int],
+        tags: Tags | None = None) -> ET.Element:
+    way: ET.Element = element_to_xml(Way.TAG, {'id': str(element_id)}, tags=tags)
     way.extend(ET.Element('nd', {'ref': str(ref)}) for ref in refs)
 
     return way
