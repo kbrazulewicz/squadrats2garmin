@@ -4,7 +4,7 @@ FROM eclipse-temurin:25-jre-resolute
 RUN mkdir "/output"
 VOLUME /output
 
-ARG MKGMAP_VERSION=r4923
+ARG MKGMAP_VERSION=r4924
 ARG SQUADRATS2GARMIN_VERSION
 
 RUN apt-get update && apt-get install --yes curl

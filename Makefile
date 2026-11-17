@@ -14,7 +14,7 @@ package:
 
 docker: package
 	docker build \
-		--build-arg MKGMAP_VERSION=r4923 \
+		--build-arg MKGMAP_VERSION=r4924 \
 		--build-arg SQUADRATS2GARMIN_VERSION=$(VERSION) \
 		--tag kbrazulewicz/visitedsquadrats2garmin \
 		docker
