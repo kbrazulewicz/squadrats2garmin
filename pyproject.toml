@@ -1,6 +1,6 @@
 [project]
 name = "Squadrats2Garmin"
-version = "0.2.4"
+version = "0.2.5"
 description = "Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches."
 readme = "README.md"
 authors = [
@@ -8,13 +8,13 @@ authors = [
 ]
 license = "GPL-3.0-only"
 keywords = ["squadrats"]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "fastkml>=1.4.0",
     "overpy>=0.7",
     "pycountry>=26.2.16",
     "requests>=2.34.2",
-    "shapely>=2.1.2",
+    "shapely==2.2.0",
 ]
 
 [project.scripts]
@@ -23,7 +23,7 @@ grid = "squadrats2garmin:squadrats_grid"
 poly = "squadrats2garmin:poly_download"
 
 [build-system]
-requires = ["uv_build>=0.12.5,<0.13"]
+requires = ["uv_build>=0.13.0,<0.14"]
 build-backend = "uv_build"
 
 [dependency-groups]
@@ -37,18 +37,5 @@ dev = [
 required-environments = [
   "sys_platform == 'linux' and platform_machine == 'x86_64'",
   "sys_platform == 'linux' and platform_machine == 'aarch64'",
-  "sys_platform == 'linux' and platform_machine == 'armv7l'",
 ]
 
-[[tool.uv.index]]
-name = "piwheels"
-url = "https://www.piwheels.org/simple"
-explicit = true          # used ONLY for packages that explicitly point here
-
-[tool.uv.sources]
-numpy = [
-  { index = "piwheels", marker = "platform_machine == 'armv7l' or platform_machine == 'armv6l'" },
-]
-shapely = [
-  { index = "piwheels", marker = "platform_machine == 'armv7l' or platform_machine == 'armv6l'" },
-]
