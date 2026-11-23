@@ -8,6 +8,7 @@ import requests
 import shapely
 from typing import Protocol
 
+from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
@@ -55,14 +56,14 @@ class SquadratsClient:
         response.raise_for_status()
         return GeoJsonMetadata(**response.json())
 
-    def get_trophies(self, user_id: str, geojson_metadata: GeoJsonMetadata = None) -> dict:
+    def get_trophies(self, user_id: str, geojson_metadata: GeoJsonMetadata|None = None) -> Response:
         with timeit(msg=f"Fetching trophies for user {user_id}"):
             if geojson_metadata is None:
                 geojson_metadata = self.get_geojson_metadata(user_id)
 
             response = self._session.get(geojson_metadata.url, timeout=self._timeout)
             response.raise_for_status()
-            return response.json()
+            return response
 
 
 class TileMapGenerator(Protocol):

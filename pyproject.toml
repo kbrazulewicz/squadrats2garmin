@@ -1,6 +1,6 @@
 [project]
 name = "Squadrats2Garmin"
-version = "0.2.5"
+version = "0.2.6"
 description = "Squadrats2Garmin project is a set of tools that improves the experience of _Squadrats_ collectors who use Garmin bike computers and smartwatches."
 readme = "README.md"
 authors = [

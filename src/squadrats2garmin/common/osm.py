@@ -18,6 +18,8 @@ type Point = tuple[float, ...]
 class OSMProducer(Protocol):
     def to_file(self, file: Path) -> None:
         ...
+    def to_string(self) -> str:
+        ...
 
 
 class AbstractOSMProducer(ABC, OSMProducer):
@@ -30,9 +32,13 @@ class AbstractOSMProducer(ABC, OSMProducer):
     def _next_id(self) -> int:
         return next(self.__id_generator)
 
-    def _write_document(self, file: Path):
+    def _to_file(self, file: Path):
         with timeit(msg=f"Writing {file}"):
-            ET.ElementTree(self._document).write(file, encoding='utf-8', xml_declaration=True)
+            ET.ElementTree(self._document).write(file, encoding='unicode', xml_declaration=True)
+
+    def _to_string(self) -> str:
+        with timeit(msg=f"Generate OSM as string"):
+            return ET.tostring(self._document, encoding='unicode', xml_declaration=True)
 
 
 class OSMElement(ABC):
