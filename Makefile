@@ -3,6 +3,10 @@ GARMIN=$(GARMIN_VOL)/Garmin
 
 VERSION := $(shell uv version --short)
 
+TYP_DIRECTORY := src/squadrats2garmin/config/mkgmap/typ
+TYP_TXT_FILES := $(wildcard $(TYP_DIRECTORY)/*.txt)
+TYP_FILES := $(TYP_TXT_FILES:.txt=.typ)
+
 clean:
 	rm -f dist/squadrats2garmin-*-py3-none-any.whl
 	rm -f docker/squadrats2garmin-*-py3-none-any.whl
@@ -85,3 +89,10 @@ mkgmap:
 	mv output/gmapsupp.img output/squadrats-visited.img
 	#scp output/squadrats-visited.img home:/home/krystian/work/squadrats2garmin/output/
 	cp output/squadrats-visited.img $(GARMIN)
+
+# compile TYP files
+typ: $(TYP_FILES)
+
+$(TYP_DIRECTORY)/%.typ: $(TYP_DIRECTORY)/%.txt
+	mkgmap --output-dir=$(TYP_DIRECTORY) $<
+	rm $(TYP_DIRECTORY)/osmmap.*

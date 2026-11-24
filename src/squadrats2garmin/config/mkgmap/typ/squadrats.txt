@@ -1,14 +1,7 @@
 [_id]
-;FID and ProductCode are taken from command line
-;FID=9724
-;ProductCode=1
-CodePage=1252
-[end]
-
-[_id]
-FID=9001
+FID=9725
 ProductCode=1
-CodePage=65001
+CodePage=1252
 [end]
 
 [_drawOrder]

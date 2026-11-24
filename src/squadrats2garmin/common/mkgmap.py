@@ -93,7 +93,7 @@ class Config(ABC):
                 # self.__style_file = style_file.copy_into(self.output_dir)
 
         if not self.__typ_file:
-            with resources.as_file(mkgmap_resources.joinpath("squadrats.typ.txt")) as typ_file:
+            with resources.as_file(mkgmap_resources.joinpath("typ", "squadrats.typ")) as typ_file:
                 self.__typ_file = Path(shutil.copy(src=typ_file, dst=self.output_dir))
                 # requires Python 3.14
                 # self.__typ_file = typ_file.copy_into(self.output_dir)
